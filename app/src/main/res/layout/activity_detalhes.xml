@@ -1,6 +1,221 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    activity_detalhes.xml
+    Detalhes do item — funciona como BottomSheet ou Activity.
+    Contém: drag handle, chips de status, imagem circular, stepper, botões salvar/remover.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:background="@color/colorSurface"
+    android:orientation="vertical"
+    android:paddingTop="16dp"
+    android:paddingBottom="32dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- ===== Drag Handle ===== -->
+    <View
+        android:layout_width="48dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:background="@color/colorOutlineVariant" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp">
+
+        <!-- ===== Chips de Status e Categoria ===== -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:chipSpacingHorizontal="8dp">
+
+            <!-- Chip de alerta de validade (dinâmico — cor muda em código) -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipStatus"
+                style="@style/Widget.InventaAi.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="false"
+                android:text="@string/expires_today"
+                app:chipBackgroundColor="@color/colorErrorContainer"
+                app:chipIcon="@drawable/ic_nav_history"
+                app:chipIconTint="@color/colorError"
+                android:textColor="@color/colorOnErrorContainer" />
+
+            <!-- Chip de categoria -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipCategoria"
+                style="@style/Widget.InventaAi.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="false"
+                android:text="Hortifruti"
+                app:chipBackgroundColor="@color/colorSurfaceContainerHighest"
+                android:textColor="@color/colorOnSurface" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <!-- ===== Imagem circular do alimento ===== -->
+        <FrameLayout
+            android:layout_width="192dp"
+            android:layout_height="192dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivItemImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/cd_food_icon"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_nav_pantry"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.InventaAi.Circle"
+                app:strokeColor="@color/colorSurface"
+                app:strokeWidth="4dp" />
+        </FrameLayout>
+
+        <!-- ===== Nome do item ===== -->
+        <TextView
+            android:id="@+id/tvItemName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_extrabold"
+            android:gravity="center"
+            android:textColor="@color/colorOnSurface"
+            android:textSize="32sp"
+            android:layout_marginBottom="8dp"
+            tools:text="Abacate Hass" />
+
+        <!-- Data de adição -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="32dp">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@android:drawable/ic_menu_my_calendar"
+                android:tint="@color/colorOnSurfaceVariant"
+                android:contentDescription="@null"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/tvAddedDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_regular"
+                android:textColor="@color/colorOnSurfaceVariant"
+                android:textSize="15sp"
+                tools:text="Adicionado há 4 dias" />
+        </LinearLayout>
+
+        <!-- ===== STEPPER de Quantidade ===== -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_card_neu"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:layout_marginBottom="32dp">
+
+            <!-- Botão diminuir (-) -->
+            <ImageButton
+                android:id="@+id/btnDecrease"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_circle_surface"
+                android:contentDescription="@string/decrease_quantity"
+                android:src="@android:drawable/ic_input_delete"
+                android:tint="@color/colorPrimary" />
+
+            <!-- Valor e unidade centrais -->
+            <LinearLayout
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingHorizontal="12dp">
+
+                <TextView
+                    android:id="@+id/tvQuantidade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_extrabold"
+                    android:gravity="center"
+                    android:textColor="@color/colorOnSurface"
+                    android:textSize="40sp"
+                    tools:text="2" />
+
+                <TextView
+                    android:id="@+id/tvUnidade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_bold"
+                    android:gravity="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/colorOutline"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.05"
+                    tools:text="UNIDADES" />
+            </LinearLayout>
+
+            <!-- Botão aumentar (+) -->
+            <ImageButton
+                android:id="@+id/btnIncrease"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_circle_surface"
+                android:contentDescription="@string/increase_quantity"
+                android:src="@android:drawable/ic_input_add"
+                android:tint="@color/colorPrimary" />
+
+        </LinearLayout>
+
+        <!-- ===== BOTÕES: Remover e Salvar ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Botão Remover/Descartar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRemover"
+                style="@style/Widget.InventaAi.Button.Pill.Outlined.Error"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/btn_discard"
+                app:icon="@android:drawable/ic_menu_delete"
+                app:iconGravity="textStart" />
+
+            <!-- Botão Salvar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSalvar"
+                style="@style/Widget.InventaAi.Button.Pill"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="@string/btn_save_item"
+                app:icon="@android:drawable/checkbox_on_background"
+                app:iconGravity="textStart" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>

@@ -1,160 +1,136 @@
 package com.example.inventaai.ui.dashboard;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
-import com.example.inventaai.data.model.HistoricoItem;
 import com.example.inventaai.data.repository.DespensaRepository;
-import com.example.inventaai.data.repository.HistoricoRepository;
-import com.example.inventaai.util.Constants;
-import com.example.inventaai.util.DateUtils;
+import com.example.inventaai.ui.cadastro.CadastroActivity;
+import com.example.inventaai.ui.chefIA.ChefIAActivity;
+import com.example.inventaai.ui.historico.HistoricoActivity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
+/**
+ * DashboardActivity — tela principal do InventaAí.
+ *
+ * Sprint 2: UI estática com navegação entre telas.
+ * Sprint 3: conectar os RecyclerViews ao DespensaRepository.
+ */
 public class DashboardActivity extends AppCompatActivity {
 
-    private static final String TAG = Constants.LOG_TAG;
+    // Views
+    private RecyclerView rvExpiringSoon;
+    private RecyclerView rvPantryItems;
+    private TextView tvEmpty;
+    private MaterialButton btnGenerateRecipe;
+    private BottomNavigationView bottomNavigation;
+
+    // Repositório (pronto para Sprint 3)
+    private DespensaRepository despensaRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_dashboard);
+
+        // Edge-to-edge padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // =====================================================================
-        // CÓDIGO DE TESTE DA SPRINT 1 — remover após validação
-        // =====================================================================
-    //    executarTestesSprint1();
+        inicializarRepositorio();
+        vincularViews();
+        configurarRecyclerViews();
+        configurarBotoes();
+        configurarBottomNavigation();
     }
 
-    /**
-     * Executa todos os testes manuais da Sprint 1.
-     * Acompanhe a saída no Logcat filtrando pela tag "InventaAi".
-     */
-    private void executarTestesSprint1() {
-        Log.d(TAG, "======================================================");
-        Log.d(TAG, "  INÍCIO DOS TESTES — SPRINT 1 · Base de Dados");
-        Log.d(TAG, "======================================================");
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Sprint 3: recarregar dados ao voltar de outra tela
+        // carregarDados();
+    }
 
-        DespensaRepository despensaRepo = new DespensaRepository(this);
-        HistoricoRepository historicoRepo = new HistoricoRepository(this);
+    // =========================================================================
+    // INICIALIZAÇÃO
+    // =========================================================================
 
-        // ------------------------------------------------------------------
-        // TESTE 1 — Inserção de itens
-        // ------------------------------------------------------------------
-        Log.d(TAG, "\n--- TESTE 1: Inserção ---");
+    private void inicializarRepositorio() {
+        despensaRepository = new DespensaRepository(this);
+    }
 
-        // Item que vence hoje (VERMELHO)
-        DespensaItem maca = new DespensaItem("Maçã", 2.0, "un",
-                DateUtils.hoje(), Constants.STATUS_ATIVO);
-        long idMaca = despensaRepo.inserir(maca);
-        Log.d(TAG, "Maçã inserida com id=" + idMaca);
+    private void vincularViews() {
+        rvExpiringSoon    = findViewById(R.id.rvExpiringSoon);
+        rvPantryItems     = findViewById(R.id.rvPantryItems);
+        tvEmpty           = findViewById(R.id.tvEmpty);
+        btnGenerateRecipe = findViewById(R.id.btnGenerateRecipe);
+        bottomNavigation  = findViewById(R.id.bottomNavigation);
+    }
 
-        // Item que vence amanhã (AMARELO)
-        DespensaItem leite = new DespensaItem("Leite", 1.0, "L",
-                DateUtils.hojeAdicionarDias(1), Constants.STATUS_ATIVO);
-        long idLeite = despensaRepo.inserir(leite);
-        Log.d(TAG, "Leite inserido com id=" + idLeite);
+    private void configurarRecyclerViews() {
+        // RecyclerView horizontal (vencendo logo)
+        rvExpiringSoon.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
-        // Item que vence em 5 dias (VERDE)
-        DespensaItem arroz = new DespensaItem("Arroz", 5.0, "kg",
-                DateUtils.hojeAdicionarDias(5), Constants.STATUS_ATIVO);
-        long idArroz = despensaRepo.inserir(arroz);
-        Log.d(TAG, "Arroz inserido com id=" + idArroz);
+        // RecyclerView vertical (lista principal)
+        rvPantryItems.setLayoutManager(new LinearLayoutManager(this));
 
-        // ------------------------------------------------------------------
-        // TESTE 2 — listarTodos (ordenado por data de validade)
-        // ------------------------------------------------------------------
-        Log.d(TAG, "\n--- TESTE 2: listarTodos ---");
-        List<DespensaItem> todos = despensaRepo.listarTodos();
-        for (DespensaItem item : todos) {
-            int diasRestantes = DateUtils.calcularDiasRestantes(item.getDataValidade());
-            String alerta     = DateUtils.getStatusAlerta(diasRestantes);
-            Log.d(TAG, item + " | diasRestantes=" + diasRestantes + " | alerta=" + alerta
-                    + " | validadeFormatada=" + DateUtils.formatarParaExibicao(item.getDataValidade()));
-        }
+        // Sprint 3: atribuir adapters reais e carregar dados do repositório
+        // Exemplo:
+        //   List<DespensaItem> itens = despensaRepository.listarTodos();
+        //   DespensaAdapter adapter = new DespensaAdapter(itens, item -> abrirDetalhes(item));
+        //   rvPantryItems.setAdapter(adapter);
+        //   tvEmpty.setVisibility(itens.isEmpty() ? View.VISIBLE : View.GONE);
+    }
 
-        // ------------------------------------------------------------------
-        // TESTE 3 — Atualização
-        // ------------------------------------------------------------------
-        Log.d(TAG, "\n--- TESTE 3: Atualização ---");
-        leite.setId(idLeite);
-        leite.setQuantidade(2.5);
-        int linhas = despensaRepo.atualizar(leite);
-        Log.d(TAG, "Atualização do Leite: " + linhas + " linha(s) afetada(s).");
+    // =========================================================================
+    // EVENTOS
+    // =========================================================================
 
-        // Confirma a atualização
-        List<DespensaItem> aposAtualizacao = despensaRepo.listarTodos();
-        for (DespensaItem item : aposAtualizacao) {
-            if (item.getId() == idLeite) {
-                Log.d(TAG, "Leite atualizado: quantidade=" + item.getQuantidade()
-                        + " (esperado: 2.5)");
+    private void configurarBotoes() {
+        // FAB "Gerar Receita" → abre ChefIAActivity
+        btnGenerateRecipe.setOnClickListener(v ->
+                startActivity(new Intent(this, ChefIAActivity.class)));
+    }
+
+    private void configurarBottomNavigation() {
+        // Marca a aba Despensa como selecionada nesta tela
+        bottomNavigation.setSelectedItemId(R.id.nav_pantry);
+
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_pantry) {
+                // Já estamos aqui; apenas consome o evento
+                return true;
+            } else if (id == R.id.nav_add) {
+                startActivity(new Intent(this, CadastroActivity.class));
+                return true;
+            } else if (id == R.id.nav_history) {
+                startActivity(new Intent(this, HistoricoActivity.class));
+                return true;
+            } else if (id == R.id.nav_chef_ia) {
+                startActivity(new Intent(this, ChefIAActivity.class));
+                return true;
             }
-        }
 
-        // ------------------------------------------------------------------
-        // TESTE 4 — listarProximosVencimento (janela de 3 dias)
-        // ------------------------------------------------------------------
-        Log.d(TAG, "\n--- TESTE 4: listarProximosVencimento(3) ---");
-        List<DespensaItem> proximos = despensaRepo.listarProximosVencimento(3);
-        Log.d(TAG, "Itens nos próximos 3 dias: " + proximos.size()
-                + " (esperado: 2 — Maçã e Leite)");
-        for (DespensaItem item : proximos) {
-            Log.d(TAG, "  → " + item.getNome() + " | validade=" + item.getDataValidade());
-        }
-
-        // ------------------------------------------------------------------
-        // TESTE 5 — moverParaHistorico
-        // ------------------------------------------------------------------
-        Log.d(TAG, "\n--- TESTE 5: moverParaHistorico ---");
-        boolean moveu = despensaRepo.moverParaHistorico(idMaca, Constants.STATUS_CONSUMIDO);
-        Log.d(TAG, "moverParaHistorico(Maçã): " + moveu + " (esperado: true)");
-
-        // Despensa não deve mais ter a Maçã
-        List<DespensaItem> aposMove = despensaRepo.listarTodos();
-        Log.d(TAG, "Itens na despensa após mover Maçã: " + aposMove.size()
-                + " (esperado: 2 — Leite e Arroz)");
-        for (DespensaItem item : aposMove) {
-            Log.d(TAG, "  → " + item.getNome());
-        }
-
-        // Histórico deve ter 1 registro
-        List<HistoricoItem> historico = historicoRepo.listarTodos();
-        Log.d(TAG, "Registros no histórico: " + historico.size() + " (esperado: 1)");
-        for (HistoricoItem h : historico) {
-            Log.d(TAG, "  → " + h);
-        }
-
-        // ------------------------------------------------------------------
-        // TESTE 6 — DateUtils
-        // ------------------------------------------------------------------
-        Log.d(TAG, "\n--- TESTE 6: DateUtils ---");
-        Log.d(TAG, "hoje()=" + DateUtils.hoje());
-        Log.d(TAG, "hojeAdicionarDias(7)=" + DateUtils.hojeAdicionarDias(7));
-        Log.d(TAG, "calcularDiasRestantes(hoje)=" + DateUtils.calcularDiasRestantes(DateUtils.hoje()));
-        Log.d(TAG, "calcularDiasRestantes(+5)="   + DateUtils.calcularDiasRestantes(DateUtils.hojeAdicionarDias(5)));
-        Log.d(TAG, "formatarParaExibicao('2026-12-31')=" + DateUtils.formatarParaExibicao("2026-12-31"));
-        Log.d(TAG, "getStatusAlerta(-1)="  + DateUtils.getStatusAlerta(-1)  + " (esperado: VERMELHO)");
-        Log.d(TAG, "getStatusAlerta(0)="   + DateUtils.getStatusAlerta(0)   + " (esperado: VERMELHO)");
-        Log.d(TAG, "getStatusAlerta(2)="   + DateUtils.getStatusAlerta(2)   + " (esperado: AMARELO)");
-        Log.d(TAG, "getStatusAlerta(3)="   + DateUtils.getStatusAlerta(3)   + " (esperado: AMARELO)");
-        Log.d(TAG, "getStatusAlerta(10)="  + DateUtils.getStatusAlerta(10)  + " (esperado: VERDE)");
-
-        Log.d(TAG, "======================================================");
-        Log.d(TAG, "  FIM DOS TESTES — verifique os resultados acima");
-        Log.d(TAG, "======================================================");
+            return false;
+        });
     }
 }

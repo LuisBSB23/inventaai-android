@@ -1,3 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">InventaAi</string>
+    <string name="app_name">InventaAí</string>
+
+    <!-- Dashboard -->
+    <string name="greeting_prefix">Bom dia,</string>
+    <string name="greeting_user">Alex!</string>
+    <string name="greeting_subtitle">Sua despensa está fresca. Pronto para cozinhar?</string>
+    <string name="pantry_health_label">SAÚDE DA DESPENSA</string>
+    <string name="pantry_health_value">85% Ideal</string>
+    <string name="expiring_soon_title">Vencendo Logo</string>
+    <string name="see_all">Ver todos</string>
+    <string name="generate_recipe">Gerar Receita</string>
+    <string name="pantry_items_title">Itens na Despensa</string>
+    <string name="no_items">Sua despensa está vazia.\nAdicione o primeiro item!</string>
+
+    <!-- Navegação -->
+    <string name="nav_pantry">Despensa</string>
+    <string name="nav_add">Adicionar</string>
+    <string name="nav_history">Histórico</string>
+    <string name="nav_chef_ia">Chef IA</string>
+
+    <!-- Cadastro -->
+    <string name="title_add_item">Adicionar Alimento</string>
+    <string name="subtitle_add_item">Mantenha sua despensa atualizada e fresca.</string>
+    <string name="hint_name">Nome do Alimento</string>
+    <string name="hint_category">Categoria</string>
+    <string name="hint_quantity">Quantidade</string>
+    <string name="hint_expiry_date">Data de Validade</string>
+    <string name="unit_unit">unid</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_lb">lb</string>
+    <string name="btn_save">Salvar na Despensa</string>
+    <string name="back">Voltar</string>
+    <string name="select_date">Selecionar data</string>
+
+    <!-- Categorias -->
+    <string-array name="categories">
+        <item>Hortifruti</item>
+        <item>Laticínios</item>
+        <item>Carnes</item>
+        <item>Grãos e Cereais</item>
+        <item>Bebidas</item>
+        <item>Congelados</item>
+        <item>Temperos</item>
+        <item>Outros</item>
+    </string-array>
+
+    <!-- Detalhes -->
+    <string name="title_item_details">Detalhes do Item</string>
+    <string name="label_quantity">QUANTIDADE</string>
+    <string name="label_units">UNIDADES</string>
+    <string name="btn_save_item">Salvar</string>
+    <string name="btn_discard">Remover/Descartar</string>
+    <string name="added_days_ago">Adicionado há %d dias</string>
+    <string name="expires_in_days">Vence em %d dias</string>
+    <string name="expired">Vencido</string>
+    <string name="expires_today">Vence hoje</string>
+    <string name="decrease_quantity">Diminuir quantidade</string>
+    <string name="increase_quantity">Aumentar quantidade</string>
+
+    <!-- Histórico -->
+    <string name="title_history">Cronologia</string>
+    <string name="subtitle_history">Reveja a atividade da sua despensa.</string>
+    <string name="consumed">Consumido</string>
+    <string name="discarded">Descartado</string>
+    <string name="history_empty">Nenhuma atividade registrada ainda.</string>
+
+    <!-- Chef IA -->
+    <string name="title_chef_ia">Chef IA</string>
+    <string name="ia_badge">CRIAÇÃO IA</string>
+    <string name="recipe_title_placeholder">Receita Gerada pela IA</string>
+    <string name="recipe_description_placeholder">Uma transformação mágica dos itens básicos da sua despensa em um prato delicioso e nutritivo.</string>
+    <string name="recipe_time">25 min</string>
+    <string name="recipe_servings">2 porções</string>
+    <string name="recipe_difficulty">Fácil</string>
+    <string name="ingredients_title">Ingredientes Utilizados</string>
+    <string name="steps_title">Modo de Fazer</string>
+    <string name="btn_save_recipe">Salvar Receita</string>
+    <string name="btn_generate_new">Gerar Nova Receita</string>
+    <string name="generating_recipe">Gerando receita com IA…</string>
+    <string name="pantry_empty_for_recipe">Adicione itens à despensa para gerar uma receita.</string>
+
+    <!-- Acessibilidade -->
+    <string name="cd_menu">Menu</string>
+    <string name="cd_profile">Perfil do usuário</string>
+    <string name="cd_food_icon">Ícone do alimento</string>
+    <string name="cd_action_icon">Ícone da ação</string>
 </resources>

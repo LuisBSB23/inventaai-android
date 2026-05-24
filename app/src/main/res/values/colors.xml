@@ -1,5 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+
+    <!-- ===== Culinary Vitality — Paleta Completa ===== -->
+
+    <!-- Primária (Fresh Mint Green) -->
+    <color name="colorPrimary">#006D36</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorPrimaryContainer">#4ADE80</color>
+    <color name="colorOnPrimaryContainer">#005E2D</color>
+    <color name="colorInversePrimary">#4DE082</color>
+    <color name="colorPrimaryFixed">#6DFE9C</color>
+    <color name="colorPrimaryFixedDim">#4DE082</color>
+    <color name="colorOnPrimaryFixed">#00210C</color>
+    <color name="colorOnPrimaryFixedVariant">#005227</color>
+
+    <!-- Secundária (Warm Citrus) -->
+    <color name="colorSecondary">#944A00</color>
+    <color name="colorOnSecondary">#FFFFFF</color>
+    <color name="colorSecondaryContainer">#FD933D</color>
+    <color name="colorOnSecondaryContainer">#693300</color>
+    <color name="colorSecondaryFixed">#FFDCC5</color>
+    <color name="colorSecondaryFixedDim">#FFB783</color>
+    <color name="colorOnSecondaryFixed">#301400</color>
+    <color name="colorOnSecondaryFixedVariant">#713700</color>
+
+    <!-- Terciária (Energetic Red) -->
+    <color name="colorTertiary">#A83639</color>
+    <color name="colorOnTertiary">#FFFFFF</color>
+    <color name="colorTertiaryContainer">#FFB0AD</color>
+    <color name="colorOnTertiaryContainer">#96282D</color>
+    <color name="colorTertiaryFixed">#FFDAD8</color>
+    <color name="colorTertiaryFixedDim">#FFB3B0</color>
+    <color name="colorOnTertiaryFixed">#410006</color>
+    <color name="colorOnTertiaryFixedVariant">#881D24</color>
+
+    <!-- Erro -->
+    <color name="colorError">#BA1A1A</color>
+    <color name="colorOnError">#FFFFFF</color>
+    <color name="colorErrorContainer">#FFDAD6</color>
+    <color name="colorOnErrorContainer">#93000A</color>
+
+    <!-- Superfícies / Background -->
+    <color name="colorBackground">#F7F9FB</color>
+    <color name="colorOnBackground">#191C1E</color>
+    <color name="colorSurface">#F7F9FB</color>
+    <color name="colorOnSurface">#191C1E</color>
+    <color name="colorSurfaceVariant">#E0E3E5</color>
+    <color name="colorOnSurfaceVariant">#3D4A3E</color>
+    <color name="colorInverseSurface">#2D3133</color>
+    <color name="colorInverseOnSurface">#EFF1F3</color>
+    <color name="colorSurfaceTint">#006D36</color>
+    <color name="colorSurfaceDim">#D8DADC</color>
+    <color name="colorSurfaceBright">#F7F9FB</color>
+    <color name="colorSurfaceContainerLowest">#FFFFFF</color>
+    <color name="colorSurfaceContainerLow">#F2F4F6</color>
+    <color name="colorSurfaceContainer">#ECEEF0</color>
+    <color name="colorSurfaceContainerHigh">#E6E8EA</color>
+    <color name="colorSurfaceContainerHighest">#E0E3E5</color>
+
+    <!-- Contorno -->
+    <color name="colorOutline">#6D7B6D</color>
+    <color name="colorOutlineVariant">#BCCABB</color>
+
 </resources>

@@ -11,15 +11,38 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.InventaAi">
+
         <activity
             android:name=".ui.dashboard.DashboardActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.cadastro.CadastroActivity"
+            android:exported="false"
+            android:label="Adicionar Alimento"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.detalhes.DetalhesActivity"
+            android:exported="false"
+            android:label="Detalhes do Item"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.historico.HistoricoActivity"
+            android:exported="false"
+            android:label="Histórico" />
+
+        <activity
+            android:name=".ui.chefIA.ChefIAActivity"
+            android:exported="false"
+            android:label="Chef IA" />
+
     </application>
 
 </manifest>

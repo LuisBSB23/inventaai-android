@@ -1,6 +1,437 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    activity_chef_ia.xml
+    Tela Chef IA — exibe receita gerada pela IA.
+    Estrutura: CoordinatorLayout > AppBar + NestedScrollView + BottomNav
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorSurface"
+    tools:context=".ui.chefIA.ChefIAActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- ======================== TOP APP BAR ======================== -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorSurface"
+        app:elevation="2dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:paddingHorizontal="24dp">
+
+            <ImageButton
+                android:id="@+id/btnMenu"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_menu"
+                android:src="@drawable/ic_nav_pantry"
+                android:tint="@color/colorPrimary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_bold"
+                android:text="@string/app_name"
+                android:textColor="@color/colorPrimary"
+                android:textSize="22sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/ivAvatar"
+                app:layout_constraintStart_toEndOf="@id/btnMenu"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/ivAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_circle_surface"
+                android:contentDescription="@string/cd_profile"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_nav_pantry"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ======================== CONTEÚDO ======================== -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ===== IMAGEM DE DESTAQUE + BADGE IA ===== -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="0dp">
+
+                <ImageView
+                    android:id="@+id/ivRecipeImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_card_neu"
+                    android:contentDescription="@string/recipe_title_placeholder"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_nav_chef" />
+
+                <!-- Badge "CRIAÇÃO IA" sobreposto -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="12dp"
+                    android:background="@drawable/bg_pill_primary"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_nav_chef"
+                        android:tint="@color/colorSecondaryContainer"
+                        android:layout_marginEnd="4dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter_bold"
+                        android:letterSpacing="0.05"
+                        android:text="@string/ia_badge"
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorOnPrimary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- ===== CORPO DO CONTEÚDO ===== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp"
+                android:paddingTop="20dp">
+
+                <!-- Nome da receita -->
+                <TextView
+                    android:id="@+id/tvRecipeTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_extrabold"
+                    android:textColor="@color/colorOnSurface"
+                    android:textSize="32sp"
+                    android:layout_marginBottom="8dp"
+                    tools:text="Frango em Crosta de Ervas" />
+
+                <!-- Descrição -->
+                <TextView
+                    android:id="@+id/tvRecipeDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_regular"
+                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textSize="15sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginBottom="16dp"
+                    tools:text="Uma transformação mágica dos itens básicos da sua despensa em um jantar leve e nutritivo." />
+
+                <!-- ===== Metadados: tempo, porções, dificuldade ===== -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="24dp">
+
+                    <!-- Tempo -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginEnd="24dp">
+                        <ImageView android:layout_width="18dp" android:layout_height="18dp"
+                            android:src="@android:drawable/ic_menu_recent_history"
+                            android:tint="@color/colorOutline" android:contentDescription="@null"
+                            android:layout_marginEnd="4dp" />
+                        <TextView android:id="@+id/tvTime" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
+                            android:textColor="@color/colorOutline" android:textSize="14sp"
+                            tools:text="25 min" />
+                    </LinearLayout>
+
+                    <!-- Porções -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginEnd="24dp">
+                        <ImageView android:layout_width="18dp" android:layout_height="18dp"
+                            android:src="@android:drawable/ic_menu_share"
+                            android:tint="@color/colorOutline" android:contentDescription="@null"
+                            android:layout_marginEnd="4dp" />
+                        <TextView android:id="@+id/tvServings" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
+                            android:textColor="@color/colorOutline" android:textSize="14sp"
+                            tools:text="2 porções" />
+                    </LinearLayout>
+
+                    <!-- Dificuldade -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <ImageView android:layout_width="18dp" android:layout_height="18dp"
+                            android:src="@android:drawable/star_off"
+                            android:tint="@color/colorOutline" android:contentDescription="@null"
+                            android:layout_marginEnd="4dp" />
+                        <TextView android:id="@+id/tvDifficulty" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
+                            android:textColor="@color/colorOutline" android:textSize="14sp"
+                            tools:text="Fácil" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Botão Salvar Receita -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSalvarReceita"
+                    style="@style/Widget.InventaAi.Button.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_save_recipe"
+                    android:layout_marginBottom="32dp"
+                    app:icon="@android:drawable/ic_menu_save"
+                    app:iconGravity="textStart" />
+
+                <!-- ===== SEÇÃO: Ingredientes ===== -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_semibold"
+                    android:text="@string/ingredients_title"
+                    android:textColor="@color/colorOnSurface"
+                    android:textSize="18sp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Grid 2 colunas para ingredientes -->
+                <GridLayout
+                    android:id="@+id/gridIngredientes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:rowCount="3"
+                    android:layout_marginBottom="32dp">
+
+                    <!-- Ingrediente placeholder 1 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="4dp"
+                        app:cardBackgroundColor="@color/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/colorSurfaceContainerHighest"
+                        app:strokeWidth="1dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="12dp">
+                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp"
+                                android:background="@drawable/bg_circle_primary_container"
+                                android:layout_marginEnd="10dp">
+                                <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                                    android:layout_gravity="center" android:contentDescription="@null"
+                                    android:src="@drawable/ic_nav_pantry"
+                                    android:tint="@color/colorPrimary" />
+                            </FrameLayout>
+                            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:orientation="vertical">
+                                <TextView android:id="@+id/tvIngr1Name" android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" android:fontFamily="@font/inter_semibold"
+                                    android:textColor="@color/colorOnSurface" android:textSize="13sp"
+                                    tools:text="Frango" />
+                                <TextView android:id="@+id/tvIngr1Qty" android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
+                                    android:textColor="@color/colorOnSurfaceVariant" android:textSize="12sp"
+                                    tools:text="2 un" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Ingrediente placeholder 2 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="4dp"
+                        app:cardBackgroundColor="@color/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/colorSurfaceContainerHighest"
+                        app:strokeWidth="1dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="12dp">
+                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp"
+                                android:background="@drawable/bg_circle_primary_container"
+                                android:layout_marginEnd="10dp">
+                                <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                                    android:layout_gravity="center" android:contentDescription="@null"
+                                    android:src="@drawable/ic_nav_pantry"
+                                    android:tint="@color/colorTertiary" />
+                            </FrameLayout>
+                            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:orientation="vertical">
+                                <TextView android:id="@+id/tvIngr2Name" android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" android:fontFamily="@font/inter_semibold"
+                                    android:textColor="@color/colorOnSurface" android:textSize="13sp"
+                                    tools:text="Ervas Finas" />
+                                <TextView android:id="@+id/tvIngr2Qty" android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
+                                    android:textColor="@color/colorOnSurfaceVariant" android:textSize="12sp"
+                                    tools:text="2 colheres" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </GridLayout>
+
+                <!-- ===== SEÇÃO: Modo de Fazer ===== -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_semibold"
+                    android:text="@string/steps_title"
+                    android:textColor="@color/colorOnSurface"
+                    android:textSize="18sp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- LinearLayout vertical dos passos -->
+                <LinearLayout
+                    android:id="@+id/llSteps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="32dp">
+
+                    <!-- Passo 1 (placeholder) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="20dp">
+
+                        <!-- Círculo numerado -->
+                        <TextView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/bg_circle_primary_container"
+                            android:fontFamily="@font/inter_bold"
+                            android:gravity="center"
+                            android:text="1"
+                            android:textColor="@color/colorOnPrimaryContainer"
+                            android:textSize="13sp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginTop="4dp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/inter_regular"
+                            android:textColor="@color/colorOnSurface"
+                            android:textSize="15sp"
+                            android:lineSpacingExtra="4dp"
+                            tools:text="Pré-aqueça o forno a 200°C. Prepare uma assadeira com um fio de azeite." />
+                    </LinearLayout>
+
+                    <!-- Passo 2 (placeholder) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="20dp">
+
+                        <TextView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/bg_circle_primary_container"
+                            android:fontFamily="@font/inter_bold"
+                            android:gravity="center"
+                            android:text="2"
+                            android:textColor="@color/colorOnPrimaryContainer"
+                            android:textSize="13sp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginTop="4dp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/inter_regular"
+                            android:textColor="@color/colorOnSurface"
+                            android:textSize="15sp"
+                            android:lineSpacingExtra="4dp"
+                            tools:text="Cubra os itens com os temperos, garantindo uma camada uniforme para o máximo de sabor." />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Botão Gerar Nova Receita -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnNovaReceita"
+                    style="@style/Widget.InventaAi.Button.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_generate_new"
+                    android:layout_marginBottom="24dp"
+                    app:icon="@drawable/ic_nav_chef"
+                    app:iconGravity="textStart" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ======================== BOTTOM NAVIGATION ======================== -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_bottom_nav"
+        app:itemIconTint="@color/selector_nav_item"
+        app:itemTextColor="@color/selector_nav_item"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu"
+        app:selectedItemId="@id/nav_chef_ia" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
