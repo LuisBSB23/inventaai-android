@@ -1,7 +1,6 @@
 package com.example.inventaai.ui.cadastro;
 
 import android.app.DatePickerDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
@@ -13,9 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
 import com.example.inventaai.data.repository.DespensaRepository;
-import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.example.inventaai.util.Constants;
-import com.example.inventaai.util.DateUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.textfield.TextInputEditText;
@@ -26,17 +23,17 @@ import java.util.Calendar;
 /**
  * CadastroActivity — formulário para adicionar um novo item à despensa.
  *
- * Sprint 2: Layout com validação básica e DatePicker funcional.
- * Sprint 3: Persistência via DespensaRepository já chamada aqui.
+ * Sprint 3: persistência real via DespensaRepository, finish() ao salvar
+ * para que o Dashboard atualize via onResume().
  */
 public class CadastroActivity extends AppCompatActivity {
 
     // Views
-    private TextInputLayout tilNome, tilCategoria, tilQuantidade, tilDataValidade;
-    private TextInputEditText etNome, etQuantidade, etDataValidade;
-    private AutoCompleteTextView actvCategoria;
+    private TextInputLayout           tilNome, tilCategoria, tilQuantidade, tilDataValidade;
+    private TextInputEditText         etNome, etQuantidade, etDataValidade;
+    private AutoCompleteTextView      actvCategoria;
     private MaterialButtonToggleGroup toggleUnit;
-    private MaterialButton btnSalvar;
+    private MaterialButton            btnSalvar;
 
     // Estado
     private String dataSelecionada = ""; // formato YYYY-MM-DD
@@ -61,16 +58,16 @@ public class CadastroActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
-        tilNome          = findViewById(R.id.tilNome);
-        tilCategoria     = findViewById(R.id.tilCategoria);
-        tilQuantidade    = findViewById(R.id.tilQuantidade);
-        tilDataValidade  = findViewById(R.id.tilDataValidade);
-        etNome           = findViewById(R.id.etNome);
-        etQuantidade     = findViewById(R.id.etQuantidade);
-        etDataValidade   = findViewById(R.id.etDataValidade);
-        actvCategoria    = findViewById(R.id.actvCategoria);
-        toggleUnit       = findViewById(R.id.toggleUnit);
-        btnSalvar        = findViewById(R.id.btnSalvar);
+        tilNome         = findViewById(R.id.tilNome);
+        tilCategoria    = findViewById(R.id.tilCategoria);
+        tilQuantidade   = findViewById(R.id.tilQuantidade);
+        tilDataValidade = findViewById(R.id.tilDataValidade);
+        etNome          = findViewById(R.id.etNome);
+        etQuantidade    = findViewById(R.id.etQuantidade);
+        etDataValidade  = findViewById(R.id.etDataValidade);
+        actvCategoria   = findViewById(R.id.actvCategoria);
+        toggleUnit      = findViewById(R.id.toggleUnit);
+        btnSalvar       = findViewById(R.id.btnSalvar);
     }
 
     private void configurarCategoria() {
@@ -81,7 +78,6 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     private void configurarDatePicker() {
-        // Abre o DatePicker ao clicar no campo ou no ícone de calendário
         etDataValidade.setOnClickListener(v -> mostrarDatePicker());
         tilDataValidade.setEndIconOnClickListener(v -> mostrarDatePicker());
     }
@@ -90,9 +86,7 @@ public class CadastroActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
         new DatePickerDialog(this,
                 (view, year, month, dayOfMonth) -> {
-                    // Armazena no formato YYYY-MM-DD (banco)
                     dataSelecionada = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
-                    // Exibe no formato dd/MM/yyyy (UI)
                     String exibicao = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year);
                     etDataValidade.setText(exibicao);
                 },
@@ -158,22 +152,19 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     private void salvarItem() {
-        String nome        = etNome.getText().toString().trim();
-        double quantidade  = Double.parseDouble(etQuantidade.getText().toString().trim());
-        String unidade     = getUnidadeSelecionada();
-        String categoria   = actvCategoria.getText().toString().trim();
-        String validadeDB  = dataSelecionada; // YYYY-MM-DD
+        String nome       = etNome.getText().toString().trim();
+        double quantidade = Double.parseDouble(etQuantidade.getText().toString().trim());
+        String unidade    = getUnidadeSelecionada();
+        String categoria  = actvCategoria.getText().toString().trim();
 
-        DespensaItem item = new DespensaItem(nome, quantidade, unidade, validadeDB, Constants.STATUS_ATIVO);
+        DespensaItem item = new DespensaItem(nome, quantidade, unidade, dataSelecionada, Constants.STATUS_ATIVO);
+        item.setCategoria(categoria);
 
         long novoId = repository.inserir(item);
 
         if (novoId != -1) {
             Toast.makeText(this, nome + " adicionado à despensa!", Toast.LENGTH_SHORT).show();
-            // Volta ao Dashboard
-            Intent intent = new Intent(this, DashboardActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+            // finish() → volta ao Dashboard, que recarrega em onResume()
             finish();
         } else {
             Toast.makeText(this, "Erro ao salvar. Tente novamente.", Toast.LENGTH_SHORT).show();
@@ -182,8 +173,8 @@ public class CadastroActivity extends AppCompatActivity {
 
     private String getUnidadeSelecionada() {
         int checkedId = toggleUnit.getCheckedButtonId();
-        if (checkedId == R.id.btnUnidKg)  return "kg";
-        if (checkedId == R.id.btnUnidLb)  return "lb";
+        if (checkedId == R.id.btnUnidKg) return "kg";
+        if (checkedId == R.id.btnUnidLb) return "lb";
         return "unid";
     }
 

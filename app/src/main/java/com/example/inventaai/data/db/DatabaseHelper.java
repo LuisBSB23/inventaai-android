@@ -9,11 +9,15 @@ import com.example.inventaai.data.db.DatabaseContract.HistoricoEntry;
 
 /**
  * Gerencia a criação e atualização do banco de dados SQLite do InventaAí.
+ *
+ * Sprint 3 — versão 3:
+ * - Adicionada coluna nome_item à tabela historico_consumo para exibir
+ *   o nome do item mesmo após ele ser removido da despensa (desnormalização).
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME    = "inventaai.db";
-    public static final int    DATABASE_VERSION = 2; // incrementado para forçar onUpgrade
+    public static final int    DATABASE_VERSION = 3;
 
     // SQL para criar a tabela despensa_itens
     private static final String SQL_CREATE_DESPENSA =
@@ -26,15 +30,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + DespensaEntry.COLUMN_STATUS        + " TEXT NOT NULL DEFAULT 'ATIVO'"
                     + ");";
 
-    // SQL para criar a tabela historico_consumo.
-    // Sem FOREIGN KEY: o id_item é rastreabilidade, não integridade referencial.
-    // Uma FK impediria deletar o item da despensa enquanto existe registro no histórico.
+    // SQL para criar a tabela historico_consumo (com nome_item denormalizado)
     private static final String SQL_CREATE_HISTORICO =
             "CREATE TABLE " + HistoricoEntry.TABLE_NAME + " ("
-                    + HistoricoEntry._ID              + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                    + HistoricoEntry.COLUMN_ID_ITEM   + " INTEGER NOT NULL, "
-                    + HistoricoEntry.COLUMN_DATA_ACAO + " TEXT NOT NULL, "
-                    + HistoricoEntry.COLUMN_MOTIVO    + " TEXT"
+                    + HistoricoEntry._ID               + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + HistoricoEntry.COLUMN_ID_ITEM    + " INTEGER NOT NULL, "
+                    + HistoricoEntry.COLUMN_DATA_ACAO  + " TEXT NOT NULL, "
+                    + HistoricoEntry.COLUMN_MOTIVO     + " TEXT, "
+                    + HistoricoEntry.COLUMN_NOME_CACHED + " TEXT"
                     + ");";
 
     private static final String SQL_DROP_DESPENSA  =
@@ -54,11 +57,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Recria as tabelas limpas a cada upgrade de versão durante desenvolvimento.
+        // Durante o desenvolvimento: descarta e recria as tabelas.
+        // Em produção isso seria uma migração incremental com ALTER TABLE.
         db.execSQL(SQL_DROP_HISTORICO);
         db.execSQL(SQL_DROP_DESPENSA);
         onCreate(db);
     }
-
-    // onConfigure removido: sem FK, não precisamos de setForeignKeyConstraintsEnabled.
 }

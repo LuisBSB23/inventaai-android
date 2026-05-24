@@ -16,22 +16,38 @@ import com.example.inventaai.data.model.HistoricoItem;
 import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.DateUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * HistoricoAdapter — adapter do RecyclerView da tela de Histórico.
  *
- * Cada item exibe: ícone circular (ação), linha de timeline, nome, data e motivo.
- * Cores diferenciadas: CONSUMIDO → verde primário | DESCARTADO → vermelho erro.
+ * Sprint 3: exibe nome real do item (campo nomeCached), ícones
+ * diferenciados por motivo e linha de timeline correta.
  */
 public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.HistoricoViewHolder> {
 
     private final List<HistoricoItem> items;
 
-    // Construtor: recebe a lista de histórico já carregada pelo repository
     public HistoricoAdapter(List<HistoricoItem> items) {
-        this.items = items;
+        this.items = items != null ? items : new ArrayList<>();
     }
+
+    // =========================================================================
+    // ATUALIZAR LISTA
+    // =========================================================================
+
+    public void atualizarLista(List<HistoricoItem> novaLista) {
+        items.clear();
+        if (novaLista != null) {
+            items.addAll(novaLista);
+        }
+        notifyDataSetChanged();
+    }
+
+    // =========================================================================
+    // ADAPTER OVERRIDES
+    // =========================================================================
 
     @NonNull
     @Override
@@ -58,13 +74,13 @@ public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.Hist
 
     static class HistoricoViewHolder extends RecyclerView.ViewHolder {
 
-        private final View frameIcon;
+        private final View      frameIcon;
         private final ImageView ivActionIcon;
-        private final View viewTimelineLine;
-        private final TextView tvItemName;
-        private final TextView tvDataAcao;
-        private final TextView tvMotivo;
-        private final TextView tvObservacao;
+        private final View      viewTimelineLine;
+        private final TextView  tvItemName;
+        private final TextView  tvDataAcao;
+        private final TextView  tvMotivo;
+        private final TextView  tvObservacao;
 
         HistoricoViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -80,32 +96,39 @@ public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.Hist
         void bind(HistoricoItem item, boolean isLast) {
             Context ctx = itemView.getContext();
 
-            // Formata a data para exibição (ex: "22/05/2026" → "HOJE" ou a data formatada)
-            String dataFormatada = DateUtils.formatarParaExibicao(item.getDataAcao());
-            String hoje = DateUtils.formatarParaExibicao(DateUtils.hoje());
-            tvDataAcao.setText(dataFormatada.equals(hoje) ? "HOJE" : dataFormatada.toUpperCase());
+            // Nome real do item (denormalizado no banco)
+            String nome = item.getNomeCached();
+            tvItemName.setText(nome != null && !nome.isEmpty() ? nome : "Item #" + item.getIdItem());
 
-            // Nome do item (o histórico armazena apenas id_item; para mostrar o nome real
-            // será necessário um JOIN ou desnormalização na Sprint 3)
-            tvItemName.setText("Item #" + item.getIdItem());
+            // Data formatada — exibe "HOJE" se for o dia atual
+            String dataFormatada = DateUtils.formatarParaExibicao(item.getDataAcao());
+            String hojeFormatado = DateUtils.formatarParaExibicao(DateUtils.hoje());
+            tvDataAcao.setText(dataFormatada.equals(hojeFormatado) ? "HOJE" : dataFormatada.toUpperCase());
 
             // Motivo e cor
             boolean consumido = Constants.STATUS_CONSUMIDO.equals(item.getMotivo());
+
             tvMotivo.setText(consumido ? "Consumido" : "Descartado");
 
             if (consumido) {
+                // Verde → consumido com sucesso
                 tvMotivo.setTextColor(ContextCompat.getColor(ctx, R.color.colorPrimary));
                 frameIcon.setBackgroundResource(R.drawable.bg_circle_primary_container);
+                ivActionIcon.setImageResource(R.drawable.ic_nav_chef);
+                ivActionIcon.setColorFilter(ContextCompat.getColor(ctx, R.color.colorOnPrimaryContainer));
             } else {
+                // Vermelho → descartado / vencido
                 tvMotivo.setTextColor(ContextCompat.getColor(ctx, R.color.colorError));
-                frameIcon.setBackgroundTintList(
-                        ContextCompat.getColorStateList(ctx, R.color.colorErrorContainer));
+                frameIcon.getBackground().setTint(
+                        ContextCompat.getColor(ctx, R.color.colorErrorContainer));
+                ivActionIcon.setImageResource(R.drawable.ic_nav_history);
+                ivActionIcon.setColorFilter(ContextCompat.getColor(ctx, R.color.colorOnErrorContainer));
             }
 
             // Linha de timeline: esconde no último item
             viewTimelineLine.setVisibility(isLast ? View.INVISIBLE : View.VISIBLE);
 
-            // Observação: vazia por padrão (campo pode ser adicionado ao modelo na Sprint 3)
+            // Observação não usada ainda — oculta
             tvObservacao.setVisibility(View.GONE);
         }
     }

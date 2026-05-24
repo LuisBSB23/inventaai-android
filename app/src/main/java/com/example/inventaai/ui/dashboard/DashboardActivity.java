@@ -17,29 +17,42 @@ import com.example.inventaai.data.model.DespensaItem;
 import com.example.inventaai.data.repository.DespensaRepository;
 import com.example.inventaai.ui.cadastro.CadastroActivity;
 import com.example.inventaai.ui.chefIA.ChefIAActivity;
+import com.example.inventaai.ui.despensa.DespensaAdapter;
+import com.example.inventaai.ui.detalhes.DetalhesActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * DashboardActivity — tela principal do InventaAí.
  *
- * Sprint 2: UI estática com navegação entre telas.
- * Sprint 3: conectar os RecyclerViews ao DespensaRepository.
+ * Sprint 3: conectada ao DespensaRepository.
+ * - rvExpiringSoon → itens que vencem nos próximos 7 dias (horizontal)
+ * - rvPantryItems  → todos os itens ativos (vertical)
+ * - onResume() recarrega os dados automaticamente ao voltar de outras telas
  */
 public class DashboardActivity extends AppCompatActivity {
 
     // Views
-    private RecyclerView rvExpiringSoon;
-    private RecyclerView rvPantryItems;
-    private TextView tvEmpty;
-    private MaterialButton btnGenerateRecipe;
-    private BottomNavigationView bottomNavigation;
+    private RecyclerView          rvExpiringSoon;
+    private RecyclerView          rvPantryItems;
+    private TextView              tvEmpty;
+    private MaterialButton        btnGenerateRecipe;
+    private BottomNavigationView  bottomNavigation;
 
-    // Repositório (pronto para Sprint 3)
+    // Adapters
+    private DespensaAdapter adapterExpiringSoon;
+    private DespensaAdapter adapterPantry;
+
+    // Repositório
     private DespensaRepository despensaRepository;
+
+    // =========================================================================
+    // CICLO DE VIDA
+    // =========================================================================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +66,8 @@ public class DashboardActivity extends AppCompatActivity {
             return insets;
         });
 
-        inicializarRepositorio();
+        despensaRepository = new DespensaRepository(this);
+
         vincularViews();
         configurarRecyclerViews();
         configurarBotoes();
@@ -63,17 +77,13 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Sprint 3: recarregar dados ao voltar de outra tela
-        // carregarDados();
+        // Sempre que a tela volta ao foco, recarrega os dados do banco
+        atualizarListas();
     }
 
     // =========================================================================
     // INICIALIZAÇÃO
     // =========================================================================
-
-    private void inicializarRepositorio() {
-        despensaRepository = new DespensaRepository(this);
-    }
 
     private void vincularViews() {
         rvExpiringSoon    = findViewById(R.id.rvExpiringSoon);
@@ -84,40 +94,66 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void configurarRecyclerViews() {
-        // RecyclerView horizontal (vencendo logo)
+        // RecyclerView horizontal — vencendo em breve
         rvExpiringSoon.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        adapterExpiringSoon = new DespensaAdapter(new ArrayList<>(), this::abrirDetalhes);
+        rvExpiringSoon.setAdapter(adapterExpiringSoon);
 
-        // RecyclerView vertical (lista principal)
+        // RecyclerView vertical — lista principal
         rvPantryItems.setLayoutManager(new LinearLayoutManager(this));
-
-        // Sprint 3: atribuir adapters reais e carregar dados do repositório
-        // Exemplo:
-        //   List<DespensaItem> itens = despensaRepository.listarTodos();
-        //   DespensaAdapter adapter = new DespensaAdapter(itens, item -> abrirDetalhes(item));
-        //   rvPantryItems.setAdapter(adapter);
-        //   tvEmpty.setVisibility(itens.isEmpty() ? View.VISIBLE : View.GONE);
+        adapterPantry = new DespensaAdapter(new ArrayList<>(), this::abrirDetalhes);
+        rvPantryItems.setAdapter(adapterPantry);
     }
 
     // =========================================================================
-    // EVENTOS
+    // CARREGAR / ATUALIZAR DADOS
     // =========================================================================
 
+    private void atualizarListas() {
+        // Lista completa de itens ativos (ordenada por validade)
+        List<DespensaItem> todos = despensaRepository.listarAtivos();
+        adapterPantry.atualizarLista(todos);
+
+        // Lista de próximos a vencer (janela de 7 dias)
+        List<DespensaItem> expirando = despensaRepository.listarProximosVencimento(7);
+        adapterExpiringSoon.atualizarLista(expirando);
+
+        // Visibilidade do estado vazio
+        if (todos.isEmpty()) {
+            tvEmpty.setVisibility(View.VISIBLE);
+            rvPantryItems.setVisibility(View.GONE);
+        } else {
+            tvEmpty.setVisibility(View.GONE);
+            rvPantryItems.setVisibility(View.VISIBLE);
+        }
+    }
+
+    // =========================================================================
+    // NAVEGAÇÃO
+    // =========================================================================
+
+    /**
+     * Abre a tela de detalhes passando o objeto DespensaItem serializado.
+     */
+    private void abrirDetalhes(DespensaItem item) {
+        Intent intent = new Intent(this, DetalhesActivity.class);
+        intent.putExtra(DetalhesActivity.EXTRA_ITEM, item);
+        startActivity(intent);
+    }
+
     private void configurarBotoes() {
-        // FAB "Gerar Receita" → abre ChefIAActivity
         btnGenerateRecipe.setOnClickListener(v ->
                 startActivity(new Intent(this, ChefIAActivity.class)));
     }
 
     private void configurarBottomNavigation() {
-        // Marca a aba Despensa como selecionada nesta tela
         bottomNavigation.setSelectedItemId(R.id.nav_pantry);
 
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
             if (id == R.id.nav_pantry) {
-                // Já estamos aqui; apenas consome o evento
                 return true;
             } else if (id == R.id.nav_add) {
                 startActivity(new Intent(this, CadastroActivity.class));

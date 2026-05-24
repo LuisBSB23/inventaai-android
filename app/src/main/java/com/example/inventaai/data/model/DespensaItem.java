@@ -1,10 +1,15 @@
 package com.example.inventaai.data.model;
 
+import java.io.Serializable;
+
 /**
  * POJO que representa um item da despensa.
+ * Implementa Serializable para permitir passagem via Intent entre Activities.
  * dataValidade deve estar no formato YYYY-MM-DD para ordenação correta no SQLite.
  */
-public class DespensaItem {
+public class DespensaItem implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private long   id;
     private String nome;
@@ -12,6 +17,7 @@ public class DespensaItem {
     private String unidadeMedida;
     private String dataValidade;   // formato: YYYY-MM-DD
     private String status;         // ATIVO | CONSUMIDO | DESCARTADO
+    private String categoria;      // campo auxiliar (não persiste no DB ainda)
 
     // -------------------------------------------------------------------------
     // Construtores
@@ -62,6 +68,9 @@ public class DespensaItem {
 
     public String getStatus()                  { return status; }
     public void setStatus(String status)       { this.status = status; }
+
+    public String getCategoria()               { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
 
     // -------------------------------------------------------------------------
     // toString — útil para logs e depuração

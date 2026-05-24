@@ -17,21 +17,23 @@ import com.example.inventaai.ui.chefIA.ChefIAActivity;
 import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * HistoricoActivity — exibe a cronologia de itens consumidos e descartados.
+ * HistoricoActivity — cronologia de itens consumidos e descartados.
  *
- * Sprint 2: RecyclerView com adapter pronto para dados reais.
- * Sprint 3: Conectar ao HistoricoRepository e popular o adapter.
+ * Sprint 3: conectada ao HistoricoRepository e ao HistoricoAdapter.
+ * onResume() recarrega os dados a cada vez que a tela é exibida.
  */
 public class HistoricoActivity extends AppCompatActivity {
 
-    private RecyclerView rvHistorico;
-    private TextView tvHistoricoEmpty;
+    private RecyclerView         rvHistorico;
+    private TextView             tvHistoricoEmpty;
     private BottomNavigationView bottomNavigation;
 
     private HistoricoRepository historicoRepository;
+    private HistoricoAdapter    historicoAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,18 +58,24 @@ public class HistoricoActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
-        rvHistorico       = findViewById(R.id.rvHistorico);
-        tvHistoricoEmpty  = findViewById(R.id.tvHistoricoEmpty);
-        bottomNavigation  = findViewById(R.id.bottomNavigation);
+        rvHistorico      = findViewById(R.id.rvHistorico);
+        tvHistoricoEmpty = findViewById(R.id.tvHistoricoEmpty);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
     }
 
     private void configurarRecyclerView() {
         rvHistorico.setLayoutManager(new LinearLayoutManager(this));
-        // Sprint 3: rvHistorico.setAdapter(new HistoricoAdapter(dados));
+        historicoAdapter = new HistoricoAdapter(new ArrayList<>());
+        rvHistorico.setAdapter(historicoAdapter);
     }
+
+    // =========================================================================
+    // CARREGAR DADOS
+    // =========================================================================
 
     private void carregarHistorico() {
         List<HistoricoItem> itens = historicoRepository.listarTodos();
+        historicoAdapter.atualizarLista(itens);
 
         if (itens.isEmpty()) {
             rvHistorico.setVisibility(View.GONE);
@@ -75,7 +83,6 @@ public class HistoricoActivity extends AppCompatActivity {
         } else {
             rvHistorico.setVisibility(View.VISIBLE);
             tvHistoricoEmpty.setVisibility(View.GONE);
-            // Sprint 3: adapter.atualizarLista(itens);
         }
     }
 

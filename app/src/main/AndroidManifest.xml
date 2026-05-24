@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permissão de internet para a Sprint 4 (integração com Gemini IA) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InventaAi">
 
+        <!-- Tela principal (launcher) -->
         <activity
             android:name=".ui.dashboard.DashboardActivity"
             android:exported="true">
@@ -21,23 +25,27 @@
             </intent-filter>
         </activity>
 
+        <!-- Cadastro de novo item -->
         <activity
             android:name=".ui.cadastro.CadastroActivity"
             android:exported="false"
             android:label="Adicionar Alimento"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Detalhes e edição de item -->
         <activity
             android:name=".ui.detalhes.DetalhesActivity"
             android:exported="false"
             android:label="Detalhes do Item"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Histórico de consumo e descarte -->
         <activity
             android:name=".ui.historico.HistoricoActivity"
             android:exported="false"
             android:label="Histórico" />
 
+        <!-- Chef IA — geração de receitas -->
         <activity
             android:name=".ui.chefIA.ChefIAActivity"
             android:exported="false"
