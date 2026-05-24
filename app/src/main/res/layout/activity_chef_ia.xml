@@ -431,7 +431,6 @@
         app:itemIconTint="@color/selector_nav_item"
         app:itemTextColor="@color/selector_nav_item"
         app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu"
-        app:selectedItemId="@id/nav_chef_ia" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
