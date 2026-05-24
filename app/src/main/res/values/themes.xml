@@ -40,6 +40,9 @@
         <item name="colorOutline">@color/colorOutline</item>
         <item name="colorOutlineVariant">@color/colorOutlineVariant</item>
 
+        <!-- BottomNav: força indicador verde (corrige laranja do tema padrão) -->
+        <item name="bottomNavigationStyle">@style/Widget.InventaAi.BottomNav.Style</item>
+
         <!-- Status bar transparente / clara -->
         <item name="android:statusBarColor">@color/colorSurface</item>
         <item name="android:windowLightStatusBar">true</item>
@@ -109,6 +112,17 @@
         <item name="chipMinHeight">28dp</item>
         <item name="android:textSize">11sp</item>
         <item name="android:fontFamily">@font/inter_bold</item>
+    </style>
+
+    <!-- ===== Estilo: BottomNavigationView (corrige cor laranja → verde) ===== -->
+    <style name="Widget.InventaAi.BottomNav.Style" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemActiveIndicatorStyle">@style/Widget.InventaAi.BottomNav.ActiveIndicator</item>
+        <item name="itemIconTint">@color/selector_nav_item</item>
+        <item name="itemTextColor">@color/selector_nav_item</item>
+    </style>
+
+    <style name="Widget.InventaAi.BottomNav.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/colorPrimaryContainer</item>
     </style>
 
 </resources>

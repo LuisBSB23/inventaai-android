@@ -126,40 +126,49 @@
                     tools:text="Hortifruti" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ===== QUANTIDADE + UNIDADE ===== -->
+            <!-- ===== QUANTIDADE ===== -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilQuantidade"
+                style="@style/Widget.InventaAi.TextInputLayout.Pill"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="@string/hint_quantity">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etQuantidade"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_regular"
+                    android:inputType="numberDecimal"
+                    android:imeOptions="actionNext"
+                    android:maxLines="1"
+                    android:textSize="16sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- ===== UNIDADE (toggle separado) ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:orientation="vertical"
                 android:layout_marginBottom="16dp">
 
-                <!-- Campo numérico de quantidade -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilQuantidade"
-                    style="@style/Widget.InventaAi.TextInputLayout.Pill"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="12dp"
-                    android:hint="@string/hint_quantity">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etQuantidade"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/inter_regular"
-                        android:inputType="numberDecimal"
-                        android:imeOptions="actionNext"
-                        android:maxLines="1"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Toggle de unidade (unid / kg / lb) -->
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/toggleUnit"
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_bold"
+                    android:text="UNIDADE"
+                    android:textAllCaps="true"
+                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.05"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="8dp" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggleUnit"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
                     app:checkedButton="@id/btnUnidUnit"
                     app:selectionRequired="true"
                     app:singleSelection="true">
@@ -167,32 +176,35 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnUnidUnit"
                         style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="48dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
                         android:fontFamily="@font/inter_bold"
                         android:text="@string/unit_unit"
-                        android:textSize="12sp"
-                        app:cornerRadius="50dp" />
+                        android:textSize="14sp"
+                        app:cornerRadius="16dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnUnidKg"
                         style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="48dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
                         android:fontFamily="@font/inter_bold"
                         android:text="@string/unit_kg"
-                        android:textSize="12sp"
-                        app:cornerRadius="50dp" />
+                        android:textSize="14sp"
+                        app:cornerRadius="16dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnUnidLb"
                         style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="48dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
                         android:fontFamily="@font/inter_bold"
                         android:text="@string/unit_lb"
-                        android:textSize="12sp"
-                        app:cornerRadius="50dp" />
+                        android:textSize="14sp"
+                        app:cornerRadius="16dp" />
 
                 </com.google.android.material.button.MaterialButtonToggleGroup>
             </LinearLayout>
