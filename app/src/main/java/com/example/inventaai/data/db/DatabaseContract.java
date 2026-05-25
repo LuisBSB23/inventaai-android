@@ -8,7 +8,6 @@ import android.provider.BaseColumns;
  */
 public final class DatabaseContract {
 
-    // Construtor privado para evitar instanciação acidental
     private DatabaseContract() {}
 
     /**
@@ -25,11 +24,14 @@ public final class DatabaseContract {
 
     /**
      * Constantes para a tabela de histórico de consumo.
+     * Sprint 3: adicionada coluna nome_cached para exibir o nome do item
+     * sem necessidade de JOIN (o item pode ter sido deletado da despensa).
      */
     public static class HistoricoEntry implements BaseColumns {
-        public static final String TABLE_NAME       = "historico_consumo";
-        public static final String COLUMN_ID_ITEM   = "id_item";
-        public static final String COLUMN_DATA_ACAO = "data_acao";
-        public static final String COLUMN_MOTIVO    = "motivo";
+        public static final String TABLE_NAME        = "historico_consumo";
+        public static final String COLUMN_ID_ITEM    = "id_item";
+        public static final String COLUMN_DATA_ACAO  = "data_acao";
+        public static final String COLUMN_MOTIVO     = "motivo";
+        public static final String COLUMN_NOME_CACHED = "nome_item"; // nome denormalizado
     }
 }

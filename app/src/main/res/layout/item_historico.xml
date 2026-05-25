@@ -1,6 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    item_historico.xml
+    Item da linha do tempo no histórico.
+    Layout: ícone circular + linha vertical + card com nome, data e motivo.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingBottom="8dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- ===== Coluna esquerda: linha do tempo + ícone ===== -->
+    <LinearLayout
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="top|center_horizontal">
+
+        <!-- Ícone da ação (círculo colorido) -->
+        <FrameLayout
+            android:id="@+id/frameIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_circle_primary_container"
+            android:layout_marginTop="4dp">
+
+            <ImageView
+                android:id="@+id/ivActionIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/cd_action_icon"
+                android:src="@drawable/ic_nav_chef"
+                android:tint="@color/colorOnPrimaryContainer" />
+        </FrameLayout>
+
+        <!-- Linha vertical da timeline (vai até o fim do item) -->
+        <View
+            android:id="@+id/viewTimelineLine"
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp"
+            android:background="@color/colorOutlineVariant" />
+
+    </LinearLayout>
+
+    <!-- ===== Conteúdo do card ===== -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@color/colorSurfaceContainerLowest"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/colorSurfaceContainerHighest"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Linha superior: nome + data -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/tvItemName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/inter_semibold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textColor="@color/colorOnSurface"
+                    android:textSize="16sp"
+                    tools:text="Espinafre Orgânico" />
+
+                <TextView
+                    android:id="@+id/tvDataAcao"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_bold"
+                    android:textAllCaps="true"
+                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.05"
+                    tools:text="HOJE" />
+            </LinearLayout>
+
+            <!-- Linha inferior: chip de motivo + descrição -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Chip do motivo (CONSUMIDO / DESCARTADO) -->
+                <TextView
+                    android:id="@+id/tvMotivo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_small"
+                    android:fontFamily="@font/inter_bold"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:textSize="11sp"
+                    android:layout_marginEnd="8dp"
+                    tools:text="Consumido"
+                    tools:textColor="@color/colorPrimary" />
+
+                <!-- Observação livre -->
+                <TextView
+                    android:id="@+id/tvObservacao"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/inter_regular"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textSize="13sp"
+                    tools:text="Usado em Smoothie Verde" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>
