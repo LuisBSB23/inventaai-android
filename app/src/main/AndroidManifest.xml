@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissão de internet para a Sprint 4 (integração com Gemini IA) -->
+    <!-- Internet: integração Gemini IA (Sprint 4) -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Galeria de imagens: seleção de avatar (Sprint 1) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <application
         android:allowBackup="true"
@@ -15,15 +17,36 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InventaAi">
 
-        <!-- Tela principal (launcher) -->
+        <!-- ========== Sprint 1: Login é a tela de entrada ========== -->
         <activity
-            android:name=".ui.dashboard.DashboardActivity"
-            android:exported="true">
+            android:name=".ui.login.LoginActivity"
+            android:exported="true"
+            android:label="Login"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Cadastro de novo perfil -->
+        <activity
+            android:name=".ui.login.CadastroPerfilActivity"
+            android:exported="false"
+            android:label="Criar Perfil"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Tela de perfil -->
+        <activity
+            android:name=".ui.perfil.PerfilActivity"
+            android:exported="false"
+            android:label="Meu Perfil"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Dashboard (não é mais launcher; é aberto após login) -->
+        <activity
+            android:name=".ui.dashboard.DashboardActivity"
+            android:exported="false" />
 
         <!-- Cadastro de novo item -->
         <activity

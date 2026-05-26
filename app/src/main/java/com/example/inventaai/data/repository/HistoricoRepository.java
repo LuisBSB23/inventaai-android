@@ -17,7 +17,8 @@ import java.util.List;
 /**
  * Encapsula as operações de leitura e escrita para a tabela historico_consumo.
  *
- * Sprint 3: fromCursor() agora lê o campo nome_item (denormalizado).
+ * Sprint 1: todos os métodos de leitura filtram por user_id.
+ * Sprint 3: fromCursor() lê o campo nome_cached (denormalizado).
  */
 public class HistoricoRepository {
 
@@ -29,45 +30,28 @@ public class HistoricoRepository {
     }
 
     // =========================================================================
-    // INSERIR
-    // =========================================================================
-
-    public long inserir(HistoricoItem item) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        long novoId = -1;
-        try {
-            ContentValues values = toContentValues(item);
-            novoId = db.insert(HistoricoEntry.TABLE_NAME, null, values);
-            Log.d(TAG, "HistoricoRepository.inserir: id=" + novoId);
-        } catch (Exception e) {
-            Log.e(TAG, "HistoricoRepository.inserir: erro", e);
-        } finally {
-            db.close();
-        }
-        return novoId;
-    }
-
-    // =========================================================================
-    // LISTAR TODOS
+    // LISTAR TODOS (filtrado por usuário)
     // =========================================================================
 
     /**
-     * Retorna todos os registros do histórico, do mais recente para o mais antigo.
+     * Retorna todos os registros do histórico do usuário informado,
+     * do mais recente para o mais antigo.
      */
-    public List<HistoricoItem> listarTodos() {
+    public List<HistoricoItem> listarTodos(String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
             cursor = db.query(
-                    HistoricoEntry.TABLE_NAME,
-                    null, null, null, null, null,
+                    HistoricoEntry.TABLE_NAME, null,
+                    HistoricoEntry.COLUMN_USER_ID + " = ?",
+                    new String[]{ userId },
+                    null, null,
                     HistoricoEntry.COLUMN_DATA_ACAO + " DESC"
             );
-            while (cursor.moveToNext()) {
-                lista.add(fromCursor(cursor));
-            }
-            Log.d(TAG, "HistoricoRepository.listarTodos: " + lista.size() + " registro(s).");
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+            Log.d(TAG, "HistoricoRepository.listarTodos: " + lista.size()
+                    + " registro(s) para userId=" + userId);
         } catch (Exception e) {
             Log.e(TAG, "HistoricoRepository.listarTodos: erro", e);
         } finally {
@@ -78,25 +62,23 @@ public class HistoricoRepository {
     }
 
     // =========================================================================
-    // LISTAR POR PERÍODO
+    // LISTAR POR PERÍODO (filtrado por usuário)
     // =========================================================================
 
-    public List<HistoricoItem> listarPorPeriodo(String dataInicio, String dataFim) {
+    public List<HistoricoItem> listarPorPeriodo(String dataInicio, String dataFim, String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
             cursor = db.query(
-                    HistoricoEntry.TABLE_NAME,
-                    null,
-                    HistoricoEntry.COLUMN_DATA_ACAO + " BETWEEN ? AND ?",
-                    new String[]{ dataInicio, dataFim },
+                    HistoricoEntry.TABLE_NAME, null,
+                    HistoricoEntry.COLUMN_DATA_ACAO + " BETWEEN ? AND ? AND "
+                            + HistoricoEntry.COLUMN_USER_ID + " = ?",
+                    new String[]{ dataInicio, dataFim, userId },
                     null, null,
                     HistoricoEntry.COLUMN_DATA_ACAO + " DESC"
             );
-            while (cursor.moveToNext()) {
-                lista.add(fromCursor(cursor));
-            }
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
         } catch (Exception e) {
             Log.e(TAG, "listarPorPeriodo: erro", e);
         } finally {
@@ -110,15 +92,6 @@ public class HistoricoRepository {
     // HELPERS PRIVADOS
     // =========================================================================
 
-    private ContentValues toContentValues(HistoricoItem item) {
-        ContentValues cv = new ContentValues();
-        cv.put(HistoricoEntry.COLUMN_ID_ITEM,     item.getIdItem());
-        cv.put(HistoricoEntry.COLUMN_DATA_ACAO,   item.getDataAcao());
-        cv.put(HistoricoEntry.COLUMN_MOTIVO,      item.getMotivo());
-        cv.put(HistoricoEntry.COLUMN_NOME_CACHED, item.getNomeCached());
-        return cv;
-    }
-
     private HistoricoItem fromCursor(Cursor cursor) {
         HistoricoItem item = new HistoricoItem();
         item.setIdHistorico(cursor.getLong(  cursor.getColumnIndexOrThrow(HistoricoEntry._ID)));
@@ -126,7 +99,6 @@ public class HistoricoRepository {
         item.setDataAcao(   cursor.getString(cursor.getColumnIndexOrThrow(HistoricoEntry.COLUMN_DATA_ACAO)));
         item.setMotivo(     cursor.getString(cursor.getColumnIndexOrThrow(HistoricoEntry.COLUMN_MOTIVO)));
 
-        // nome_item pode ser null em registros antigos (versão 2 do banco)
         int nomeCol = cursor.getColumnIndex(HistoricoEntry.COLUMN_NOME_CACHED);
         if (nomeCol >= 0 && !cursor.isNull(nomeCol)) {
             item.setNomeCached(cursor.getString(nomeCol));

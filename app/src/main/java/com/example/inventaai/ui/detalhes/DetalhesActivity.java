@@ -43,6 +43,7 @@ public class DetalhesActivity extends AppCompatActivity {
     private DespensaItem item;
     private double       quantidadeAtual;
     private DespensaRepository repository;
+    private com.example.inventaai.util.SessionManager sessionManagerDetalhes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +51,7 @@ public class DetalhesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detalhes);
 
         repository = new DespensaRepository(this);
+        sessionManagerDetalhes = new com.example.inventaai.util.SessionManager(this);
 
         vincularViews();
         carregarItem();
@@ -193,7 +195,7 @@ public class DetalhesActivity extends AppCompatActivity {
     private void descartarItem() {
         if (item != null) {
             boolean ok = repository.moverParaHistorico(
-                    item.getId(), item.getNome(), Constants.STATUS_DESCARTADO);
+                    item.getId(), item.getNome(), Constants.STATUS_DESCARTADO, sessionManagerDetalhes.getUserId());
             Toast.makeText(this,
                     ok ? "Item descartado." : "Erro ao descartar item.",
                     Toast.LENGTH_SHORT).show();
@@ -204,7 +206,7 @@ public class DetalhesActivity extends AppCompatActivity {
     private void marcarConsumido() {
         if (item != null) {
             boolean ok = repository.moverParaHistorico(
-                    item.getId(), item.getNome(), Constants.STATUS_CONSUMIDO);
+                    item.getId(), item.getNome(), Constants.STATUS_CONSUMIDO, sessionManagerDetalhes.getUserId());
             Toast.makeText(this,
                     ok ? "Item marcado como consumido." : "Erro ao registrar consumo.",
                     Toast.LENGTH_SHORT).show();

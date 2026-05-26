@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Menu do Navigation Drawer — Sprint 1 -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_perfil"
+            android:icon="@drawable/ic_nav_pantry"
+            android:title="Meu Perfil" />
+
+        <item
+            android:id="@+id/nav_configuracoes"
+            android:icon="@drawable/ic_nav_history"
+            android:title="Configurações" />
+
+    </group>
+
+    <item android:title="Sessão">
+        <menu>
+            <item
+                android:id="@+id/nav_sair"
+                android:icon="@drawable/ic_nav_pantry"
+                android:title="Sair"
+                android:iconTint="@color/colorError" />
+        </menu>
+    </item>
+
+</menu>

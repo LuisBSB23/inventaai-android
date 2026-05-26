@@ -118,8 +118,10 @@ public class ChefIAActivity extends AppCompatActivity {
      */
     private void gerarReceita() {
         // Prioridade: próximos ao vencimento
-        List<DespensaItem> proximosVencer = despensaRepository.listarProximosVencimento(7);
-        List<DespensaItem> todosAtivos    = despensaRepository.listarAtivos();
+        com.example.inventaai.util.SessionManager smChef = new com.example.inventaai.util.SessionManager(this);
+        String chefUserId = smChef.getUserId();
+        List<DespensaItem> proximosVencer = despensaRepository.listarProximosVencimento(7, chefUserId);
+        List<DespensaItem> todosAtivos    = despensaRepository.listarAtivos(chefUserId);
 
         // Combina sem duplicatas
         List<DespensaItem> itensParaReceita = new ArrayList<>(proximosVencer);

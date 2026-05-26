@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    activity_cadastro_perfil.xml
+    Tela de criação de novo perfil — Design: Culinary Vitality
+-->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="32dp"
+        android:gravity="center_horizontal">
+
+        <!-- Espaço superior -->
+        <Space android:layout_width="match_parent" android:layout_height="48dp" />
+
+        <!-- Botão Voltar -->
+        <ImageButton
+            android:id="@+id/btnCadastroVoltar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="start"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_nav_pantry"
+            android:tint="@color/colorOnSurface"
+            android:contentDescription="@string/back"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Avatar placeholder (toque para selecionar foto) -->
+        <FrameLayout
+            android:id="@+id/frameAvatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@drawable/bg_circle_surface">
+
+            <ImageView
+                android:id="@+id/ivCadastroAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_nav_pantry"
+                android:tint="@color/colorPrimary"
+                android:contentDescription="Foto de perfil" />
+
+            <!-- Ícone de câmera sobreposto -->
+            <FrameLayout
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/bg_circle_primary_container">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_nav_chef"
+                    android:tint="@color/colorPrimary"
+                    android:contentDescription="@null" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Toque para adicionar foto (opcional)"
+            android:fontFamily="@font/inter_regular"
+            android:textSize="12sp"
+            android:textColor="@color/colorOnSurfaceVariant"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Título -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Criar novo perfil"
+            android:fontFamily="@font/inter_extrabold"
+            android:textSize="26sp"
+            android:textColor="@color/colorOnSurface"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Personalize sua experiência no InventaAí."
+            android:fontFamily="@font/inter_regular"
+            android:textSize="14sp"
+            android:textColor="@color/colorOnSurfaceVariant"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Campo: Nome -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilCadastroNome"
+            style="@style/Widget.InventaAi.TextInputLayout.Pill"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Seu nome"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCadastroNome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:imeOptions="actionNext"
+                android:fontFamily="@font/inter_regular"
+                android:textColor="@color/colorOnSurface"
+                android:textSize="15sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Campo: Senha -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilCadastroSenha"
+            style="@style/Widget.InventaAi.TextInputLayout.Pill"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Senha"
+            app:endIconMode="password_toggle"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCadastroSenha"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:imeOptions="actionNext"
+                android:fontFamily="@font/inter_regular"
+                android:textColor="@color/colorOnSurface"
+                android:textSize="15sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Campo: Confirmar Senha -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilCadastroConfirmarSenha"
+            style="@style/Widget.InventaAi.TextInputLayout.Pill"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Confirmar senha"
+            app:endIconMode="password_toggle"
+            android:layout_marginBottom="32dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCadastroConfirmarSenha"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:imeOptions="actionDone"
+                android:fontFamily="@font/inter_regular"
+                android:textColor="@color/colorOnSurface"
+                android:textSize="15sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Botão Criar Perfil -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCriarPerfil"
+            style="@style/Widget.InventaAi.Button.Pill"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Criar Perfil"
+            android:textSize="17sp"
+            android:layout_marginBottom="48dp" />
+
+    </LinearLayout>
+</ScrollView>

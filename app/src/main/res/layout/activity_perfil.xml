@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tela de perfil do usuário — Sprint 1 -->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp">
+
+        <!-- Top Bar -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp">
+
+            <ImageButton
+                android:id="@+id/btnPerfilVoltar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_nav_pantry"
+                android:tint="@color/colorOnSurface"
+                android:contentDescription="@string/back"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meu Perfil"
+                android:fontFamily="@font/inter_semibold"
+                android:textSize="20sp"
+                android:textColor="@color/colorOnSurface"
+                app:layout_constraintStart_toEndOf="@id/btnPerfilVoltar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Avatar + ID -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingVertical="24dp">
+
+            <FrameLayout
+                android:id="@+id/framePerfilAvatar"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/bg_circle_surface"
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:id="@+id/ivPerfilAvatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_nav_pantry"
+                    android:tint="@color/colorPrimary"
+                    android:contentDescription="Foto de perfil" />
+
+                <FrameLayout
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="bottom|end"
+                    android:background="@drawable/bg_circle_primary_container">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_nav_chef"
+                        android:tint="@color/colorPrimary"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tvPerfilNomeDisplay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_bold"
+                android:textSize="22sp"
+                android:textColor="@color/colorOnSurface"
+                android:text="Nome do Usuário" />
+
+            <!-- ID copiável (clique longo) -->
+            <TextView
+                android:id="@+id/tvPerfilId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_regular"
+                android:textSize="12sp"
+                android:textColor="@color/colorOnSurfaceVariant"
+                android:text="ID: xxxxxxxx"
+                android:longClickable="true"
+                android:padding="8dp" />
+        </LinearLayout>
+
+        <!-- Card: Editar Nome -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.InventaAi.Card.Small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ALTERAR NOME"
+                    android:fontFamily="@font/inter_bold"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.05"
+                    android:textAllCaps="true"
+                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPerfilNome"
+                    style="@style/Widget.InventaAi.TextInputLayout.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Novo nome"
+                    android:layout_marginBottom="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPerfilNome"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:fontFamily="@font/inter_regular"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSalvarNome"
+                    style="@style/Widget.InventaAi.Button.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Salvar Nome" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Card: Trocar Senha -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.InventaAi.Card.Small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TROCAR SENHA"
+                    android:fontFamily="@font/inter_bold"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.05"
+                    android:textAllCaps="true"
+                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilSenhaAtual"
+                    style="@style/Widget.InventaAi.TextInputLayout.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Senha atual"
+                    app:endIconMode="password_toggle"
+                    android:layout_marginBottom="12dp">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etSenhaAtual"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:fontFamily="@font/inter_regular"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilNovaSenha"
+                    style="@style/Widget.InventaAi.TextInputLayout.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Nova senha"
+                    app:endIconMode="password_toggle"
+                    android:layout_marginBottom="12dp">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNovaSenha"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:fontFamily="@font/inter_regular"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTrocarSenha"
+                    style="@style/Widget.InventaAi.Button.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Trocar Senha" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Botão Sair -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            style="@style/Widget.InventaAi.Button.Pill.Outlined.Error"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Sair da Conta"
+            android:layout_marginBottom="40dp" />
+
+    </LinearLayout>
+</ScrollView>

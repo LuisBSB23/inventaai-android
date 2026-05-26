@@ -74,7 +74,8 @@ public class HistoricoActivity extends AppCompatActivity {
     // =========================================================================
 
     private void carregarHistorico() {
-        List<HistoricoItem> itens = historicoRepository.listarTodos();
+        com.example.inventaai.util.SessionManager sm = new com.example.inventaai.util.SessionManager(this);
+        List<HistoricoItem> itens = historicoRepository.listarTodos(sm.getUserId());
         historicoAdapter.atualizarLista(itens);
 
         if (itens.isEmpty()) {
