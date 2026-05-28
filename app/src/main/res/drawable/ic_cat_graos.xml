@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ic_cat_graos.xml
+    Ícone de categoria: Grãos e Cereais — bowl de arroz/grãos estilizado.
+    Cor primária do design system: #006D36
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Bowl (tigela) -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12H2Z" />
+
+    <!-- Borda do bowl -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M2,11H22V12H2V11Z"
+        android:fillAlpha="0.4" />
+
+    <!-- Grão central esquerdo -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.55"
+        android:pathData="M8,14C8,14 7,15.5 7,16.5C7,17.33 7.67,18 8.5,18C9.33,18 10,17.33 10,16.5C10,15.5 9,14 9,14H8Z" />
+
+    <!-- Grão central -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.55"
+        android:pathData="M11.5,13C11.5,13 10.5,14.5 10.5,15.5C10.5,16.33 11.17,17 12,17C12.83,17 13.5,16.33 13.5,15.5C13.5,14.5 12.5,13 12.5,13H11.5Z" />
+
+    <!-- Grão central direito -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.55"
+        android:pathData="M15,14C15,14 14,15.5 14,16.5C14,17.33 14.67,18 15.5,18C16.33,18 17,17.33 17,16.5C17,15.5 16,14 16,14H15Z" />
+
+    <!-- Espiga de trigo (caule) -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M12,2C12,2 10,5 10,7C10,8.1 10.9,9 12,9C13.1,9 14,8.1 14,7C14,5 12,2 12,2Z"
+        android:fillAlpha="0.7" />
+</vector>

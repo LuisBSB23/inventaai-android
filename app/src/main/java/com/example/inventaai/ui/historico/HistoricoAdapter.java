@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.HistoricoItem;
+import com.example.inventaai.util.CategoryIconHelper;
 import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.DateUtils;
 
@@ -24,6 +25,10 @@ import java.util.List;
  *
  * Sprint 3: exibe nome real do item (campo nomeCached), ícones
  * diferenciados por motivo e linha de timeline correta.
+ *
+ * Sprint 2: adicionado ícone de categoria (ivCategoryIcon) como elemento
+ * secundário dentro do card, para facilitar identificação visual do item.
+ * O ícone de ação principal (consumido/descartado) permanece na timeline.
  */
 public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.HistoricoViewHolder> {
 
@@ -81,6 +86,7 @@ public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.Hist
         private final TextView  tvDataAcao;
         private final TextView  tvMotivo;
         private final TextView  tvObservacao;
+        private final ImageView ivCategoryIcon;  // Sprint 2: ícone de categoria
 
         HistoricoViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -91,6 +97,7 @@ public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.Hist
             tvDataAcao       = itemView.findViewById(R.id.tvDataAcao);
             tvMotivo         = itemView.findViewById(R.id.tvMotivo);
             tvObservacao     = itemView.findViewById(R.id.tvObservacao);
+            ivCategoryIcon   = itemView.findViewById(R.id.ivCategoryIcon); // Sprint 2
         }
 
         void bind(HistoricoItem item, boolean isLast) {
@@ -124,6 +131,19 @@ public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.Hist
                 ivActionIcon.setImageResource(R.drawable.ic_nav_history);
                 ivActionIcon.setColorFilter(ContextCompat.getColor(ctx, R.color.colorOnErrorContainer));
             }
+
+            // ── Sprint 2: ícone de categoria secundário ───────────────────────
+            if (ivCategoryIcon != null) {
+                String categoria = item.getCategoria();
+                if (categoria != null && !categoria.trim().isEmpty()) {
+                    ivCategoryIcon.setImageResource(CategoryIconHelper.getIcon(categoria));
+                    ivCategoryIcon.setVisibility(View.VISIBLE);
+                } else {
+                    // Sem categoria: oculta o ícone para não mostrar "Outros" sem contexto
+                    ivCategoryIcon.setVisibility(View.GONE);
+                }
+            }
+            // ─────────────────────────────────────────────────────────────────
 
             // Linha de timeline: esconde no último item
             viewTimelineLine.setVisibility(isLast ? View.INVISIBLE : View.VISIBLE);

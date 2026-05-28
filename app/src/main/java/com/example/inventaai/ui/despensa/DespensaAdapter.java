@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
+import com.example.inventaai.util.CategoryIconHelper;
 import com.example.inventaai.util.DateUtils;
 
 import java.util.ArrayList;
@@ -21,8 +23,10 @@ import java.util.List;
 /**
  * DespensaAdapter — adapter do RecyclerView da tela principal (Dashboard).
  *
- * Cada card exibe: nome, quantidade+unidade, badge de dias restantes
- * e barra de frescor com cor dinâmica (verde / amarelo / vermelho).
+ * Cada card exibe: nome, quantidade+unidade, badge de dias restantes,
+ * barra de frescor com cor dinâmica e ícone da categoria do alimento.
+ *
+ * Sprint 2: adicionado ícone de categoria via CategoryIconHelper no ivItemIcon.
  *
  * Uso:
  *   DespensaAdapter adapter = new DespensaAdapter(itens, item -> abrirDetalhes(item));
@@ -88,6 +92,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
     static class DespensaViewHolder extends RecyclerView.ViewHolder {
 
+        private final ImageView   ivItemIcon;        // Sprint 2: ícone de categoria
         private final TextView    tvItemName;
         private final TextView    tvItemQuantity;
         private final TextView    tvExpiryBadge;
@@ -95,6 +100,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
         DespensaViewHolder(@NonNull View itemView) {
             super(itemView);
+            ivItemIcon        = itemView.findViewById(R.id.ivItemIcon);
             tvItemName        = itemView.findViewById(R.id.tvItemName);
             tvItemQuantity    = itemView.findViewById(R.id.tvItemQuantity);
             tvExpiryBadge     = itemView.findViewById(R.id.tvExpiryBadge);
@@ -103,6 +109,11 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
         void bind(DespensaItem item, OnItemClickListener listener) {
             Context ctx = itemView.getContext();
+
+            // ── Sprint 2: ícone da categoria ─────────────────────────────────
+            int iconRes = CategoryIconHelper.getIcon(item.getCategoria());
+            ivItemIcon.setImageResource(iconRes);
+            // ─────────────────────────────────────────────────────────────────
 
             // Nome
             tvItemName.setText(item.getNome());

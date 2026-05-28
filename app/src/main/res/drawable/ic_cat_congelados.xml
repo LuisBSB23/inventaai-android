@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ic_cat_congelados.xml
+    Ícone de categoria: Congelados — floco de neve estilizado.
+    Cor primária do design system: #006D36
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Eixo vertical -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M11,2H13V22H11V2Z" />
+
+    <!-- Eixo horizontal -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M2,11H22V13H2V11Z" />
+
+    <!-- Diagonal 1 -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M4.93,4.93L6.34,3.51L19.07,16.24L17.66,17.66L4.93,4.93Z" />
+
+    <!-- Diagonal 2 -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M3.51,17.66L16.24,4.93L17.66,6.34L4.93,19.07L3.51,17.66Z" />
+
+    <!-- Pontas do floco — topo -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M9,2L12,5L15,2H9Z" />
+
+    <!-- Pontas do floco — base -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M9,22L12,19L15,22H9Z" />
+
+    <!-- Pontas do floco — esquerda -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M2,9L5,12L2,15V9Z" />
+
+    <!-- Pontas do floco — direita -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M22,9L19,12L22,15V9Z" />
+</vector>

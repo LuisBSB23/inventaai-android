@@ -3,6 +3,10 @@
     item_historico.xml
     Item da linha do tempo no histórico.
     Layout: ícone circular + linha vertical + card com nome, data e motivo.
+
+    Sprint 2: adicionado ivCategoryIcon (ImageView 16dp) à direita do tvMotivo,
+    exibindo o ícone da categoria do item como elemento visual secundário.
+    O HistoricoAdapter controla a visibilidade (VISIBLE/GONE) desse ícone.
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -101,7 +105,7 @@
                     tools:text="HOJE" />
             </LinearLayout>
 
-            <!-- Linha inferior: chip de motivo + descrição -->
+            <!-- Linha inferior: chip de motivo + ícone de categoria + observação -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -121,6 +125,23 @@
                     android:layout_marginEnd="8dp"
                     tools:text="Consumido"
                     tools:textColor="@color/colorPrimary" />
+
+                <!--
+                    Sprint 2: ícone de categoria secundário.
+                    Visibilidade controlada pelo HistoricoAdapter:
+                    VISIBLE quando categoria != null, GONE caso contrário.
+                -->
+                <ImageView
+                    android:id="@+id/ivCategoryIcon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="@string/cd_food_icon"
+                    android:src="@drawable/ic_cat_outros"
+                    android:tint="@color/colorOnSurfaceVariant"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:src="@drawable/ic_cat_hortifruti" />
 
                 <!-- Observação livre -->
                 <TextView

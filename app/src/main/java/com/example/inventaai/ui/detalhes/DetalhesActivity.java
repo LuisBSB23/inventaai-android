@@ -2,6 +2,7 @@ package com.example.inventaai.ui.detalhes;
 
 import android.os.Bundle;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
 import com.example.inventaai.data.repository.DespensaRepository;
+import com.example.inventaai.util.CategoryIconHelper;
 import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.DateUtils;
 import com.google.android.material.button.MaterialButton;
@@ -21,6 +23,9 @@ import com.google.android.material.chip.Chip;
  * Sprint 3: recebe o DespensaItem serializado via Intent (EXTRA_ITEM),
  * permite editar a quantidade com o stepper e persiste via repositório.
  * O botão "Remover" abre AlertDialog para escolher entre Consumido e Descartado.
+ *
+ * Sprint 2: chipCategoria exibe o ícone da categoria via CategoryIconHelper.
+ *           ivItemImage também exibe o ícone da categoria em destaque no centro.
  */
 public class DetalhesActivity extends AppCompatActivity {
 
@@ -38,6 +43,7 @@ public class DetalhesActivity extends AppCompatActivity {
     private ImageButton   btnIncrease;
     private MaterialButton btnSalvar;
     private MaterialButton btnRemover;
+    private ImageView     ivItemImage;   // Sprint 2: exibe ícone de categoria em destaque
 
     // Estado
     private DespensaItem item;
@@ -64,16 +70,17 @@ public class DetalhesActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
-        chipStatus   = findViewById(R.id.chipStatus);
+        chipStatus    = findViewById(R.id.chipStatus);
         chipCategoria = findViewById(R.id.chipCategoria);
-        tvItemName   = findViewById(R.id.tvItemName);
-        tvAddedDate  = findViewById(R.id.tvAddedDate);
-        tvQuantidade = findViewById(R.id.tvQuantidade);
-        tvUnidade    = findViewById(R.id.tvUnidade);
-        btnDecrease  = findViewById(R.id.btnDecrease);
-        btnIncrease  = findViewById(R.id.btnIncrease);
-        btnSalvar    = findViewById(R.id.btnSalvar);
-        btnRemover   = findViewById(R.id.btnRemover);
+        tvItemName    = findViewById(R.id.tvItemName);
+        tvAddedDate   = findViewById(R.id.tvAddedDate);
+        tvQuantidade  = findViewById(R.id.tvQuantidade);
+        tvUnidade     = findViewById(R.id.tvUnidade);
+        btnDecrease   = findViewById(R.id.btnDecrease);
+        btnIncrease   = findViewById(R.id.btnIncrease);
+        btnSalvar     = findViewById(R.id.btnSalvar);
+        btnRemover    = findViewById(R.id.btnRemover);
+        ivItemImage   = findViewById(R.id.ivItemImage);   // Sprint 2
     }
 
     /**
@@ -86,7 +93,6 @@ public class DetalhesActivity extends AppCompatActivity {
         }
 
         if (item == null) {
-            // Fallback de segurança: exibe dados de exemplo se não receber item
             tvItemName.setText("Item não encontrado");
             quantidadeAtual = 1;
             atualizarDisplayQuantidade();
@@ -101,20 +107,35 @@ public class DetalhesActivity extends AppCompatActivity {
         tvItemName.setText(item.getNome());
 
         // Unidade
-        String unidade = item.getUnidadeMedida() != null ? item.getUnidadeMedida().toUpperCase() : "UNIDADES";
+        String unidade = item.getUnidadeMedida() != null
+                ? item.getUnidadeMedida().toUpperCase()
+                : "UNIDADES";
         tvUnidade.setText(unidade);
 
         // Quantidade inicial
         quantidadeAtual = item.getQuantidade();
         atualizarDisplayQuantidade();
 
-        // Categoria
+        // ── Sprint 2: ícone de categoria ─────────────────────────────────────
         String cat = item.getCategoria();
+        int iconRes = CategoryIconHelper.getIcon(cat);
+
+        // Chip de categoria com ícone
         chipCategoria.setText(cat != null && !cat.isEmpty() ? cat : "Sem categoria");
+        chipCategoria.setChipIconResource(iconRes);
+        chipCategoria.setChipIconVisible(true);
+
+        // Imagem central em destaque (ivItemImage)
+        if (ivItemImage != null) {
+            ivItemImage.setImageResource(iconRes);
+            // Aplica tint verde do design system para manter identidade visual
+            ivItemImage.setColorFilter(
+                    androidx.core.content.ContextCompat.getColor(this, R.color.colorPrimary));
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         // Status de validade
         int dias = DateUtils.calcularDiasRestantes(item.getDataValidade());
-        String alerta = DateUtils.getStatusAlerta(dias);
 
         if (dias < 0) {
             chipStatus.setText("Vencido");
@@ -185,7 +206,8 @@ public class DetalhesActivity extends AppCompatActivity {
     private void confirmarRemocao() {
         new android.app.AlertDialog.Builder(this)
                 .setTitle("Remover item")
-                .setMessage("O que deseja fazer com \"" + (item != null ? item.getNome() : "este item") + "\"?")
+                .setMessage("O que deseja fazer com \""
+                        + (item != null ? item.getNome() : "este item") + "\"?")
                 .setPositiveButton("Descartado", (dialog, which) -> descartarItem())
                 .setNegativeButton("Consumido",  (dialog, which) -> marcarConsumido())
                 .setNeutralButton("Cancelar", null)
@@ -195,7 +217,9 @@ public class DetalhesActivity extends AppCompatActivity {
     private void descartarItem() {
         if (item != null) {
             boolean ok = repository.moverParaHistorico(
-                    item.getId(), item.getNome(), Constants.STATUS_DESCARTADO, sessionManagerDetalhes.getUserId());
+                    item.getId(), item.getNome(),
+                    Constants.STATUS_DESCARTADO,
+                    sessionManagerDetalhes.getUserId());
             Toast.makeText(this,
                     ok ? "Item descartado." : "Erro ao descartar item.",
                     Toast.LENGTH_SHORT).show();
@@ -206,7 +230,9 @@ public class DetalhesActivity extends AppCompatActivity {
     private void marcarConsumido() {
         if (item != null) {
             boolean ok = repository.moverParaHistorico(
-                    item.getId(), item.getNome(), Constants.STATUS_CONSUMIDO, sessionManagerDetalhes.getUserId());
+                    item.getId(), item.getNome(),
+                    Constants.STATUS_CONSUMIDO,
+                    sessionManagerDetalhes.getUserId());
             Toast.makeText(this,
                     ok ? "Item marcado como consumido." : "Erro ao registrar consumo.",
                     Toast.LENGTH_SHORT).show();

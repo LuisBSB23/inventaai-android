@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ic_cat_laticinios.xml
+    Ícone de categoria: Laticínios — gota de leite.
+    Cor primária do design system: #006D36
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Garrafa de leite — corpo -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M9,3V4H8C7.45,4 7,4.45 7,5V7.29C5.81,8.15 5,9.48 5,11V19C5,20.1 5.9,21 7,21H17C18.1,21 19,20.1 19,19V11C19,9.48 18.19,8.15 17,7.29V5C17,4.45 16.55,4 16,4H15V3H9ZM9,6H15V7H9V6Z" />
+
+    <!-- Líquido dentro (destaque claro) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.35"
+        android:pathData="M7,14H17V19C17,19.55 16.55,20 16,20H8C7.45,20 7,19.55 7,19V14Z" />
+
+    <!-- Ondinha do leite -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.6"
+        android:pathData="M7,13C7,13 8.5,14.5 12,14.5C15.5,14.5 17,13 17,13V14C17,14 15.5,15.5 12,15.5C8.5,15.5 7,14 7,14V13Z" />
+</vector>
