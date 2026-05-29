@@ -185,7 +185,7 @@
                         android:gravity="center_vertical"
                         android:layout_marginEnd="24dp">
                         <ImageView android:layout_width="18dp" android:layout_height="18dp"
-                            android:src="@android:drawable/ic_menu_recent_history"
+                            android:src="@drawable/ic_time"
                             android:tint="@color/colorOutline" android:contentDescription="@null"
                             android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvTime" android:layout_width="wrap_content"
@@ -202,7 +202,7 @@
                         android:gravity="center_vertical"
                         android:layout_marginEnd="24dp">
                         <ImageView android:layout_width="18dp" android:layout_height="18dp"
-                            android:src="@android:drawable/ic_menu_share"
+                            android:src="@drawable/ic_share"
                             android:tint="@color/colorOutline" android:contentDescription="@null"
                             android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvServings" android:layout_width="wrap_content"
@@ -218,7 +218,7 @@
                         android:orientation="horizontal"
                         android:gravity="center_vertical">
                         <ImageView android:layout_width="18dp" android:layout_height="18dp"
-                            android:src="@android:drawable/star_off"
+                            android:src="@drawable/ic_favorite"
                             android:tint="@color/colorOutline" android:contentDescription="@null"
                             android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvDifficulty" android:layout_width="wrap_content"
@@ -237,7 +237,7 @@
                     android:layout_height="56dp"
                     android:text="@string/btn_save_recipe"
                     android:layout_marginBottom="32dp"
-                    app:icon="@android:drawable/ic_menu_save"
+                    app:icon="@drawable/ic_save"
                     app:iconGravity="textStart" />
 
                 <!-- ===== SEÇÃO: Ingredientes ===== -->

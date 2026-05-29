@@ -31,7 +31,7 @@
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/back"
-                android:src="@android:drawable/ic_media_previous"
+                android:src="@drawable/ic_back_arrow"
                 android:tint="@color/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -218,7 +218,7 @@
                 android:layout_marginBottom="40dp"
                 android:hint="@string/hint_expiry_date"
                 app:endIconMode="custom"
-                app:endIconDrawable="@android:drawable/ic_menu_my_calendar"
+                app:endIconDrawable="@drawable/ic_calendar"
                 app:endIconTint="@color/colorPrimary">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -241,7 +241,7 @@
                 android:layout_height="56dp"
                 android:text="@string/btn_save"
                 android:textSize="17sp"
-                app:icon="@android:drawable/ic_menu_add"
+                app:icon="@drawable/ic_save"
                 app:iconGravity="textStart" />
 
         </LinearLayout>

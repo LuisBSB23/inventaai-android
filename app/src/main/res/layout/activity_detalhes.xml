@@ -106,7 +106,7 @@
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
-                android:src="@android:drawable/ic_menu_my_calendar"
+                android:src="@drawable/ic_calendar"
                 android:tint="@color/colorOnSurfaceVariant"
                 android:contentDescription="@null"
                 android:layout_marginEnd="6dp" />
@@ -139,7 +139,7 @@
                 android:layout_height="56dp"
                 android:background="@drawable/bg_circle_surface"
                 android:contentDescription="@string/decrease_quantity"
-                android:src="@android:drawable/ic_input_delete"
+                android:src="@drawable/ic_decrease"
                 android:tint="@color/colorPrimary" />
 
             <!-- Valor e unidade centrais -->
@@ -180,7 +180,7 @@
                 android:layout_height="56dp"
                 android:background="@drawable/bg_circle_surface"
                 android:contentDescription="@string/increase_quantity"
-                android:src="@android:drawable/ic_input_add"
+                android:src="@drawable/ic_increase"
                 android:tint="@color/colorPrimary" />
 
         </LinearLayout>
@@ -200,7 +200,7 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:text="@string/btn_discard"
-                app:icon="@android:drawable/ic_menu_delete"
+                app:icon="@drawable/ic_delete"
                 app:iconGravity="textStart" />
 
             <!-- Botão Salvar -->
@@ -212,7 +212,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:text="@string/btn_save_item"
-                app:icon="@android:drawable/checkbox_on_background"
+                app:icon="@drawable/ic_save"
                 app:iconGravity="textStart" />
 
         </LinearLayout>
