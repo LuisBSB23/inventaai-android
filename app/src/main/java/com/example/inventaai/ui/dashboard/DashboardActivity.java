@@ -1,9 +1,7 @@
 package com.example.inventaai.ui.dashboard;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -30,12 +28,12 @@ import com.example.inventaai.ui.detalhes.DetalhesActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.ui.login.LoginActivity;
 import com.example.inventaai.ui.perfil.PerfilActivity;
+import com.example.inventaai.util.GlideHelper;  // Sprint 3
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +42,8 @@ import java.util.List;
  *
  * Sprint 1: integração do Navigation Drawer, SessionManager e filtragem
  * de dados por user_id. Redireciona ao Login se não há sessão ativa.
+ *
+ * Sprint 3: carregamento de avatares via GlideHelper (circular, com cache).
  */
 public class DashboardActivity extends AppCompatActivity {
 
@@ -106,7 +106,6 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Recarrega userId da sessão (pode ter mudado o nome)
         currentUserId = sessionManager.getUserId();
         if (currentUserId == null) { irParaLogin(); return; }
         atualizarListas();
@@ -147,15 +146,12 @@ public class DashboardActivity extends AppCompatActivity {
     // =========================================================================
 
     private void configurarDrawer() {
-        // Botão hambúrguer abre o drawer
         findViewById(R.id.btnMenu).setOnClickListener(v ->
                 drawerLayout.openDrawer(GravityCompat.START));
 
-        // Avatar no topo da toolbar também abre o drawer
         ivAvatar.setOnClickListener(v ->
                 drawerLayout.openDrawer(GravityCompat.START));
 
-        // Itens do menu
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             drawerLayout.closeDrawers();
@@ -170,7 +166,12 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    /** Atualiza nome e avatar no header do drawer e na toolbar. */
+    /**
+     * Atualiza nome e avatar no header do drawer e na toolbar.
+     *
+     * Sprint 3: substituída a leitura manual de URI por GlideHelper.loadCircularImage(),
+     * que aproveita o cache do Glide para carregamento instantâneo em onResume.
+     */
     private void atualizarHeaderDrawer() {
         User user = userRepository.getUserById(currentUserId);
         if (user == null) return;
@@ -178,46 +179,42 @@ public class DashboardActivity extends AppCompatActivity {
         // Saudação
         tvGreetingUser.setText(user.getNome() + "!");
 
-        // Iniciais no avatar da toolbar
-        tvAvatarIniciais.setText(user.getIniciais());
-        tvAvatarIniciais.setVisibility(View.VISIBLE);
-
-        // Avatar real (se houver foto)
-        if (user.getAvatarPath() != null) {
-            File arq = new File(user.getAvatarPath());
-            if (arq.exists()) {
-                ivAvatarImg.setImageURI(Uri.fromFile(arq));
-                ivAvatarImg.setColorFilter(null);
-                tvAvatarIniciais.setVisibility(View.GONE);
-            }
+        // ── Avatar da toolbar (ivAvatarImg) ──────────────────────────────────
+        if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
+            // Sprint 3: Glide com circleCrop — cache automático, sem blink no onResume
+            GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivAvatarImg);
+            ivAvatarImg.setColorFilter(null);
+            tvAvatarIniciais.setVisibility(View.GONE);
+        } else {
+            // Sem foto: exibe iniciais
+            tvAvatarIniciais.setText(user.getIniciais());
+            tvAvatarIniciais.setVisibility(View.VISIBLE);
         }
 
-        // Header do drawer
+        // ── Header do drawer ─────────────────────────────────────────────────
         View header = navigationView.getHeaderView(0);
         if (header == null) return;
 
-        TextView tvDrawerNome        = header.findViewById(R.id.tvDrawerNome);
-        TextView tvDrawerIdAbreviado = header.findViewById(R.id.tvDrawerIdAbreviado);
-        TextView tvDrawerIniciais    = header.findViewById(R.id.tvDrawerIniciais);
-        ImageView ivDrawerAvatar     = header.findViewById(R.id.ivDrawerAvatar);
+        TextView  tvDrawerNome        = header.findViewById(R.id.tvDrawerNome);
+        TextView  tvDrawerIdAbreviado = header.findViewById(R.id.tvDrawerIdAbreviado);
+        TextView  tvDrawerIniciais    = header.findViewById(R.id.tvDrawerIniciais);
+        ImageView ivDrawerAvatar      = header.findViewById(R.id.ivDrawerAvatar);
 
         tvDrawerNome.setText(user.getNome());
         tvDrawerIdAbreviado.setText("ID: " + user.getIdAbreviado());
 
-        if (user.getAvatarPath() != null) {
-            File arq = new File(user.getAvatarPath());
-            if (arq.exists()) {
-                ivDrawerAvatar.setImageURI(Uri.fromFile(arq));
-                ivDrawerAvatar.setColorFilter(null);
-                tvDrawerIniciais.setVisibility(View.GONE);
-                ivDrawerAvatar.setVisibility(View.VISIBLE);
-                return;
-            }
+        if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
+            // Sprint 3: Glide circular no header do drawer
+            GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivDrawerAvatar);
+            ivDrawerAvatar.setColorFilter(null);
+            ivDrawerAvatar.setVisibility(View.VISIBLE);
+            tvDrawerIniciais.setVisibility(View.GONE);
+        } else {
+            // Sem foto: exibe iniciais
+            ivDrawerAvatar.setVisibility(View.GONE);
+            tvDrawerIniciais.setText(user.getIniciais());
+            tvDrawerIniciais.setVisibility(View.VISIBLE);
         }
-        // Sem foto: exibe iniciais
-        ivDrawerAvatar.setVisibility(View.GONE);
-        tvDrawerIniciais.setText(user.getIniciais());
-        tvDrawerIniciais.setVisibility(View.VISIBLE);
     }
 
     // =========================================================================

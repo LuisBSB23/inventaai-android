@@ -20,6 +20,7 @@ import com.example.inventaai.R;
 import com.example.inventaai.data.model.User;
 import com.example.inventaai.data.repository.UserRepository;
 import com.example.inventaai.ui.login.LoginActivity;
+import com.example.inventaai.util.GlideHelper;  // Sprint 3
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -33,6 +34,8 @@ import java.io.InputStream;
  * PerfilActivity — visualização e edição do perfil do usuário logado.
  *
  * Sprint 1: alterar nome, trocar senha, atualizar avatar, logout.
+ * Sprint 3: carregamento do avatar via GlideHelper.loadCircularImage()
+ *           (cache automático, transição fade-in, corte circular consistente).
  */
 public class PerfilActivity extends AppCompatActivity {
 
@@ -102,13 +105,11 @@ public class PerfilActivity extends AppCompatActivity {
         tvId.setText("ID: " + usuarioAtual.getId());
         etNome.setText(usuarioAtual.getNome());
 
-        // Avatar — carrega arquivo local se existir
-        if (usuarioAtual.getAvatarPath() != null) {
-            File arq = new File(usuarioAtual.getAvatarPath());
-            if (arq.exists()) {
-                ivAvatar.setImageURI(Uri.fromFile(arq));
-                ivAvatar.setColorFilter(null);
-            }
+        // Sprint 3: GlideHelper.loadCircularImage() substitui setImageURI()
+        // — aproveita cache do Glide, exibe com fade-in e corte circular correto
+        if (usuarioAtual.getAvatarPath() != null && !usuarioAtual.getAvatarPath().isEmpty()) {
+            GlideHelper.loadCircularImage(this, usuarioAtual.getAvatarPath(), ivAvatar);
+            ivAvatar.setColorFilter(null);
         }
     }
 
@@ -196,8 +197,11 @@ public class PerfilActivity extends AppCompatActivity {
             String path = destino.getAbsolutePath();
             userRepository.updateAvatar(usuarioAtual.getId(), path);
             usuarioAtual.setAvatarPath(path);
-            ivAvatar.setImageURI(uri);
+
+            // Sprint 3: usa Glide para exibir a foto recém-salva (com circleCrop)
+            GlideHelper.loadCircularImage(this, path, ivAvatar);
             ivAvatar.setColorFilter(null);
+
             Toast.makeText(this, "Foto de perfil atualizada!", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Toast.makeText(this, "Erro ao salvar foto.", Toast.LENGTH_SHORT).show();

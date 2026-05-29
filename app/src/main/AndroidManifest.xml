@@ -68,11 +68,27 @@
             android:exported="false"
             android:label="Histórico" />
 
-        <!-- Chef IA — geração de receitas -->
+        <!--
+            Chef IA — geração de receitas.
+
+            BUG CORRIGIDO (launchMode):
+            O launchMode padrão ("standard") criava uma NOVA instância do ChefIAActivity
+            a cada vez que o usuário navegava de volta para essa tela, disparando
+            gerarReceita() e uma nova chamada à API Gemini em cada visita.
+            Com poucas sessões de uso, isso esgotava a cota diária da API (RPD),
+            causando o erro "Limite de requisições atingido" mesmo sem o limite real
+            ter sido atingido no projeto.
+
+            "singleTop": se o ChefIAActivity já estiver no topo da back stack,
+            o Android reutiliza a instância existente (chama onNewIntent, não onCreate),
+            evitando chamadas duplicadas à API. Uma nova instância só é criada se a
+            Activity não estiver no topo — comportamento correto e esperado.
+        -->
         <activity
             android:name=".ui.chefIA.ChefIAActivity"
             android:exported="false"
-            android:label="Chef IA" />
+            android:label="Chef IA"
+            android:launchMode="singleTop" />
 
     </application>
 

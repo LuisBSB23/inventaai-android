@@ -2,9 +2,10 @@ package com.example.inventaai.ui.chefIA;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridLayout;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -15,10 +16,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
 import com.example.inventaai.data.model.ReceitaResponse;
+import com.example.inventaai.data.remote.UnsplashService;
 import com.example.inventaai.data.repository.DespensaRepository;
 import com.example.inventaai.ui.cadastro.CadastroActivity;
 import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
+import com.example.inventaai.util.Constants;
+import com.example.inventaai.util.GlideHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
@@ -29,14 +33,21 @@ import java.util.List;
 /**
  * ChefIAActivity — gera receitas personalizadas usando a API do Gemini (Sprint 4).
  *
+ * Sprint 3: integração com Unsplash API + Glide para exibir uma imagem real
+ * relacionada ao título da receita gerada.
+ *
  * Fluxo:
  *  1. onCreate  → busca itens da despensa (próximos ao vencimento primeiro, depois demais)
  *  2. Exibe ProgressBar e chama GeminiService.gerarReceita()
  *  3. onSucesso → preenche título, metadados, grid de ingredientes e lista de passos
+ *               → em paralelo, chama UnsplashService para buscar a imagem do prato
+ *               → GlideHelper.loadImage() exibe a imagem com fade-in no ivRecipeImage
  *  4. onErro    → exibe mensagem amigável e reabilita o botão "Gerar Nova Receita"
  *  5. btnNovaReceita → repete o fluxo com os dados mais recentes da despensa
  */
 public class ChefIAActivity extends AppCompatActivity {
+
+    private static final String TAG = Constants.LOG_TAG;
 
     // ──────────────────────────────────────────────────────────────────────────
     // Views
@@ -52,8 +63,11 @@ public class ChefIAActivity extends AppCompatActivity {
     private MaterialButton       btnSalvarReceita;
     private MaterialButton       btnNovaReceita;
     private BottomNavigationView bottomNavigation;
-    private ProgressBar          progressBar;       // estado de carregamento
-    private View                 viewConteudo;      // agrupa título + metadados + listas
+    private ProgressBar          progressBar;
+    private View                 viewConteudo;
+
+    // Sprint 3: ImageView do hero image da receita
+    private ImageView            ivRecipeImage;
 
     // ──────────────────────────────────────────────────────────────────────────
     // Dependências
@@ -61,6 +75,7 @@ public class ChefIAActivity extends AppCompatActivity {
 
     private DespensaRepository despensaRepository;
     private GeminiService      geminiService;
+    private UnsplashService    unsplashService;  // Sprint 3
 
     // Receita atual em memória (para o botão Salvar)
     private ReceitaResponse receitaAtual;
@@ -76,6 +91,7 @@ public class ChefIAActivity extends AppCompatActivity {
 
         despensaRepository = new DespensaRepository(this);
         geminiService      = new GeminiService();
+        unsplashService    = new UnsplashService();  // Sprint 3
 
         vincularViews();
         configurarBotoes();
@@ -100,11 +116,11 @@ public class ChefIAActivity extends AppCompatActivity {
         btnSalvarReceita    = findViewById(R.id.btnSalvarReceita);
         btnNovaReceita      = findViewById(R.id.btnNovaReceita);
         bottomNavigation    = findViewById(R.id.bottomNavigation);
+        progressBar         = findViewById(R.id.progressBarChef);
+        viewConteudo        = findViewById(R.id.scrollViewConteudo);
 
-        // ProgressBar e contêiner de conteúdo são adicionados via lógica de estado —
-        // se não existirem no layout atual, os métodos de estado tratam o null com segurança.
-        progressBar  = findViewById(R.id.progressBarChef);
-        viewConteudo = findViewById(R.id.scrollViewConteudo);
+        // Sprint 3: hero image da receita
+        ivRecipeImage = findViewById(R.id.ivRecipeImage);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -114,16 +130,20 @@ public class ChefIAActivity extends AppCompatActivity {
     /**
      * Monta a lista de ingredientes priorizando os mais próximos do vencimento
      * (janela de 7 dias) e completa com os demais itens ativos.
-     * Em seguida, chama o GeminiService.
+     * Em seguida, chama o GeminiService e, ao receber o título, dispara a busca
+     * de imagem no Unsplash em paralelo.
      */
     private void gerarReceita() {
-        // Prioridade: próximos ao vencimento
-        com.example.inventaai.util.SessionManager smChef = new com.example.inventaai.util.SessionManager(this);
+        com.example.inventaai.util.SessionManager smChef =
+                new com.example.inventaai.util.SessionManager(this);
         String chefUserId = smChef.getUserId();
-        List<DespensaItem> proximosVencer = despensaRepository.listarProximosVencimento(7, chefUserId);
-        List<DespensaItem> todosAtivos    = despensaRepository.listarAtivos(chefUserId);
 
-        // Combina sem duplicatas
+        List<DespensaItem> proximosVencer =
+                despensaRepository.listarProximosVencimento(7, chefUserId);
+        List<DespensaItem> todosAtivos    =
+                despensaRepository.listarAtivos(chefUserId);
+
+        // Combina sem duplicatas, priorizando os próximos do vencimento
         List<DespensaItem> itensParaReceita = new ArrayList<>(proximosVencer);
         for (DespensaItem item : todosAtivos) {
             if (!contemId(itensParaReceita, item.getId())) {
@@ -145,6 +165,9 @@ public class ChefIAActivity extends AppCompatActivity {
                     receitaAtual = receita;
                     preencherReceita(receita, itensParaReceita);
                     mostrarCarregando(false);
+
+                    // ── Sprint 3: busca imagem em paralelo após preencher a UI ──
+                    buscarImagemParaReceita(receita.getTitulo());
                 });
             }
 
@@ -159,20 +182,48 @@ public class ChefIAActivity extends AppCompatActivity {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Preencher UI com a receita recebida
+    // Sprint 3: buscar e exibir imagem da receita via Unsplash
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
-     * Popula todos os campos visuais com os dados retornados pelo Gemini.
+     * Dispara uma busca assíncrona no Unsplash pelo título da receita.
+     * O Glide carrega a URL retornada no ivRecipeImage com transição fade-in.
+     * Em caso de erro, o placeholder padrão é mantido — sem impacto na receita.
      *
-     * @param receita  Objeto ReceitaResponse mapeado pelo Gson.
-     * @param itensUsados Lista de itens enviados ao prompt (fallback para ingredientes).
+     * @param tituloReceita Título gerado pela IA (ex: "Frango ao Limão").
      */
+    private void buscarImagemParaReceita(String tituloReceita) {
+        if (ivRecipeImage == null) return;
+
+        Log.d(TAG, "ChefIA: buscando imagem para \"" + tituloReceita + "\"");
+
+        unsplashService.buscarImagemReceita(tituloReceita, new UnsplashService.ImageCallback() {
+
+            @Override
+            public void onSucesso(String imageUrl) {
+                // Glide DEVE ser chamado na UI thread
+                runOnUiThread(() -> {
+                    Log.d(TAG, "ChefIA: carregando imagem com Glide → " + imageUrl);
+                    GlideHelper.loadImage(ChefIAActivity.this, imageUrl, ivRecipeImage);
+                });
+            }
+
+            @Override
+            public void onErro(String mensagem) {
+                // Falha silenciosa — o placeholder já está sendo exibido
+                Log.w(TAG, "ChefIA: imagem não carregada → " + mensagem);
+            }
+        });
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Preencher UI com a receita recebida
+    // ──────────────────────────────────────────────────────────────────────────
+
     private void preencherReceita(ReceitaResponse receita, List<DespensaItem> itensUsados) {
         // ── Cabeçalho ──────────────────────────────────────────────────────
         tvRecipeTitle.setText(receita.getTitulo());
 
-        // A descrição não vem da IA; usamos um texto motivacional genérico
         tvRecipeDescription.setText(
                 "Uma receita criada especialmente para os ingredientes da sua despensa. " +
                         "Aproveite ao máximo o que você já tem!");
@@ -187,14 +238,12 @@ public class ChefIAActivity extends AppCompatActivity {
 
         List<String> ingredientes = receita.getIngredientes();
         if (ingredientes == null || ingredientes.isEmpty()) {
-            // Fallback: usa os nomes dos itens da despensa
             for (DespensaItem item : itensUsados) {
                 adicionarCartaoIngrediente(item.getNome(),
                         formatarQtd(item.getQuantidade()) + " " + item.getUnidadeMedida());
             }
         } else {
             for (String ingrediente : ingredientes) {
-                // Tenta separar "Nome - quantidade" ou usa o texto inteiro como nome
                 String[] partes = ingrediente.split(" - ", 2);
                 String nome = partes[0].trim();
                 String qtd  = partes.length > 1 ? partes[1].trim() : "";
@@ -219,11 +268,7 @@ public class ChefIAActivity extends AppCompatActivity {
     // Helpers de UI — ingrediente e passo
     // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Adiciona dinamicamente um card de ingrediente ao GridLayout de 2 colunas.
-     */
     private void adicionarCartaoIngrediente(String nome, String quantidade) {
-        // Card externo
         MaterialCardView card = new MaterialCardView(this);
         GridLayout.LayoutParams cardParams = new GridLayout.LayoutParams();
         cardParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
@@ -236,14 +281,12 @@ public class ChefIAActivity extends AppCompatActivity {
         card.setStrokeColor(getColor(R.color.colorSurfaceContainerHighest));
         card.setStrokeWidth(dpToPx(1));
 
-        // Container interno horizontal
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(android.view.Gravity.CENTER_VERTICAL);
         int pad = dpToPx(12);
         row.setPadding(pad, pad, pad, pad);
 
-        // Coluna de texto (nome + quantidade)
         LinearLayout colTexto = new LinearLayout(this);
         colTexto.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams colParams =
@@ -257,7 +300,6 @@ public class ChefIAActivity extends AppCompatActivity {
         tvNome.setTypeface(getResources().getFont(R.font.inter_semibold));
         tvNome.setMaxLines(2);
         tvNome.setEllipsize(android.text.TextUtils.TruncateAt.END);
-
         colTexto.addView(tvNome);
 
         if (quantidade != null && !quantidade.isEmpty()) {
@@ -274,9 +316,6 @@ public class ChefIAActivity extends AppCompatActivity {
         gridIngredientes.addView(card);
     }
 
-    /**
-     * Adiciona dinamicamente um passo (número + texto) ao LinearLayout de passos.
-     */
     private void adicionarPasso(int numero, String descricao) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -286,7 +325,6 @@ public class ChefIAActivity extends AppCompatActivity {
         rowParams.setMargins(0, 0, 0, dpToPx(20));
         row.setLayoutParams(rowParams);
 
-        // Círculo numerado
         TextView tvNum = new TextView(this);
         tvNum.setText(String.valueOf(numero));
         tvNum.setTextSize(13f);
@@ -299,7 +337,6 @@ public class ChefIAActivity extends AppCompatActivity {
         numParams.setMargins(0, dpToPx(4), dpToPx(16), 0);
         tvNum.setLayoutParams(numParams);
 
-        // Texto do passo
         TextView tvDesc = new TextView(this);
         tvDesc.setText(descricao);
         tvDesc.setTextSize(15f);
@@ -319,10 +356,6 @@ public class ChefIAActivity extends AppCompatActivity {
     // Gerenciamento de estado de UI
     // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Alterna entre o estado de carregamento (ProgressBar visível, botões desabilitados)
-     * e o estado normal (conteúdo visível, botões habilitados).
-     */
     private void mostrarCarregando(boolean carregando) {
         if (progressBar != null) {
             progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE);
@@ -339,9 +372,6 @@ public class ChefIAActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Exibe uma mensagem de erro via Toast e restaura o estado da tela.
-     */
     private void mostrarErro(String mensagem) {
         Toast.makeText(this, mensagem, Toast.LENGTH_LONG).show();
         tvRecipeTitle.setText(R.string.recipe_title_placeholder);
@@ -359,7 +389,6 @@ public class ChefIAActivity extends AppCompatActivity {
 
         btnSalvarReceita.setOnClickListener(v -> {
             if (receitaAtual != null) {
-                // Sprint 5 (futuro): persistir receita no banco de dados local
                 Toast.makeText(this,
                         "\"" + receitaAtual.getTitulo() + "\" salva nos favoritos!",
                         Toast.LENGTH_SHORT).show();
@@ -403,7 +432,6 @@ public class ChefIAActivity extends AppCompatActivity {
     // Utilitários
     // ──────────────────────────────────────────────────────────────────────────
 
-    /** Verifica se uma lista já contém um item com determinado id. */
     private boolean contemId(List<DespensaItem> lista, long id) {
         for (DespensaItem i : lista) {
             if (i.getId() == id) return true;
@@ -411,13 +439,11 @@ public class ChefIAActivity extends AppCompatActivity {
         return false;
     }
 
-    /** Converte dp em pixels para uso programático em LayoutParams. */
     private int dpToPx(int dp) {
         float density = getResources().getDisplayMetrics().density;
         return Math.round(dp * density);
     }
 
-    /** Formata quantidade sem casas decimais desnecessárias. */
     private String formatarQtd(double qtd) {
         return qtd == Math.floor(qtd) ? String.valueOf((int) qtd) : String.valueOf(qtd);
     }

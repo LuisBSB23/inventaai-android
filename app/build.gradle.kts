@@ -1,6 +1,7 @@
 import java.util.Properties
 
 // ── Sprint 4: Lê a chave do Gemini do local.properties ──────────────────────
+// ── Sprint 3: Lê também a chave do Unsplash ──────────────────────────────────
 // Feito aqui, fora do bloco android {}, para que o import de Properties
 // seja resolvido corretamente pelo Kotlin DSL em todas as versões do Gradle.
 val localProps = Properties()
@@ -8,7 +9,8 @@ val localPropsFile = rootProject.file("local.properties")
 if (localPropsFile.exists()) {
     localProps.load(localPropsFile.inputStream())
 }
-val geminiApiKey: String = localProps.getProperty("GEMINI_API_KEY", "")
+val geminiApiKey: String    = localProps.getProperty("GEMINI_API_KEY", "")
+val unsplashAccessKey: String = localProps.getProperty("UNSPLASH_ACCESS_KEY", "")
 // ────────────────────────────────────────────────────────────────────────────
 
 plugins {
@@ -32,12 +34,15 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Expõe a chave via BuildConfig.GEMINI_API_KEY
+        // Sprint 4: chave Gemini
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+
+        // Sprint 3: chave Unsplash
+        buildConfigField("String", "UNSPLASH_ACCESS_KEY", "\"$unsplashAccessKey\"")
     }
 
     buildFeatures {
-        buildConfig = true   // Sprint 4: necessário para expor GEMINI_API_KEY
+        buildConfig = true   // necessário para expor as chaves via BuildConfig
     }
 
     buildTypes {
@@ -67,6 +72,14 @@ dependencies {
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.3.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // ── Sprint 3: Retrofit (cliente HTTP tipado para Unsplash API) ───────────
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // ── Sprint 3: Glide (carregamento e cache de imagens) ───────────────────
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
