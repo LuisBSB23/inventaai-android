@@ -31,19 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ChefIAActivity — gera receitas personalizadas usando a API do Gemini (Sprint 4).
+ * ChefIAActivity — gera receitas personalizadas usando a API do Gemini.
  *
- * Sprint 3: integração com Unsplash API + Glide para exibir uma imagem real
- * relacionada ao título da receita gerada.
- *
- * Fluxo:
- *  1. onCreate  → busca itens da despensa (próximos ao vencimento primeiro, depois demais)
- *  2. Exibe ProgressBar e chama GeminiService.gerarReceita()
- *  3. onSucesso → preenche título, metadados, grid de ingredientes e lista de passos
- *               → em paralelo, chama UnsplashService para buscar a imagem do prato
- *               → GlideHelper.loadImage() exibe a imagem com fade-in no ivRecipeImage
- *  4. onErro    → exibe mensagem amigável e reabilita o botão "Gerar Nova Receita"
- *  5. btnNovaReceita → repete o fluxo com os dados mais recentes da despensa
+ * Sprint 3: integração com Unsplash API + Glide para imagem do prato.
+ * Sprint 4: btnBack (voltar) e btnSavedRecipes (receitas salvas) na toolbar.
+ *           Ícones padronizados — zero @android:drawable.
  */
 public class ChefIAActivity extends AppCompatActivity {
 
@@ -66,8 +58,8 @@ public class ChefIAActivity extends AppCompatActivity {
     private ProgressBar          progressBar;
     private View                 viewConteudo;
 
-    // Sprint 3: ImageView do hero image da receita
-    private ImageView            ivRecipeImage;
+    // Sprint 3: hero image da receita
+    private ImageView ivRecipeImage;
 
     // ──────────────────────────────────────────────────────────────────────────
     // Dependências
@@ -75,7 +67,7 @@ public class ChefIAActivity extends AppCompatActivity {
 
     private DespensaRepository despensaRepository;
     private GeminiService      geminiService;
-    private UnsplashService    unsplashService;  // Sprint 3
+    private UnsplashService    unsplashService;
 
     // Receita atual em memória (para o botão Salvar)
     private ReceitaResponse receitaAtual;
@@ -91,7 +83,7 @@ public class ChefIAActivity extends AppCompatActivity {
 
         despensaRepository = new DespensaRepository(this);
         geminiService      = new GeminiService();
-        unsplashService    = new UnsplashService();  // Sprint 3
+        unsplashService    = new UnsplashService();
 
         vincularViews();
         configurarBotoes();
@@ -119,20 +111,22 @@ public class ChefIAActivity extends AppCompatActivity {
         progressBar         = findViewById(R.id.progressBarChef);
         viewConteudo        = findViewById(R.id.scrollViewConteudo);
 
-        // Sprint 3: hero image da receita
+        // Sprint 3: hero image
         ivRecipeImage = findViewById(R.id.ivRecipeImage);
+
+        // Sprint 4: botões da toolbar
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
+        // btnSavedRecipes — placeholder para tela de receitas salvas (sprint futura)
+        findViewById(R.id.btnSavedRecipes).setOnClickListener(v ->
+                Toast.makeText(this, "Receitas salvas — em breve!", Toast.LENGTH_SHORT).show()
+        );
     }
 
     // ──────────────────────────────────────────────────────────────────────────
     // Lógica principal: gerar receita
     // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Monta a lista de ingredientes priorizando os mais próximos do vencimento
-     * (janela de 7 dias) e completa com os demais itens ativos.
-     * Em seguida, chama o GeminiService e, ao receber o título, dispara a busca
-     * de imagem no Unsplash em paralelo.
-     */
     private void gerarReceita() {
         com.example.inventaai.util.SessionManager smChef =
                 new com.example.inventaai.util.SessionManager(this);
@@ -140,7 +134,7 @@ public class ChefIAActivity extends AppCompatActivity {
 
         List<DespensaItem> proximosVencer =
                 despensaRepository.listarProximosVencimento(7, chefUserId);
-        List<DespensaItem> todosAtivos    =
+        List<DespensaItem> todosAtivos =
                 despensaRepository.listarAtivos(chefUserId);
 
         // Combina sem duplicatas, priorizando os próximos do vencimento
@@ -165,8 +159,6 @@ public class ChefIAActivity extends AppCompatActivity {
                     receitaAtual = receita;
                     preencherReceita(receita, itensParaReceita);
                     mostrarCarregando(false);
-
-                    // ── Sprint 3: busca imagem em paralelo após preencher a UI ──
                     buscarImagemParaReceita(receita.getTitulo());
                 });
             }
@@ -185,23 +177,14 @@ public class ChefIAActivity extends AppCompatActivity {
     // Sprint 3: buscar e exibir imagem da receita via Unsplash
     // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Dispara uma busca assíncrona no Unsplash pelo título da receita.
-     * O Glide carrega a URL retornada no ivRecipeImage com transição fade-in.
-     * Em caso de erro, o placeholder padrão é mantido — sem impacto na receita.
-     *
-     * @param tituloReceita Título gerado pela IA (ex: "Frango ao Limão").
-     */
     private void buscarImagemParaReceita(String tituloReceita) {
         if (ivRecipeImage == null) return;
 
         Log.d(TAG, "ChefIA: buscando imagem para \"" + tituloReceita + "\"");
 
         unsplashService.buscarImagemReceita(tituloReceita, new UnsplashService.ImageCallback() {
-
             @Override
             public void onSucesso(String imageUrl) {
-                // Glide DEVE ser chamado na UI thread
                 runOnUiThread(() -> {
                     Log.d(TAG, "ChefIA: carregando imagem com Glide → " + imageUrl);
                     GlideHelper.loadImage(ChefIAActivity.this, imageUrl, ivRecipeImage);
@@ -210,7 +193,6 @@ public class ChefIAActivity extends AppCompatActivity {
 
             @Override
             public void onErro(String mensagem) {
-                // Falha silenciosa — o placeholder já está sendo exibido
                 Log.w(TAG, "ChefIA: imagem não carregada → " + mensagem);
             }
         });
@@ -221,21 +203,16 @@ public class ChefIAActivity extends AppCompatActivity {
     // ──────────────────────────────────────────────────────────────────────────
 
     private void preencherReceita(ReceitaResponse receita, List<DespensaItem> itensUsados) {
-        // ── Cabeçalho ──────────────────────────────────────────────────────
         tvRecipeTitle.setText(receita.getTitulo());
-
         tvRecipeDescription.setText(
                 "Uma receita criada especialmente para os ingredientes da sua despensa. " +
                         "Aproveite ao máximo o que você já tem!");
 
-        // ── Metadados ──────────────────────────────────────────────────────
         tvTime.setText(receita.getTempoPreparo());
         tvServings.setText(receita.getPorcoes());
         tvDifficulty.setText(receita.getDificuldade());
 
-        // ── Grid de ingredientes ───────────────────────────────────────────
         gridIngredientes.removeAllViews();
-
         List<String> ingredientes = receita.getIngredientes();
         if (ingredientes == null || ingredientes.isEmpty()) {
             for (DespensaItem item : itensUsados) {
@@ -251,9 +228,7 @@ public class ChefIAActivity extends AppCompatActivity {
             }
         }
 
-        // ── Passos ─────────────────────────────────────────────────────────
         llSteps.removeAllViews();
-
         List<String> passos = receita.getPassos();
         if (passos != null && !passos.isEmpty()) {
             for (int i = 0; i < passos.size(); i++) {
@@ -265,7 +240,7 @@ public class ChefIAActivity extends AppCompatActivity {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Helpers de UI — ingrediente e passo
+    // Helpers de UI
     // ──────────────────────────────────────────────────────────────────────────
 
     private void adicionarCartaoIngrediente(String nome, String quantidade) {
@@ -353,19 +328,16 @@ public class ChefIAActivity extends AppCompatActivity {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Gerenciamento de estado de UI
+    // Estado de UI
     // ──────────────────────────────────────────────────────────────────────────
 
     private void mostrarCarregando(boolean carregando) {
-        if (progressBar != null) {
+        if (progressBar != null)
             progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE);
-        }
-        if (viewConteudo != null) {
+        if (viewConteudo != null)
             viewConteudo.setVisibility(carregando ? View.GONE : View.VISIBLE);
-        }
         btnNovaReceita.setEnabled(!carregando);
         btnSalvarReceita.setEnabled(!carregando);
-
         if (carregando) {
             tvRecipeTitle.setText(R.string.generating_recipe);
             tvRecipeDescription.setText("");

@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,7 +21,7 @@ import com.example.inventaai.R;
 import com.example.inventaai.data.model.User;
 import com.example.inventaai.data.repository.UserRepository;
 import com.example.inventaai.ui.login.LoginActivity;
-import com.example.inventaai.util.GlideHelper;  // Sprint 3
+import com.example.inventaai.util.GlideHelper;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -34,13 +35,14 @@ import java.io.InputStream;
  * PerfilActivity — visualização e edição do perfil do usuário logado.
  *
  * Sprint 1: alterar nome, trocar senha, atualizar avatar, logout.
- * Sprint 3: carregamento do avatar via GlideHelper.loadCircularImage()
- *           (cache automático, transição fade-in, corte circular consistente).
+ * Sprint 3: carregamento do avatar via GlideHelper.loadCircularImage().
+ * Sprint 4: exibe inicial do nome quando não há foto (tvPerfilIniciais),
+ *           ícone de + no badge de edição de foto.
  */
 public class PerfilActivity extends AppCompatActivity {
 
     private ImageView         ivAvatar;
-    private TextView          tvNomeDisplay, tvId;
+    private TextView          tvIniciais, tvNomeDisplay, tvId;
     private TextInputLayout   tilNome, tilSenhaAtual, tilNovaSenha;
     private TextInputEditText etNome, etSenhaAtual, etNovaSenha;
     private MaterialButton    btnSalvarNome, btnTrocarSenha, btnLogout;
@@ -79,6 +81,7 @@ public class PerfilActivity extends AppCompatActivity {
 
     private void vincularViews() {
         ivAvatar       = findViewById(R.id.ivPerfilAvatar);
+        tvIniciais     = findViewById(R.id.tvPerfilIniciais);   // Sprint 4
         tvNomeDisplay  = findViewById(R.id.tvPerfilNomeDisplay);
         tvId           = findViewById(R.id.tvPerfilId);
         tilNome        = findViewById(R.id.tilPerfilNome);
@@ -105,11 +108,23 @@ public class PerfilActivity extends AppCompatActivity {
         tvId.setText("ID: " + usuarioAtual.getId());
         etNome.setText(usuarioAtual.getNome());
 
-        // Sprint 3: GlideHelper.loadCircularImage() substitui setImageURI()
-        // — aproveita cache do Glide, exibe com fade-in e corte circular correto
+        atualizarAvatar();
+    }
+
+    /**
+     * Sprint 4: exibe foto via Glide quando disponível;
+     * caso contrário mostra a inicial do nome no lugar do ImageView.
+     */
+    private void atualizarAvatar() {
         if (usuarioAtual.getAvatarPath() != null && !usuarioAtual.getAvatarPath().isEmpty()) {
             GlideHelper.loadCircularImage(this, usuarioAtual.getAvatarPath(), ivAvatar);
             ivAvatar.setColorFilter(null);
+            ivAvatar.setVisibility(View.VISIBLE);
+            tvIniciais.setVisibility(View.GONE);
+        } else {
+            ivAvatar.setVisibility(View.GONE);
+            tvIniciais.setText(usuarioAtual.getIniciais());
+            tvIniciais.setVisibility(View.VISIBLE);
         }
     }
 
@@ -153,6 +168,10 @@ public class PerfilActivity extends AppCompatActivity {
             sessionManager.salvarSessao(usuarioAtual.getId(), novoNome);
             tvNomeDisplay.setText(novoNome);
             usuarioAtual.setNome(novoNome);
+            // Sprint 4: atualiza inicial se não tiver foto
+            if (usuarioAtual.getAvatarPath() == null || usuarioAtual.getAvatarPath().isEmpty()) {
+                tvIniciais.setText(usuarioAtual.getIniciais());
+            }
             Toast.makeText(this, "Nome atualizado!", Toast.LENGTH_SHORT).show();
         } else {
             tilNome.setError("Nome já em uso por outro perfil");
@@ -198,9 +217,11 @@ public class PerfilActivity extends AppCompatActivity {
             userRepository.updateAvatar(usuarioAtual.getId(), path);
             usuarioAtual.setAvatarPath(path);
 
-            // Sprint 3: usa Glide para exibir a foto recém-salva (com circleCrop)
+            // Sprint 4: exibe foto e esconde inicial
             GlideHelper.loadCircularImage(this, path, ivAvatar);
             ivAvatar.setColorFilter(null);
+            ivAvatar.setVisibility(View.VISIBLE);
+            tvIniciais.setVisibility(View.GONE);
 
             Toast.makeText(this, "Foto de perfil atualizada!", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {

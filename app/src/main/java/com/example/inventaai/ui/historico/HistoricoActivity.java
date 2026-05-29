@@ -24,7 +24,8 @@ import java.util.List;
  * HistoricoActivity — cronologia de itens consumidos e descartados.
  *
  * Sprint 3: conectada ao HistoricoRepository e ao HistoricoAdapter.
- * onResume() recarrega os dados a cada vez que a tela é exibida.
+ * Sprint 4: btnBack adicionado na toolbar — finish() para voltar à tela anterior.
+ *           ivAvatar removido da toolbar (sem avatar nessa tela).
  */
 public class HistoricoActivity extends AppCompatActivity {
 
@@ -61,6 +62,9 @@ public class HistoricoActivity extends AppCompatActivity {
         rvHistorico      = findViewById(R.id.rvHistorico);
         tvHistoricoEmpty = findViewById(R.id.tvHistoricoEmpty);
         bottomNavigation = findViewById(R.id.bottomNavigation);
+
+        // Sprint 4: botão voltar na toolbar
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
     }
 
     private void configurarRecyclerView() {
@@ -74,7 +78,8 @@ public class HistoricoActivity extends AppCompatActivity {
     // =========================================================================
 
     private void carregarHistorico() {
-        com.example.inventaai.util.SessionManager sm = new com.example.inventaai.util.SessionManager(this);
+        com.example.inventaai.util.SessionManager sm =
+                new com.example.inventaai.util.SessionManager(this);
         List<HistoricoItem> itens = historicoRepository.listarTodos(sm.getUserId());
         historicoAdapter.atualizarLista(itens);
 

@@ -24,7 +24,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_nav_pantry"
+                android:src="@drawable/ic_back_arrow"
                 android:tint="@color/colorOnSurface"
                 android:contentDescription="@string/back"
                 app:layout_constraintStart_toStartOf="parent"
@@ -58,18 +58,30 @@
                 android:layout_height="96dp"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="@drawable/bg_circle_surface"
+                android:background="@drawable/bg_circle_primary_container"
                 android:layout_marginBottom="12dp">
 
+                <!-- Foto quando disponível -->
                 <ImageView
                     android:id="@+id/ivPerfilAvatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/ic_nav_pantry"
-                    android:tint="@color/colorPrimary"
+                    android:visibility="gone"
                     android:contentDescription="Foto de perfil" />
 
+                <!-- Inicial quando sem foto -->
+                <TextView
+                    android:id="@+id/tvPerfilIniciais"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:fontFamily="@font/inter_bold"
+                    android:textSize="36sp"
+                    android:textColor="@color/colorPrimary"
+                    android:visibility="visible" />
+
+                <!-- Badge de adicionar foto (ícone +) -->
                 <FrameLayout
                     android:layout_width="30dp"
                     android:layout_height="30dp"
@@ -79,7 +91,7 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_nav_chef"
+                        android:src="@drawable/ic_add_photo"
                         android:tint="@color/colorPrimary"
                         android:contentDescription="@null" />
                 </FrameLayout>

@@ -26,12 +26,12 @@
             android:paddingHorizontal="24dp">
 
             <ImageButton
-                android:id="@+id/btnMenu"
+                android:id="@+id/btnBack"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/cd_menu"
-                android:src="@drawable/ic_nav_pantry"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_back_arrow"
                 android:tint="@color/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -45,20 +45,8 @@
                 android:textColor="@color/colorPrimary"
                 android:textSize="22sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/ivAvatar"
-                app:layout_constraintStart_toEndOf="@id/btnMenu"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/ivAvatar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/bg_circle_surface"
-                android:contentDescription="@string/cd_profile"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_nav_pantry"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/btnMenu"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
