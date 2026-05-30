@@ -17,6 +17,7 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -104,7 +105,7 @@ public class DashboardActivity extends AppCompatActivity {
         configurarBottomNavigation();
         configurarDrawer();
 
-        // Anima o card de Saúde da Despensa na entrada da tela
+        // Sprint 6: anima o card de Saúde da Despensa na entrada da tela
         animarCardSaude();
     }
 
@@ -127,7 +128,7 @@ public class DashboardActivity extends AppCompatActivity {
         rvExpiringSoon    = findViewById(R.id.rvExpiringSoon);
         rvPantryItems     = findViewById(R.id.rvPantryItems);
 
-        // Empty state ilustrado
+        // Sprint 5: empty state ilustrado
         layoutEmptyPantry = findViewById(R.id.layoutEmptyPantry);
 
         tvGreetingUser    = findViewById(R.id.tvGreetingUser);
@@ -137,7 +138,7 @@ public class DashboardActivity extends AppCompatActivity {
         btnGenerateRecipe = findViewById(R.id.btnGenerateRecipe);
         bottomNavigation  = findViewById(R.id.bottomNavigation);
 
-        // Card de saúde (use o ID real do card no seu layout)
+        // Sprint 6: card de saúde (use o ID real do card no seu layout)
         cardSaudeDespensa = findViewById(R.id.cardPantryHealth);
     }
 
@@ -147,13 +148,13 @@ public class DashboardActivity extends AppCompatActivity {
         adapterExpiringSoon = new DespensaAdapter(new ArrayList<>(), this::abrirDetalhes);
         rvExpiringSoon.setAdapter(adapterExpiringSoon);
 
-        rvPantryItems.setLayoutManager(new LinearLayoutManager(this));
+        rvPantryItems.setLayoutManager(new GridLayoutManager(this, 2));
         adapterPantry = new DespensaAdapter(new ArrayList<>(), this::abrirDetalhes);
         rvPantryItems.setAdapter(adapterPantry);
     }
 
     // =========================================================================
-    // ANIMAÇÃO DO CARD DE SAÚDE DA DESPENSA
+    // SPRINT 6: ANIMAÇÃO DO CARD DE SAÚDE DA DESPENSA
     // =========================================================================
 
     private void animarCardSaude() {
@@ -274,7 +275,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     /**
-     * versão com Shared Element Transition.
+     * Sprint 6: versão com Shared Element Transition.
      * Chame este método quando tiver a View do ícone do card clicado.
      *
      * @param item      DespensaItem selecionado

@@ -18,88 +18,67 @@ import java.util.List;
 
 public class DespensaRepository {
 
-    private static final String TAG = Constants.LOG_TAG;
+    private static final String TAG = "DespensaRepository";
     private final DatabaseHelper dbHelper;
 
     public DespensaRepository(Context context) {
         this.dbHelper = new DatabaseHelper(context);
     }
 
-    // =========================================================================
-    // INSERIR
-    // =========================================================================
+    // ── INSERIR ──────────────────────────────────────────────────────────────
 
-    /**
-     * Insere um novo item na despensa vinculado ao usuário logado.
-     *
-     * @param item   DespensaItem a ser inserido (id será ignorado).
-     * @param userId UUID do usuário proprietário do item.
-     * @return ID gerado pelo banco, ou -1 em caso de erro.
-     */
     public long inserir(DespensaItem item, String userId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        long novoId = -1;
         try {
-            ContentValues values = toContentValues(item, userId);
-            novoId = db.insert(DespensaEntry.TABLE_NAME, null, values);
-            Log.d(TAG, "inserir: item '" + item.getNome() + "' inserido com id=" + novoId
-                    + " para userId=" + userId);
+            return db.insertOrThrow(DespensaEntry.TABLE_NAME, null, toContentValues(item, userId));
         } catch (Exception e) {
-            Log.e(TAG, "inserir: erro ao inserir item", e);
+            Log.e(TAG, "inserir: erro", e);
+            return -1;
         } finally {
             db.close();
         }
-        return novoId;
     }
 
-    // =========================================================================
-    // BUSCAR POR ID
-    // =========================================================================
+    // ── BUSCAR POR ID (público) ───────────────────────────────────────────────
 
-    /**
-     * Busca um único item pelo seu ID (sem filtro de usuário — usado internamente).
-     */
     public DespensaItem buscarPorId(long id) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+        try {
+            return buscarPorIdInterno(db, id);
+        } catch (Exception e) {
+            Log.e(TAG, "buscarPorId: erro id=" + id, e);
+            return null;
+        } finally {
+            db.close();
+        }
+    }
+
+    /** Versão interna: usa db já aberto, NÃO fecha — evita SQLiteClosable error. */
+    private DespensaItem buscarPorIdInterno(SQLiteDatabase db, long id) {
         Cursor cursor = null;
         try {
-            cursor = db.query(
-                    DespensaEntry.TABLE_NAME, null,
-                    DespensaEntry._ID + " = ?",
-                    new String[]{ String.valueOf(id) },
-                    null, null, null, "1"
-            );
-            if (cursor.moveToFirst()) {
-                return fromCursor(cursor);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "buscarPorId: erro ao buscar id=" + id, e);
+            cursor = db.query(DespensaEntry.TABLE_NAME, null,
+                    DespensaEntry._ID + " = ?", new String[]{ String.valueOf(id) },
+                    null, null, null, "1");
+            if (cursor.moveToFirst()) return fromCursor(cursor);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return null;
     }
 
-    // =========================================================================
-    // LISTAR ATIVOS (filtrado por usuário)
-    // =========================================================================
+    // ── LISTAR ATIVOS ─────────────────────────────────────────────────────────
 
     public List<DespensaItem> listarAtivos(String userId) {
         List<DespensaItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            cursor = db.query(
-                    DespensaEntry.TABLE_NAME, null,
-                    DespensaEntry.COLUMN_STATUS  + " = ? AND "
-                            + DespensaEntry.COLUMN_USER_ID + " = ?",
+            cursor = db.query(DespensaEntry.TABLE_NAME, null,
+                    DespensaEntry.COLUMN_STATUS + " = ? AND " + DespensaEntry.COLUMN_USER_ID + " = ?",
                     new String[]{ Constants.STATUS_ATIVO, userId },
-                    null, null,
-                    DespensaEntry.COLUMN_DATA_VALIDADE + " ASC"
-            );
+                    null, null, DespensaEntry.COLUMN_DATA_VALIDADE + " ASC");
             while (cursor.moveToNext()) lista.add(fromCursor(cursor));
-            Log.d(TAG, "listarAtivos: " + lista.size() + " item(ns) para userId=" + userId);
         } catch (Exception e) {
             Log.e(TAG, "listarAtivos: erro", e);
         } finally {
@@ -109,22 +88,16 @@ public class DespensaRepository {
         return lista;
     }
 
-    // =========================================================================
-    // LISTAR TODOS (filtrado por usuário)
-    // =========================================================================
+    // ── LISTAR TODOS ──────────────────────────────────────────────────────────
 
     public List<DespensaItem> listarTodos(String userId) {
         List<DespensaItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            cursor = db.query(
-                    DespensaEntry.TABLE_NAME, null,
-                    DespensaEntry.COLUMN_USER_ID + " = ?",
-                    new String[]{ userId },
-                    null, null,
-                    DespensaEntry.COLUMN_DATA_VALIDADE + " ASC"
-            );
+            cursor = db.query(DespensaEntry.TABLE_NAME, null,
+                    DespensaEntry.COLUMN_USER_ID + " = ?", new String[]{ userId },
+                    null, null, DespensaEntry.COLUMN_DATA_VALIDADE + " ASC");
             while (cursor.moveToNext()) lista.add(fromCursor(cursor));
         } catch (Exception e) {
             Log.e(TAG, "listarTodos: erro", e);
@@ -135,9 +108,7 @@ public class DespensaRepository {
         return lista;
     }
 
-    // =========================================================================
-    // LISTAR PRÓXIMOS DO VENCIMENTO (filtrado por usuário)
-    // =========================================================================
+    // ── LISTAR PRÓXIMOS DO VENCIMENTO ─────────────────────────────────────────
 
     public List<DespensaItem> listarProximosVencimento(int dias, String userId) {
         List<DespensaItem> lista = new ArrayList<>();
@@ -146,19 +117,13 @@ public class DespensaRepository {
         try {
             String hoje   = DateUtils.hoje();
             String limite = DateUtils.hojeAdicionarDias(dias);
-
-            cursor = db.query(
-                    DespensaEntry.TABLE_NAME, null,
-                    DespensaEntry.COLUMN_STATUS        + " = ? AND "
+            cursor = db.query(DespensaEntry.TABLE_NAME, null,
+                    DespensaEntry.COLUMN_STATUS + " = ? AND "
                             + DespensaEntry.COLUMN_DATA_VALIDADE + " BETWEEN ? AND ? AND "
-                            + DespensaEntry.COLUMN_USER_ID       + " = ?",
+                            + DespensaEntry.COLUMN_USER_ID + " = ?",
                     new String[]{ Constants.STATUS_ATIVO, hoje, limite, userId },
-                    null, null,
-                    DespensaEntry.COLUMN_DATA_VALIDADE + " ASC"
-            );
+                    null, null, DespensaEntry.COLUMN_DATA_VALIDADE + " ASC");
             while (cursor.moveToNext()) lista.add(fromCursor(cursor));
-            Log.d(TAG, "listarProximosVencimento(" + dias + "d): "
-                    + lista.size() + " item(ns) para userId=" + userId);
         } catch (Exception e) {
             Log.e(TAG, "listarProximosVencimento: erro", e);
         } finally {
@@ -168,55 +133,48 @@ public class DespensaRepository {
         return lista;
     }
 
-    // =========================================================================
-    // ATUALIZAR
-    // =========================================================================
+    // ── ATUALIZAR ─────────────────────────────────────────────────────────────
 
     public int atualizar(DespensaItem item) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int linhasAfetadas = 0;
+        int linhas = 0;
         try {
-            // Mantém o user_id existente — busca antes para preservar
-            DespensaItem existente = buscarPorId(item.getId());
+            // buscarPorIdInterno não fecha o db — evita o bug de "closed object"
+            DespensaItem existente = buscarPorIdInterno(db, item.getId());
             String userId = existente != null ? existente.getUserId() : null;
 
-            ContentValues values = toContentValues(item, userId);
-            linhasAfetadas = db.update(DespensaEntry.TABLE_NAME, values,
-                    DespensaEntry._ID + " = ?",
-                    new String[]{ String.valueOf(item.getId()) });
+            linhas = db.update(DespensaEntry.TABLE_NAME, toContentValues(item, userId),
+                    DespensaEntry._ID + " = ?", new String[]{ String.valueOf(item.getId()) });
+            Log.d(TAG, "atualizar: id=" + item.getId() + " → " + linhas + " linha(s)");
         } catch (Exception e) {
             Log.e(TAG, "atualizar: erro id=" + item.getId(), e);
         } finally {
             db.close();
         }
-        return linhasAfetadas;
+        return linhas;
     }
 
-    // =========================================================================
-    // MOVER PARA HISTÓRICO
-    // =========================================================================
+    // ── MOVER PARA HISTÓRICO ──────────────────────────────────────────────────
 
     public boolean moverParaHistorico(long idItem, String nomeItem, String motivo, String userId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.beginTransaction();
         try {
-            ContentValues histValues = new ContentValues();
-            histValues.put(HistoricoEntry.COLUMN_ID_ITEM,     idItem);
-            histValues.put(HistoricoEntry.COLUMN_DATA_ACAO,   DateUtils.hoje());
-            histValues.put(HistoricoEntry.COLUMN_MOTIVO,      motivo);
-            histValues.put(HistoricoEntry.COLUMN_NOME_CACHED, nomeItem);
-            histValues.put(HistoricoEntry.COLUMN_USER_ID,     userId);
-            long idHist = db.insert(HistoricoEntry.TABLE_NAME, null, histValues);
+            db.beginTransaction();
 
-            if (idHist == -1) return false;
+            ContentValues status = new ContentValues();
+            status.put(DespensaEntry.COLUMN_STATUS, motivo);
+            db.update(DespensaEntry.TABLE_NAME, status,
+                    DespensaEntry._ID + " = ?", new String[]{ String.valueOf(idItem) });
 
-            int deletados = db.delete(DespensaEntry.TABLE_NAME,
-                    DespensaEntry._ID + " = ?",
-                    new String[]{ String.valueOf(idItem) });
-            if (deletados == 0) return false;
+            ContentValues hist = new ContentValues();
+            hist.put(HistoricoEntry.COLUMN_ID_ITEM,     idItem);
+            hist.put(HistoricoEntry.COLUMN_NOME_CACHED, nomeItem);
+            hist.put(HistoricoEntry.COLUMN_MOTIVO,      motivo);
+            hist.put(HistoricoEntry.COLUMN_USER_ID,     userId);
+            hist.put(HistoricoEntry.COLUMN_DATA_ACAO,   DateUtils.hoje());
+            db.insertOrThrow(HistoricoEntry.TABLE_NAME, null, hist);
 
             db.setTransactionSuccessful();
-            Log.d(TAG, "moverParaHistorico: item '" + nomeItem + "' → " + motivo);
             return true;
         } catch (Exception e) {
             Log.e(TAG, "moverParaHistorico: erro", e);
@@ -227,53 +185,47 @@ public class DespensaRepository {
         }
     }
 
-    // =========================================================================
-    // DELETAR
-    // =========================================================================
+    // ── DELETAR ───────────────────────────────────────────────────────────────
 
-    public int deletar(long idItem) {
+    public boolean deletar(long id) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int deletados = 0;
         try {
-            deletados = db.delete(DespensaEntry.TABLE_NAME,
-                    DespensaEntry._ID + " = ?",
-                    new String[]{ String.valueOf(idItem) });
+            return db.delete(DespensaEntry.TABLE_NAME,
+                    DespensaEntry._ID + " = ?", new String[]{ String.valueOf(id) }) > 0;
         } catch (Exception e) {
-            Log.e(TAG, "deletar: erro id=" + idItem, e);
+            Log.e(TAG, "deletar: erro id=" + id, e);
+            return false;
         } finally {
             db.close();
         }
-        return deletados;
     }
 
-    // =========================================================================
-    // HELPERS PRIVADOS
-    // =========================================================================
-
-    private ContentValues toContentValues(DespensaItem item, String userId) {
-        ContentValues cv = new ContentValues();
-        cv.put(DespensaEntry.COLUMN_NOME,          item.getNome());
-        cv.put(DespensaEntry.COLUMN_QUANTIDADE,    item.getQuantidade());
-        cv.put(DespensaEntry.COLUMN_UNIDADE,       item.getUnidadeMedida());
-        cv.put(DespensaEntry.COLUMN_DATA_VALIDADE, item.getDataValidade());
-        cv.put(DespensaEntry.COLUMN_STATUS,        item.getStatus());
-        cv.put(DespensaEntry.COLUMN_USER_ID,       userId);
-        return cv;
-    }
+    // ── HELPERS ───────────────────────────────────────────────────────────────
 
     private DespensaItem fromCursor(Cursor cursor) {
         DespensaItem item = new DespensaItem();
-        item.setId(            cursor.getLong(  cursor.getColumnIndexOrThrow(DespensaEntry._ID)));
-        item.setNome(          cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_NOME)));
-        item.setQuantidade(    cursor.getDouble(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_QUANTIDADE)));
-        item.setUnidadeMedida( cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_UNIDADE)));
-        item.setDataValidade(  cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_DATA_VALIDADE)));
-        item.setStatus(        cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_STATUS)));
-
-        int userIdCol = cursor.getColumnIndex(DespensaEntry.COLUMN_USER_ID);
-        if (userIdCol >= 0 && !cursor.isNull(userIdCol)) {
-            item.setUserId(cursor.getString(userIdCol));
-        }
+        item.setId(           cursor.getLong(  cursor.getColumnIndexOrThrow(DespensaEntry._ID)));
+        item.setNome(         cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_NOME)));
+        item.setQuantidade(   cursor.getDouble(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_QUANTIDADE)));
+        item.setUnidadeMedida(cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_UNIDADE)));
+        item.setDataValidade( cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_DATA_VALIDADE)));
+        item.setStatus(       cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_STATUS)));
+        item.setUserId(       cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_USER_ID)));
+        // Sprint 6: lê categoria do banco
+        int colCat = cursor.getColumnIndex(DespensaEntry.COLUMN_CATEGORIA);
+        if (colCat >= 0) item.setCategoria(cursor.getString(colCat));
         return item;
+    }
+
+    private ContentValues toContentValues(DespensaItem item, String userId) {
+        ContentValues v = new ContentValues();
+        v.put(DespensaEntry.COLUMN_NOME,          item.getNome());
+        v.put(DespensaEntry.COLUMN_QUANTIDADE,    item.getQuantidade());
+        v.put(DespensaEntry.COLUMN_UNIDADE,       item.getUnidadeMedida());
+        v.put(DespensaEntry.COLUMN_DATA_VALIDADE, item.getDataValidade());
+        v.put(DespensaEntry.COLUMN_STATUS,        item.getStatus() != null ? item.getStatus() : Constants.STATUS_ATIVO);
+        v.put(DespensaEntry.COLUMN_CATEGORIA,     item.getCategoria());   // Sprint 6
+        if (userId != null) v.put(DespensaEntry.COLUMN_USER_ID, userId);
+        return v;
     }
 }
