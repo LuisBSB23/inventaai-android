@@ -16,13 +16,6 @@ import com.example.inventaai.util.DateUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Encapsula todas as operações CRUD para a tabela despensa_itens.
- * A camada de UI nunca acessa o SQLiteDatabase diretamente.
- *
- * Sprint 1: todos os métodos de leitura/escrita agora filtram por user_id,
- * garantindo isolamento total entre perfis distintos.
- */
 public class DespensaRepository {
 
     private static final String TAG = Constants.LOG_TAG;
@@ -92,10 +85,6 @@ public class DespensaRepository {
     // LISTAR ATIVOS (filtrado por usuário)
     // =========================================================================
 
-    /**
-     * Retorna todos os itens ATIVOS do usuário informado,
-     * ordenados por data de validade (mais próximo primeiro).
-     */
     public List<DespensaItem> listarAtivos(String userId) {
         List<DespensaItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();

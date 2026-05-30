@@ -20,16 +20,6 @@ import com.example.inventaai.util.DateUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * HistoricoAdapter — adapter do RecyclerView da tela de Histórico.
- *
- * Sprint 3: exibe nome real do item (campo nomeCached), ícones
- * diferenciados por motivo e linha de timeline correta.
- *
- * Sprint 2: adicionado ícone de categoria (ivCategoryIcon) como elemento
- * secundário dentro do card, para facilitar identificação visual do item.
- * O ícone de ação principal (consumido/descartado) permanece na timeline.
- */
 public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.HistoricoViewHolder> {
 
     private final List<HistoricoItem> items;

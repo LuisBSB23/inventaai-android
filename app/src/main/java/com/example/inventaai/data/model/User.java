@@ -2,10 +2,6 @@ package com.example.inventaai.data.model;
 
 import java.io.Serializable;
 
-/**
- * POJO que representa um perfil de usuário local do InventaAí.
- * Sprint 1: suporte a múltiplos perfis com autenticação por senha (SHA-256).
- */
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;

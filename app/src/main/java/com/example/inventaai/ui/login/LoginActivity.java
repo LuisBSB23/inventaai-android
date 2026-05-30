@@ -17,13 +17,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-/**
- * LoginActivity — ponto de entrada do app para usuários já cadastrados.
- *
- * Sprint 1:
- * - Verifica sessão ativa no onStart() e redireciona direto ao Dashboard.
- * - Salva user_id no SharedPreferences após login bem-sucedido.
- */
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputLayout    tilNome, tilSenha;

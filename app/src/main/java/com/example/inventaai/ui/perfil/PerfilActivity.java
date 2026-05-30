@@ -31,14 +31,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-/**
- * PerfilActivity — visualização e edição do perfil do usuário logado.
- *
- * Sprint 1: alterar nome, trocar senha, atualizar avatar, logout.
- * Sprint 3: carregamento do avatar via GlideHelper.loadCircularImage().
- * Sprint 4: exibe inicial do nome quando não há foto (tvPerfilIniciais),
- *           ícone de + no badge de edição de foto.
- */
 public class PerfilActivity extends AppCompatActivity {
 
     private ImageView         ivAvatar;

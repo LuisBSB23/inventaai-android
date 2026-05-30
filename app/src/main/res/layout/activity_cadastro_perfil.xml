@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    activity_cadastro_perfil.xml
-    Tela de criação de novo perfil — Design: Culinary Vitality
--->
+
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground"
+    android:background="?attr/colorSurface"
     android:fillViewport="true">
 
     <LinearLayout
@@ -18,53 +15,63 @@
         android:paddingHorizontal="32dp"
         android:gravity="center_horizontal">
 
-        <!-- Espaço superior -->
         <Space android:layout_width="match_parent" android:layout_height="48dp" />
 
-        <!-- Botão Voltar -->
+        <!-- ===== BOTÃO VOLTAR — ícone ic_back_arrow (igual às outras telas) ===== -->
         <ImageButton
             android:id="@+id/btnCadastroVoltar"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="start"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_nav_pantry"
-            android:tint="@color/colorOnSurface"
+            android:src="@drawable/ic_back_arrow"
+            android:tint="?attr/colorOnSurface"
             android:contentDescription="@string/back"
             android:layout_marginBottom="24dp" />
 
-        <!-- Avatar placeholder (toque para selecionar foto) -->
+        <!--===== AVATAR — mesmo padrão do activity_perfil.xml ===== -->
         <FrameLayout
             android:id="@+id/frameAvatar"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginBottom="8dp"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
             android:clickable="true"
             android:focusable="true"
-            android:background="@drawable/bg_circle_surface">
+            android:background="@drawable/bg_circle_primary_container"
+            android:layout_marginBottom="8dp">
 
+            <!-- Foto quando disponível -->
             <ImageView
                 android:id="@+id/ivCadastroAvatar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_nav_pantry"
-                android:tint="@color/colorPrimary"
+                android:visibility="gone"
                 android:contentDescription="Foto de perfil" />
 
-            <!-- Ícone de câmera sobreposto -->
+            <!-- Inicial/letra quando sem foto -->
+            <TextView
+                android:id="@+id/tvCadastroIniciais"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:fontFamily="@font/inter_bold"
+                android:textSize="36sp"
+                android:textColor="?attr/colorPrimary"
+                android:text="?" />
+
+            <!-- Badge de adicionar foto (ícone +) -->
             <FrameLayout
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_gravity="bottom|end"
                 android:background="@drawable/bg_circle_primary_container">
 
                 <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_nav_chef"
-                    android:tint="@color/colorPrimary"
+                    android:src="@drawable/ic_add_photo"
+                    android:tint="?attr/colorPrimary"
                     android:contentDescription="@null" />
             </FrameLayout>
         </FrameLayout>
@@ -75,7 +82,7 @@
             android:text="Toque para adicionar foto (opcional)"
             android:fontFamily="@font/inter_regular"
             android:textSize="12sp"
-            android:textColor="@color/colorOnSurfaceVariant"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginBottom="32dp" />
 
         <!-- Título -->
@@ -85,7 +92,7 @@
             android:text="Criar novo perfil"
             android:fontFamily="@font/inter_extrabold"
             android:textSize="26sp"
-            android:textColor="@color/colorOnSurface"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="8dp" />
 
         <TextView
@@ -94,7 +101,7 @@
             android:text="Personalize sua experiência no InventaAí."
             android:fontFamily="@font/inter_regular"
             android:textSize="14sp"
-            android:textColor="@color/colorOnSurfaceVariant"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginBottom="32dp" />
 
         <!-- Campo: Nome -->
@@ -113,7 +120,7 @@
                 android:inputType="textPersonName"
                 android:imeOptions="actionNext"
                 android:fontFamily="@font/inter_regular"
-                android:textColor="@color/colorOnSurface"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="15sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -134,7 +141,7 @@
                 android:inputType="textPassword"
                 android:imeOptions="actionNext"
                 android:fontFamily="@font/inter_regular"
-                android:textColor="@color/colorOnSurface"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="15sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -155,7 +162,7 @@
                 android:inputType="textPassword"
                 android:imeOptions="actionDone"
                 android:fontFamily="@font/inter_regular"
-                android:textColor="@color/colorOnSurface"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="15sp" />
         </com.google.android.material.textfield.TextInputLayout>
 

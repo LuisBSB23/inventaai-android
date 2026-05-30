@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Fundo circular suave -->
+    <path
+        android:pathData="M60,10 A50,50 0 1,1 59.99,10 Z"
+        android:fillColor="#1A944A00" />
+
+    <!-- Linha pontilhada da timeline — segmentos separados -->
+    <path android:pathData="M60,22 L60,30"
+        android:strokeWidth="2.5" android:strokeColor="#944A00" android:strokeAlpha="0.3"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M60,35 L60,43"
+        android:strokeWidth="2.5" android:strokeColor="#944A00" android:strokeAlpha="0.3"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M60,61 L60,69"
+        android:strokeWidth="2.5" android:strokeColor="#944A00" android:strokeAlpha="0.3"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M60,74 L60,82"
+        android:strokeWidth="2.5" android:strokeColor="#944A00" android:strokeAlpha="0.3"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M60,87 L60,95"
+        android:strokeWidth="2.5" android:strokeColor="#944A00" android:strokeAlpha="0.3"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+
+    <!-- Ponto timeline topo -->
+    <path
+        android:pathData="M60,22 A4,4 0 1,1 59.99,22 Z"
+        android:fillColor="#944A00"
+        android:fillAlpha="0.3" />
+
+    <!-- Ponto timeline fundo -->
+    <path
+        android:pathData="M60,96 A4,4 0 1,1 59.99,96 Z"
+        android:fillColor="#944A00"
+        android:fillAlpha="0.3" />
+
+    <!-- Relógio — fundo branco -->
+    <path
+        android:pathData="M60,44 A16,16 0 1,1 59.99,44 Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.9" />
+
+    <!-- Relógio — borda -->
+    <path
+        android:pathData="M60,44 A16,16 0 1,1 59.99,44 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#944A00"
+        android:strokeAlpha="0.55"
+        android:fillColor="#00000000" />
+
+    <!-- Ponteiro de hora -->
+    <path
+        android:pathData="M60,44 L60,37"
+        android:strokeWidth="2"
+        android:strokeColor="#944A00"
+        android:strokeAlpha="0.7"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Ponteiro de minuto -->
+    <path
+        android:pathData="M60,44 L65,47"
+        android:strokeWidth="2"
+        android:strokeColor="#944A00"
+        android:strokeAlpha="0.7"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Centro do relógio -->
+    <path
+        android:pathData="M60,44 A2,2 0 1,1 59.99,44 Z"
+        android:fillColor="#944A00"
+        android:fillAlpha="0.7" />
+
+    <!-- Marcadores de hora (12, 3, 6, 9) -->
+    <path android:pathData="M60,30 L60,33"
+        android:strokeWidth="1.5" android:strokeColor="#944A00" android:strokeAlpha="0.4"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M74,44 L71,44"
+        android:strokeWidth="1.5" android:strokeColor="#944A00" android:strokeAlpha="0.4"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M60,58 L60,55"
+        android:strokeWidth="1.5" android:strokeColor="#944A00" android:strokeAlpha="0.4"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M46,44 L49,44"
+        android:strokeWidth="1.5" android:strokeColor="#944A00" android:strokeAlpha="0.4"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+
+    <!-- Linhas laterais "sem registros" -->
+    <path android:pathData="M72,38 L88,38"
+        android:strokeWidth="2" android:strokeColor="#944A00" android:strokeAlpha="0.2"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M72,44 L90,44"
+        android:strokeWidth="2" android:strokeColor="#944A00" android:strokeAlpha="0.15"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M72,50 L85,50"
+        android:strokeWidth="2" android:strokeColor="#944A00" android:strokeAlpha="0.1"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+
+</vector>

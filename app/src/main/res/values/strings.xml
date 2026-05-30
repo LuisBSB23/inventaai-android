@@ -86,4 +86,12 @@
     <string name="cd_profile">Perfil do usuário</string>
     <string name="cd_food_icon">Ícone do alimento</string>
     <string name="cd_action_icon">Ícone da ação</string>
+
+    <!-- Sprint 5: Empty States -->
+    <string name="empty_pantry_title">Despensa vazia</string>
+    <string name="empty_pantry_message">Adicione itens para começar a gerenciar sua despensa!</string>
+    <string name="empty_history_title">Nenhuma atividade ainda</string>
+    <string name="empty_history_message">Quando você consumir ou descartar itens, eles aparecerão aqui.</string>
+    <string name="empty_recipe_title">Despensa sem ingredientes</string>
+    <string name="empty_recipe_message">Adicione pelo menos um item à sua despensa para gerar uma receita com IA.</string>
 </resources>

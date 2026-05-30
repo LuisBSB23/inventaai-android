@@ -20,12 +20,6 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Calendar;
 
-/**
- * CadastroActivity — formulário para adicionar um novo item à despensa.
- *
- * Sprint 3: persistência real via DespensaRepository, finish() ao salvar
- * para que o Dashboard atualize via onResume().
- */
 public class CadastroActivity extends AppCompatActivity {
 
     // Views

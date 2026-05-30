@@ -17,16 +17,6 @@ import com.example.inventaai.util.DateUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 
-/**
- * DetalhesActivity — detalhes e edição de um item da despensa.
- *
- * Sprint 3: recebe o DespensaItem serializado via Intent (EXTRA_ITEM),
- * permite editar a quantidade com o stepper e persiste via repositório.
- * O botão "Remover" abre AlertDialog para escolher entre Consumido e Descartado.
- *
- * Sprint 2: chipCategoria exibe o ícone da categoria via CategoryIconHelper.
- *           ivItemImage também exibe o ícone da categoria em destaque no centro.
- */
 public class DetalhesActivity extends AppCompatActivity {
 
     /** Chave para passar o DespensaItem serializado via Intent */

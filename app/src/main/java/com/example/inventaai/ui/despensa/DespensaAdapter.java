@@ -20,18 +20,6 @@ import com.example.inventaai.util.DateUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DespensaAdapter — adapter do RecyclerView da tela principal (Dashboard).
- *
- * Cada card exibe: nome, quantidade+unidade, badge de dias restantes,
- * barra de frescor com cor dinâmica e ícone da categoria do alimento.
- *
- * Sprint 2: adicionado ícone de categoria via CategoryIconHelper no ivItemIcon.
- *
- * Uso:
- *   DespensaAdapter adapter = new DespensaAdapter(itens, item -> abrirDetalhes(item));
- *   recyclerView.setAdapter(adapter);
- */
 public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.DespensaViewHolder> {
 
     // Interface de callback — Activity implementa para receber o clique
@@ -51,10 +39,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     // ATUALIZAR LISTA
     // =========================================================================
 
-    /**
-     * Substitui os dados do adapter e notifica o RecyclerView.
-     * Chamado pelo Dashboard a cada onResume().
-     */
     public void atualizarLista(List<DespensaItem> novaLista) {
         items.clear();
         if (novaLista != null) {

@@ -2,20 +2,6 @@ package com.example.inventaai.util;
 
 import com.example.inventaai.R;
 
-/**
- * CategoryIconHelper — mapeamento centralizado de categoria → ícone drawable.
- *
- * Sprint 2: fornece um ponto único para obter o ícone de categoria correto,
- * evitando switch/if repetidos em Adapters e Activities.
- *
- * Uso:
- *   int iconRes = CategoryIconHelper.getIcon(item.getCategoria());
- *   imageView.setImageResource(iconRes);
- *
- * As strings de categoria devem ser exatamente as definidas em res/values/strings.xml
- * (array "categories") — ex.: "Hortifruti", "Laticínios", "Grãos e Cereais".
- * Qualquer valor não reconhecido retorna o ícone genérico ic_cat_outros.
- */
 public final class CategoryIconHelper {
 
     private CategoryIconHelper() {}

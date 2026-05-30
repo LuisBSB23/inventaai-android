@@ -1,18 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
-    <!--
-        Dark mode: por ora herda o tema claro.
-        Substituir com tokens escuros na Sprint 3 se necessário.
-    -->
-    <style name="Theme.InventaAi" parent="Theme.Material3.Light.NoActionBar">
-        <item name="android:colorBackground">@color/colorBackground</item>
-        <item name="android:windowBackground">@color/colorBackground</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorSecondary">@color/colorSecondary</item>
-        <item name="colorTertiary">@color/colorTertiary</item>
-        <item name="colorSurface">@color/colorSurface</item>
-        <item name="colorOnSurface">@color/colorOnSurface</item>
-        <item name="android:statusBarColor">@color/colorSurface</item>
-        <item name="android:windowLightStatusBar">true</item>
+
+    <!-- ===== Tema Base — Culinary Vitality (Dark) ===== -->
+    <style name="Theme.InventaAi" parent="Theme.Material3.Dark.NoActionBar">
+
+        <!-- Cores primárias -->
+        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <item name="colorOnPrimary">@color/colorOnPrimaryDark</item>
+        <item name="colorPrimaryContainer">@color/colorPrimaryContainerDark</item>
+        <item name="colorOnPrimaryContainer">@color/colorOnPrimaryContainerDark</item>
+
+        <!-- Cores secundárias -->
+        <item name="colorSecondary">@color/colorSecondaryDark</item>
+        <item name="colorOnSecondary">@color/colorOnSecondaryDark</item>
+        <item name="colorSecondaryContainer">@color/colorSecondaryContainerDark</item>
+        <item name="colorOnSecondaryContainer">@color/colorOnSecondaryContainerDark</item>
+
+        <!-- Cores terciárias -->
+        <item name="colorTertiary">@color/colorTertiaryDark</item>
+        <item name="colorOnTertiary">@color/colorOnTertiaryDark</item>
+        <item name="colorTertiaryContainer">@color/colorTertiaryContainerDark</item>
+        <item name="colorOnTertiaryContainer">@color/colorOnTertiaryContainerDark</item>
+
+        <!-- Erro -->
+        <item name="colorError">@color/colorErrorDark</item>
+        <item name="colorOnError">@color/colorOnErrorDark</item>
+        <item name="colorErrorContainer">@color/colorErrorContainerDark</item>
+        <item name="colorOnErrorContainer">@color/colorOnErrorContainerDark</item>
+
+        <!-- Background e superfícies -->
+        <item name="android:colorBackground">@color/colorBackgroundDark</item>
+        <item name="android:windowBackground">@color/colorBackgroundDark</item>
+        <item name="colorSurface">@color/colorSurfaceDark</item>
+        <item name="colorOnSurface">@color/colorOnSurfaceDark</item>
+        <item name="colorSurfaceVariant">@color/colorSurfaceVariantDark</item>
+        <item name="colorOnSurfaceVariant">@color/colorOnSurfaceVariantDark</item>
+
+        <!-- Contorno -->
+        <item name="colorOutline">@color/colorOutlineDark</item>
+        <item name="colorOutlineVariant">@color/colorOutlineVariantDark</item>
+
+        <!-- BottomNav: mantém o estilo customizado -->
+        <item name="bottomNavigationStyle">@style/Widget.InventaAi.BottomNav.Style</item>
+
+        <!-- Status bar escura no dark mode -->
+        <item name="android:statusBarColor">@color/colorSurfaceDark</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Tipografia: Inter -->
+        <item name="android:fontFamily">@font/inter_regular</item>
     </style>
+
+    <!-- TextInputLayout adaptado para dark mode -->
+    <style name="Widget.InventaAi.TextInputLayout.Pill.Dark"
+        parent="Widget.InventaAi.TextInputLayout.Pill">
+        <item name="boxBackgroundColor">@color/colorSurfaceContainerLowestDark</item>
+        <item name="boxStrokeColor">@color/colorOutlineVariantDark</item>
+        <item name="hintTextColor">@color/colorOnSurfaceVariantDark</item>
+        <item name="android:textColorHint">@color/colorOnSurfaceVariantDark</item>
+    </style>
+
 </resources>

@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    ic_cat_bebidas.xml
-    Ícone de categoria: Bebidas — copo com canudo estilizado.
-    Cor primária do design system: #006D36
--->
+
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

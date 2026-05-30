@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tela de perfil do usuário — Sprint 1 -->
+
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground"
+    android:background="?attr/colorSurface"
     android:fillViewport="true">
 
     <LinearLayout
@@ -25,7 +25,7 @@
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_back_arrow"
-                android:tint="@color/colorOnSurface"
+                android:tint="?attr/colorOnSurface"
                 android:contentDescription="@string/back"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -37,7 +37,7 @@
                 android:text="Meu Perfil"
                 android:fontFamily="@font/inter_semibold"
                 android:textSize="20sp"
-                android:textColor="@color/colorOnSurface"
+                android:textColor="?attr/colorOnSurface"
                 app:layout_constraintStart_toEndOf="@id/btnPerfilVoltar"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -78,21 +78,22 @@
                     android:gravity="center"
                     android:fontFamily="@font/inter_bold"
                     android:textSize="36sp"
-                    android:textColor="@color/colorPrimary"
+                    android:textColor="?attr/colorPrimary"
                     android:visibility="visible" />
 
-                <!-- Badge de adicionar foto (ícone +) -->
+                <!-- Badge de adicionar foto -->
                 <FrameLayout
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="bottom|end"
                     android:background="@drawable/bg_circle_primary_container">
+
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_add_photo"
-                        android:tint="@color/colorPrimary"
+                        android:tint="?attr/colorPrimary"
                         android:contentDescription="@null" />
                 </FrameLayout>
             </FrameLayout>
@@ -103,17 +104,17 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_bold"
                 android:textSize="22sp"
-                android:textColor="@color/colorOnSurface"
+                android:textColor="?attr/colorOnSurface"
                 android:text="Nome do Usuário" />
 
-            <!-- ID copiável (clique longo) -->
+            <!-- ID copiável -->
             <TextView
                 android:id="@+id/tvPerfilId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_regular"
                 android:textSize="12sp"
-                android:textColor="@color/colorOnSurfaceVariant"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:text="ID: xxxxxxxx"
                 android:longClickable="true"
                 android:padding="8dp" />
@@ -140,7 +141,7 @@
                     android:textSize="11sp"
                     android:letterSpacing="0.05"
                     android:textAllCaps="true"
-                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginBottom="12dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -190,7 +191,7 @@
                     android:textSize="11sp"
                     android:letterSpacing="0.05"
                     android:textAllCaps="true"
-                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginBottom="12dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -201,6 +202,7 @@
                     android:hint="Senha atual"
                     app:endIconMode="password_toggle"
                     android:layout_marginBottom="12dp">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etSenhaAtual"
                         android:layout_width="match_parent"
@@ -218,6 +220,7 @@
                     android:hint="Nova senha"
                     app:endIconMode="password_toggle"
                     android:layout_marginBottom="12dp">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etNovaSenha"
                         android:layout_width="match_parent"

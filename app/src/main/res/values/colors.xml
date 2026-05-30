@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
 
-    <!-- ===== Culinary Vitality — Paleta Completa ===== -->
+    <!-- ===== Culinary Vitality — Paleta Completa (Light) ===== -->
 
     <!-- Primária (Fresh Mint Green) -->
     <color name="colorPrimary">#006D36</color>
@@ -40,7 +41,7 @@
     <color name="colorErrorContainer">#FFDAD6</color>
     <color name="colorOnErrorContainer">#93000A</color>
 
-    <!-- Superfícies / Background -->
+    <!-- Superfícies / Background (Light) -->
     <color name="colorBackground">#F7F9FB</color>
     <color name="colorOnBackground">#191C1E</color>
     <color name="colorSurface">#F7F9FB</color>
@@ -58,8 +59,54 @@
     <color name="colorSurfaceContainerHigh">#E6E8EA</color>
     <color name="colorSurfaceContainerHighest">#E0E3E5</color>
 
-    <!-- Contorno -->
+    <!-- Contorno (Light) -->
     <color name="colorOutline">#6D7B6D</color>
     <color name="colorOutlineVariant">#BCCABB</color>
+
+    <!-- Primária Dark — verde mais vibrante para contraste sobre fundo escuro -->
+    <color name="colorPrimaryDark">#4DE082</color>
+    <color name="colorOnPrimaryDark">#00391A</color>
+    <color name="colorPrimaryContainerDark">#005227</color>
+    <color name="colorOnPrimaryContainerDark">#6DFE9C</color>
+
+    <!-- Secundária Dark -->
+    <color name="colorSecondaryDark">#FFB783</color>
+    <color name="colorOnSecondaryDark">#4F1C00</color>
+    <color name="colorSecondaryContainerDark">#713700</color>
+    <color name="colorOnSecondaryContainerDark">#FFDCC5</color>
+
+    <!-- Terciária Dark -->
+    <color name="colorTertiaryDark">#FFB3B0</color>
+    <color name="colorOnTertiaryDark">#68000A</color>
+    <color name="colorTertiaryContainerDark">#881D24</color>
+    <color name="colorOnTertiaryContainerDark">#FFDAD8</color>
+
+    <!-- Erro Dark -->
+    <color name="colorErrorDark">#FFB4AB</color>
+    <color name="colorOnErrorDark">#690005</color>
+    <color name="colorErrorContainerDark">#93000A</color>
+    <color name="colorOnErrorContainerDark">#FFDAD6</color>
+
+    <!-- Background / Surface Dark — preto azulado Material 3 -->
+    <color name="colorBackgroundDark">#0F1410</color>
+    <color name="colorOnBackgroundDark">#DEE4DD</color>
+    <color name="colorSurfaceDark">#0F1410</color>
+    <color name="colorOnSurfaceDark">#DEE4DD</color>
+    <color name="colorSurfaceVariantDark">#3D4A3E</color>
+    <color name="colorOnSurfaceVariantDark">#BCCABB</color>
+    <color name="colorInverseSurfaceDark">#DEE4DD</color>
+    <color name="colorInverseOnSurfaceDark">#2D3433</color>
+    <color name="colorSurfaceTintDark">#4DE082</color>
+    <color name="colorSurfaceDimDark">#0F1410</color>
+    <color name="colorSurfaceBrightDark">#343B34</color>
+    <color name="colorSurfaceContainerLowestDark">#090E0A</color>
+    <color name="colorSurfaceContainerLowDark">#171D18</color>
+    <color name="colorSurfaceContainerDark">#1B221C</color>
+    <color name="colorSurfaceContainerHighDark">#262D26</color>
+    <color name="colorSurfaceContainerHighestDark">#313831</color>
+
+    <!-- Contorno Dark -->
+    <color name="colorOutlineDark">#879487</color>
+    <color name="colorOutlineVariantDark">#3D4A3E</color>
 
 </resources>

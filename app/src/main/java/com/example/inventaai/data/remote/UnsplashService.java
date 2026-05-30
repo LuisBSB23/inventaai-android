@@ -16,21 +16,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-/**
- * UnsplashService — encapsula toda a comunicação com a Unsplash API.
- *
- * Uso:
- *   UnsplashService service = new UnsplashService();
- *   service.buscarImagemReceita("Omelete de Espinafre", new UnsplashService.ImageCallback() {
- *       public void onSucesso(String imageUrl) { ... }
- *       public void onErro(String mensagem)    { ... }
- *   });
- *
- * O callback é chamado na thread do Retrofit (fundo).
- * Use runOnUiThread() na Activity para atualizar o ImageView.
- *
- * Sprint 3: integração com Glide na ChefIAActivity.
- */
 public class UnsplashService {
 
     // -------------------------------------------------------------------------

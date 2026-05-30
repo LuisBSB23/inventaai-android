@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Fundo circular suave -->
+    <path
+        android:pathData="M60,10 A50,50 0 1,1 59.99,10 Z"
+        android:fillColor="#1A3D4A3E" />
+
+    <!-- Prato — elipse preenchida -->
+    <path
+        android:pathData="M28,72 Q28,88 60,88 Q92,88 92,72 Q92,56 60,56 Q28,56 28,72 Z"
+        android:fillColor="#3D4A3E"
+        android:fillAlpha="0.12" />
+
+    <!-- Prato — borda superior -->
+    <path
+        android:pathData="M28,72 Q28,58 60,58 Q92,58 92,72"
+        android:strokeWidth="2.5"
+        android:strokeColor="#3D4A3E"
+        android:strokeAlpha="0.30"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Borda externa do prato -->
+    <path
+        android:pathData="M22,70 Q22,92 60,92 Q98,92 98,70 Q98,68 96,68 Q94,68 94,70 Q94,88 60,88 Q26,88 26,70 Q26,68 24,68 Q22,68 22,70 Z"
+        android:fillColor="#3D4A3E"
+        android:fillAlpha="0.18" />
+
+    <!-- Cabo da lupa -->
+    <path
+        android:pathData="M72,54 L88,38"
+        android:strokeWidth="4"
+        android:strokeColor="#3D4A3E"
+        android:strokeAlpha="0.45"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Lupa — anel -->
+    <path
+        android:pathData="M56,58 A18,18 0 1,1 55.99,58 Z"
+        android:strokeWidth="4"
+        android:strokeColor="#3D4A3E"
+        android:strokeAlpha="0.45"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7" />
+
+    <!-- X dentro da lupa — traço 1 -->
+    <path
+        android:pathData="M50,34 L62,46"
+        android:strokeWidth="2.5"
+        android:strokeColor="#3D4A3E"
+        android:strokeAlpha="0.50"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- X dentro da lupa — traço 2 -->
+    <path
+        android:pathData="M62,34 L50,46"
+        android:strokeWidth="2.5"
+        android:strokeColor="#3D4A3E"
+        android:strokeAlpha="0.50"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+</vector>

@@ -7,18 +7,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.inventaai.R;
 
-/**
- * GlideHelper — utilitário centralizado para carregamento de imagens com Glide.
- *
- * Padroniza o uso do Glide em todo o aplicativo, garantindo:
- *  - Placeholder consistente durante o carregamento
- *  - Transição suave (fade-in)
- *  - Transformações (circular para avatares)
- *  - Fallback em caso de erro
- *
- * Sprint 3: adotado em ChefIAActivity (hero image) e nas telas de avatar
- * (DashboardActivity drawer header, PerfilActivity).
- */
 public final class GlideHelper {
 
     private GlideHelper() {}

@@ -3,10 +3,6 @@ package com.example.inventaai.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-/**
- * Centraliza leitura e escrita da sessão do usuário no SharedPreferences.
- * Sprint 1: salva/recupera o user_id do usuário logado.
- */
 public class SessionManager {
 
     private static final String PREF_NAME       = "InventaAiPrefs";

@@ -24,29 +24,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-/**
- * GeminiService — encapsula toda a comunicação com a API do Gemini (Sprint 4).
- *
- * Uso:
- *   GeminiService service = new GeminiService();
- *   service.gerarReceita(itens, new GeminiService.ReceitaCallback() {
- *       public void onSucesso(ReceitaResponse receita) { ... }
- *       public void onErro(String mensagem)            { ... }
- *   });
- *
- * O callback é sempre chamado na thread de rede do OkHttp.
- * Use runOnUiThread() na Activity para atualizar a UI.
- *
- * CORREÇÕES aplicadas:
- *  1. Log detalhado: o código HTTP real e o body completo da resposta de erro
- *     são exibidos no Logcat, permitindo diagnóstico preciso sem alterar a
- *     mensagem exibida ao usuário final.
- *  2. extrairReceita() defensivo: trata candidates nulo/vazio, finishReason
- *     diferente de STOP, e JSON malformado — cada caso com mensagem distinta
- *     no log, sem lançar exceção genérica que escondia a causa raiz.
- *  3. Detecção de SAFETY block: quando a API bloqueia por filtro de segurança
- *     (HTTP 200 com candidates vazio), o erro é identificado corretamente.
- */
 public class GeminiService {
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -55,10 +32,6 @@ public class GeminiService {
 
     private static final String TAG = Constants.LOG_TAG;
 
-    /**
-     * Endpoint Gemini Flash Latest — sempre aponta para a versão mais recente e estável
-     * do Flash disponível na conta, evitando problemas de quota de modelos específicos.
-     */
     private static final String ENDPOINT =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=";
 
@@ -248,21 +221,6 @@ public class GeminiService {
         return gson.toJson(body);
     }
 
-    /**
-     * Extrai o texto gerado da resposta do Gemini e converte para ReceitaResponse.
-     *
-     * CORREÇÃO: versão defensiva que trata todos os casos de resposta anômala
-     * que antes causavam NullPointerException ou IndexOutOfBoundsException silenciosos,
-     * mascarando a causa real do erro.
-     *
-     * Casos tratados:
-     *  - candidates nulo ou ausente no JSON
-     *  - candidates vazio (SAFETY block ou outro bloqueio — HTTP 200 com 0 resultados)
-     *  - finishReason diferente de "STOP" (ex: MAX_TOKENS, RECITATION, SAFETY)
-     *  - JSON de receita malformado ou incompleto retornado pelo modelo
-     *
-     * @return ReceitaResponse em caso de sucesso, ou null se callback.onErro já foi chamado.
-     */
     private ReceitaResponse extrairReceita(String responseJson, ReceitaCallback callback) {
         try {
             JsonObject root = JsonParser.parseString(responseJson).getAsJsonObject();
@@ -351,11 +309,6 @@ public class GeminiService {
         }
     }
 
-    /**
-     * Tenta extrair a mensagem de erro estruturada do JSON retornado pela API.
-     * Estrutura esperada: { "error": { "code": 429, "message": "...", "status": "..." } }
-     * Retorna null se não conseguir extrair.
-     */
     private String extrairMensagemDeErro(String bodyJson) {
         try {
             JsonObject root = JsonParser.parseString(bodyJson).getAsJsonObject();
@@ -372,12 +325,6 @@ public class GeminiService {
         return null;
     }
 
-    /**
-     * Retorna mensagem amigável para os códigos HTTP mais comuns da API Google.
-     *
-     * NOTA DE DEBUG: para ver o código HTTP real e o body completo do erro,
-     * filtre o Logcat pela tag "InventaAi" e procure as linhas com "══════".
-     */
     private String traduzirErroHttp(int code) {
         switch (code) {
             case 400: return "Requisição inválida enviada à IA. Verifique o Logcat (tag InventaAi) para detalhes.";

@@ -4,14 +4,6 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!--
-        InventaAí Launcher Foreground
-        Zona segura: círculo de raio 33dp centrado em (54,54).
-        Ícone: folha estilizada combinada com um check — representa
-        frescor (despensa) + confirmação (controle de itens).
-        Cor: branco (#FFFFFF) sobre fundo primário #006D36.
-    -->
-
     <!-- Folha (leaf shape) centralizada -->
     <path
         android:fillColor="#FFFFFF"

@@ -16,15 +16,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-/**
- * Gerencia a criação e atualização do banco de dados SQLite do InventaAí.
- *
- * Sprint 1 — versão 4:
- * - Nova tabela USERS (id UUID, nome, senha_hash, avatar_path, created_at).
- * - Coluna user_id adicionada em despensa_itens e historico_consumo.
- * - Migração segura: dados existentes são vinculados a um usuário padrão
- *   criado automaticamente durante o onUpgrade (v3 → v4).
- */
+// Gerencia a criação e atualização do banco de dados SQLite do InventaAí.
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "InventaAi.DB";
@@ -116,13 +109,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /**
-     * Migração v3 → v4:
-     * 1. Cria tabela users.
-     * 2. Adiciona user_id em despensa_itens e historico_consumo.
-     * 3. Se já existirem dados, cria um usuário-padrão e vincula todos os
-     *    registros existentes a ele (evita perda de dados).
-     */
     private void migrarParaV4(SQLiteDatabase db) {
         // 1. Cria tabela users
         db.execSQL(SQL_CREATE_USERS);

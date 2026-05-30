@@ -15,15 +15,6 @@ import com.example.inventaai.util.Constants;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Encapsula as operações de leitura e escrita para a tabela historico_consumo.
- *
- * Sprint 1: todos os métodos de leitura filtram por user_id.
- * Sprint 3: fromCursor() lê o campo nome_cached (denormalizado).
- * Sprint 2: listarTodos() e listarPorPeriodo() fazem LEFT JOIN com despensa_itens
- *           para popular o campo categoria em HistoricoItem, permitindo que
- *           o HistoricoAdapter exiba o ícone de categoria correto.
- */
 public class HistoricoRepository {
 
     private static final String TAG = Constants.LOG_TAG;
@@ -37,14 +28,6 @@ public class HistoricoRepository {
     // LISTAR TODOS (filtrado por usuário)
     // =========================================================================
 
-    /**
-     * Retorna todos os registros do histórico do usuário informado,
-     * do mais recente para o mais antigo.
-     *
-     * Sprint 2: usa LEFT JOIN com despensa_itens para obter a categoria
-     * do item, sem quebrar registros de itens já deletados da despensa
-     * (LEFT JOIN retorna NULL para esses casos, tratado em fromCursor()).
-     */
     public List<HistoricoItem> listarTodos(String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -104,7 +87,7 @@ public class HistoricoRepository {
     // =========================================================================
 
     /**
-     * Sprint 2: também faz JOIN para popular categoria no filtro por período.
+     * Também faz JOIN para popular categoria no filtro por período.
      */
     public List<HistoricoItem> listarPorPeriodo(String dataInicio, String dataFim, String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
@@ -149,14 +132,9 @@ public class HistoricoRepository {
             item.setNomeCached("Item #" + item.getIdItem());
         }
 
-        // Sprint 2: categoria via JOIN (coluna d_status usada como proxy de categoria)
-        // NOTA: despensa_itens não persiste a categoria no banco — ela é campo UI only
-        // em DespensaItem. Por isso o campo categoria de HistoricoItem ficará nulo para
-        // itens antigos; o HistoricoAdapter já trata isso ocultando o ícone nesses casos.
         int catCol = cursor.getColumnIndex("d_status");
         if (catCol >= 0 && !cursor.isNull(catCol)) {
-            // Aqui poderíamos popular categoria se o schema incluísse a coluna.
-            // Como categoria é UI-only, deixamos null e o adapter exibe GONE.
+
         }
 
         return item;

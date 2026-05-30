@@ -6,14 +6,6 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-/**
- * UnsplashApi — interface Retrofit para a Unsplash API.
- *
- * Endpoint utilizado: GET /search/photos
- * Documentação: https://unsplash.com/documentation#search-photos
- *
- * Sprint 3: busca a primeira foto relacionada ao título da receita gerada pela IA.
- */
 public interface UnsplashApi {
 
     /**

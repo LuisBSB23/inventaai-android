@@ -9,11 +9,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Métodos utilitários para manipulação e formatação de datas no InventaAí.
- * Formato interno (banco de dados): YYYY-MM-DD
- * Formato de exibição:              dd/MM/yyyy
- */
 public final class DateUtils {
 
     private static final String FMT_DB      = "yyyy-MM-dd";
@@ -26,10 +21,6 @@ public final class DateUtils {
     // hoje()
     // -------------------------------------------------------------------------
 
-    /**
-     * Retorna a data atual no formato YYYY-MM-DD.
-     * Exemplo: "2026-05-21"
-     */
     public static String hoje() {
         SimpleDateFormat sdf = new SimpleDateFormat(FMT_DB, Locale.getDefault());
         return sdf.format(new Date());

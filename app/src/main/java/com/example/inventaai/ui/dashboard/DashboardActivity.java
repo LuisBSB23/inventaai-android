@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,7 +29,7 @@ import com.example.inventaai.ui.detalhes.DetalhesActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.ui.login.LoginActivity;
 import com.example.inventaai.ui.perfil.PerfilActivity;
-import com.example.inventaai.util.GlideHelper;  // Sprint 3
+import com.example.inventaai.util.GlideHelper;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
@@ -37,14 +38,6 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DashboardActivity — tela principal do InventaAí.
- *
- * Sprint 1: integração do Navigation Drawer, SessionManager e filtragem
- * de dados por user_id. Redireciona ao Login se não há sessão ativa.
- *
- * Sprint 3: carregamento de avatares via GlideHelper (circular, com cache).
- */
 public class DashboardActivity extends AppCompatActivity {
 
     // Views principais
@@ -52,7 +45,10 @@ public class DashboardActivity extends AppCompatActivity {
     private NavigationView       navigationView;
     private RecyclerView         rvExpiringSoon;
     private RecyclerView         rvPantryItems;
-    private TextView             tvEmpty;
+
+    // Sprint 5: empty state ilustrado (substitui tvEmpty)
+    private LinearLayout         layoutEmptyPantry;
+
     private TextView             tvGreetingUser;
     private FrameLayout          ivAvatar;
     private ImageView            ivAvatarImg;
@@ -117,15 +113,18 @@ public class DashboardActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
-        drawerLayout     = findViewById(R.id.drawerLayout);
-        navigationView   = findViewById(R.id.navigationView);
-        rvExpiringSoon   = findViewById(R.id.rvExpiringSoon);
-        rvPantryItems    = findViewById(R.id.rvPantryItems);
-        tvEmpty          = findViewById(R.id.tvEmpty);
-        tvGreetingUser   = findViewById(R.id.tvGreetingUser);
-        ivAvatar         = findViewById(R.id.ivAvatar);
-        ivAvatarImg      = findViewById(R.id.ivAvatarImg);
-        tvAvatarIniciais = findViewById(R.id.tvAvatarIniciais);
+        drawerLayout      = findViewById(R.id.drawerLayout);
+        navigationView    = findViewById(R.id.navigationView);
+        rvExpiringSoon    = findViewById(R.id.rvExpiringSoon);
+        rvPantryItems     = findViewById(R.id.rvPantryItems);
+
+        // Sprint 5: empty state ilustrado
+        layoutEmptyPantry = findViewById(R.id.layoutEmptyPantry);
+
+        tvGreetingUser    = findViewById(R.id.tvGreetingUser);
+        ivAvatar          = findViewById(R.id.ivAvatar);
+        ivAvatarImg       = findViewById(R.id.ivAvatarImg);
+        tvAvatarIniciais  = findViewById(R.id.tvAvatarIniciais);
         btnGenerateRecipe = findViewById(R.id.btnGenerateRecipe);
         bottomNavigation  = findViewById(R.id.bottomNavigation);
     }
@@ -168,30 +167,23 @@ public class DashboardActivity extends AppCompatActivity {
 
     /**
      * Atualiza nome e avatar no header do drawer e na toolbar.
-     *
-     * Sprint 3: substituída a leitura manual de URI por GlideHelper.loadCircularImage(),
-     * que aproveita o cache do Glide para carregamento instantâneo em onResume.
+     * Sprint 3: GlideHelper.loadCircularImage() para cache automático.
      */
     private void atualizarHeaderDrawer() {
         User user = userRepository.getUserById(currentUserId);
         if (user == null) return;
 
-        // Saudação
         tvGreetingUser.setText(user.getNome() + "!");
 
-        // ── Avatar da toolbar (ivAvatarImg) ──────────────────────────────────
         if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
-            // Sprint 3: Glide com circleCrop — cache automático, sem blink no onResume
             GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivAvatarImg);
             ivAvatarImg.setColorFilter(null);
             tvAvatarIniciais.setVisibility(View.GONE);
         } else {
-            // Sem foto: exibe iniciais
             tvAvatarIniciais.setText(user.getIniciais());
             tvAvatarIniciais.setVisibility(View.VISIBLE);
         }
 
-        // ── Header do drawer ─────────────────────────────────────────────────
         View header = navigationView.getHeaderView(0);
         if (header == null) return;
 
@@ -204,13 +196,11 @@ public class DashboardActivity extends AppCompatActivity {
         tvDrawerIdAbreviado.setText("ID: " + user.getIdAbreviado());
 
         if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
-            // Sprint 3: Glide circular no header do drawer
             GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivDrawerAvatar);
             ivDrawerAvatar.setColorFilter(null);
             ivDrawerAvatar.setVisibility(View.VISIBLE);
             tvDrawerIniciais.setVisibility(View.GONE);
         } else {
-            // Sem foto: exibe iniciais
             ivDrawerAvatar.setVisibility(View.GONE);
             tvDrawerIniciais.setText(user.getIniciais());
             tvDrawerIniciais.setVisibility(View.VISIBLE);
@@ -221,6 +211,10 @@ public class DashboardActivity extends AppCompatActivity {
     // CARREGAR / ATUALIZAR DADOS
     // =========================================================================
 
+    /**
+     * Sprint 5: usa layoutEmptyPantry (ilustrado) no lugar do tvEmpty anterior.
+     * A lógica de visibilidade é idêntica — apenas o ID do View mudou.
+     */
     private void atualizarListas() {
         List<DespensaItem> todos = despensaRepository.listarAtivos(currentUserId);
         adapterPantry.atualizarLista(todos);
@@ -228,8 +222,14 @@ public class DashboardActivity extends AppCompatActivity {
         List<DespensaItem> expirando = despensaRepository.listarProximosVencimento(7, currentUserId);
         adapterExpiringSoon.atualizarLista(expirando);
 
-        tvEmpty.setVisibility(todos.isEmpty() ? View.VISIBLE : View.GONE);
-        rvPantryItems.setVisibility(todos.isEmpty() ? View.GONE : View.VISIBLE);
+        // Controle do empty state ilustrado
+        if (todos.isEmpty()) {
+            rvPantryItems.setVisibility(View.GONE);
+            layoutEmptyPantry.setVisibility(View.VISIBLE);
+        } else {
+            rvPantryItems.setVisibility(View.VISIBLE);
+            layoutEmptyPantry.setVisibility(View.GONE);
+        }
     }
 
     // =========================================================================

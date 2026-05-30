@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    item_despensa.xml
-    Card de item da despensa (usado no RecyclerView do Dashboard).
-    Dimensões: largura fixa 160dp (modo horizontal) ou match_parent (modo vertical).
--->
+
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

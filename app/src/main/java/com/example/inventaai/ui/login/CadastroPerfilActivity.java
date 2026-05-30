@@ -4,9 +4,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -26,25 +30,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-/**
- * CadastroPerfilActivity — criação de novo perfil de usuário.
- *
- * Sprint 1:
- * - Gera UUID para o novo usuário.
- * - Suporta seleção opcional de foto da galeria (salva no armazenamento interno).
- * - Após criar, salva sessão e navega ao Dashboard.
- */
 public class CadastroPerfilActivity extends AppCompatActivity {
 
-    private TextInputLayout    tilNome, tilSenha, tilConfirmar;
-    private TextInputEditText  etNome, etSenha, etConfirmar;
-    private MaterialButton     btnCriarPerfil;
-    private FrameLayout        frameAvatar;
-    private ImageView          ivAvatar;
+    private TextInputLayout   tilNome, tilSenha, tilConfirmar;
+    private TextInputEditText etNome, etSenha, etConfirmar;
+    private MaterialButton    btnCriarPerfil;
+    private FrameLayout       frameAvatar;
+    private ImageView         ivAvatar;       // foto selecionada da galeria
+    private TextView          tvIniciais;     // Sprint 5: inicial do nome
 
     private UserRepository userRepository;
     private SessionManager sessionManager;
-    private String avatarPathLocal = null; // caminho da foto escolhida
+    private String avatarPathLocal = null;
 
     // Launcher para selecionar imagem da galeria
     private final ActivityResultLauncher<Intent> galeriaLauncher =
@@ -86,6 +83,10 @@ public class CadastroPerfilActivity extends AppCompatActivity {
         btnCriarPerfil = findViewById(R.id.btnCriarPerfil);
         frameAvatar   = findViewById(R.id.frameAvatar);
         ivAvatar      = findViewById(R.id.ivCadastroAvatar);
+        tvIniciais    = findViewById(R.id.tvCadastroIniciais); // Sprint 5
+
+        // Estado inicial: mostrar "?" até o usuário digitar o nome
+        atualizarAvatarIniciais("");
 
         findViewById(R.id.btnCadastroVoltar).setOnClickListener(v -> finish());
     }
@@ -93,6 +94,35 @@ public class CadastroPerfilActivity extends AppCompatActivity {
     private void configurarListeners() {
         frameAvatar.setOnClickListener(v -> abrirGaleria());
         btnCriarPerfil.setOnClickListener(v -> tentarCriar());
+
+        // Sprint 5: atualiza a inicial do avatar enquanto o usuário digita o nome
+        etNome.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Só atualiza as iniciais se nenhuma foto foi selecionada ainda
+                if (avatarPathLocal == null) {
+                    atualizarAvatarIniciais(s.toString().trim());
+                }
+            }
+        });
+    }
+
+    // =========================================================================
+    // Avatar — iniciais (Sprint 5)
+    // =========================================================================
+
+    /**
+     * Exibe a primeira letra maiúscula do nome no círculo do avatar.
+     * Se o nome estiver vazio, exibe "?".
+     */
+    private void atualizarAvatarIniciais(String nome) {
+        if (tvIniciais == null) return;
+        String inicial = (!nome.isEmpty()) ? String.valueOf(nome.charAt(0)).toUpperCase() : "?";
+        tvIniciais.setText(inicial);
+        tvIniciais.setVisibility(View.VISIBLE);
     }
 
     // =========================================================================
@@ -104,7 +134,10 @@ public class CadastroPerfilActivity extends AppCompatActivity {
         galeriaLauncher.launch(intent);
     }
 
-    /** Copia a imagem para o armazenamento interno do app (filesDir/avatars/). */
+    /**
+     * Copia a imagem para o armazenamento interno do app (filesDir/avatars/).
+     * Sprint 5: após carregar a foto, oculta as iniciais e exibe a ImageView.
+     */
     private void salvarAvatarLocalmente(Uri uri) {
         try {
             File avatarDir = new File(getFilesDir(), "avatars");
@@ -120,8 +153,13 @@ public class CadastroPerfilActivity extends AppCompatActivity {
                 }
             }
             avatarPathLocal = destino.getAbsolutePath();
+
+            // Exibe a foto e oculta as iniciais
             ivAvatar.setImageURI(uri);
-            ivAvatar.setColorFilter(null); // remove tint da imagem padrão
+            ivAvatar.setColorFilter(null);
+            ivAvatar.setVisibility(View.VISIBLE);
+            if (tvIniciais != null) tvIniciais.setVisibility(View.GONE);
+
         } catch (Exception e) {
             Toast.makeText(this, "Não foi possível carregar a foto.", Toast.LENGTH_SHORT).show();
         }
@@ -132,9 +170,9 @@ public class CadastroPerfilActivity extends AppCompatActivity {
     // =========================================================================
 
     private void tentarCriar() {
-        String nome      = etNome.getText()     != null ? etNome.getText().toString().trim() : "";
-        String senha     = etSenha.getText()    != null ? etSenha.getText().toString()       : "";
-        String confirmar = etConfirmar.getText()!= null ? etConfirmar.getText().toString()   : "";
+        String nome      = etNome.getText()      != null ? etNome.getText().toString().trim() : "";
+        String senha     = etSenha.getText()     != null ? etSenha.getText().toString()       : "";
+        String confirmar = etConfirmar.getText() != null ? etConfirmar.getText().toString()   : "";
 
         boolean valido = true;
 
@@ -161,7 +199,6 @@ public class CadastroPerfilActivity extends AppCompatActivity {
             return;
         }
 
-        // Salva avatar se foi selecionado
         if (avatarPathLocal != null) {
             userRepository.updateAvatar(novoUser.getId(), avatarPathLocal);
         }

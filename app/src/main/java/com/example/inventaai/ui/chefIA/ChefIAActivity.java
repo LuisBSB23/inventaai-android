@@ -30,13 +30,6 @@ import com.google.android.material.card.MaterialCardView;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ChefIAActivity — gera receitas personalizadas usando a API do Gemini.
- *
- * Sprint 3: integração com Unsplash API + Glide para imagem do prato.
- * Sprint 4: btnBack (voltar) e btnSavedRecipes (receitas salvas) na toolbar.
- *           Ícones padronizados — zero @android:drawable.
- */
 public class ChefIAActivity extends AppCompatActivity {
 
     private static final String TAG = Constants.LOG_TAG;
@@ -60,6 +53,9 @@ public class ChefIAActivity extends AppCompatActivity {
 
     // Sprint 3: hero image da receita
     private ImageView ivRecipeImage;
+
+    // Sprint 5: empty state ilustrado (despensa vazia)
+    private LinearLayout layoutEmptyRecipe;
 
     // ──────────────────────────────────────────────────────────────────────────
     // Dependências
@@ -114,6 +110,9 @@ public class ChefIAActivity extends AppCompatActivity {
         // Sprint 3: hero image
         ivRecipeImage = findViewById(R.id.ivRecipeImage);
 
+        // Sprint 5: empty state
+        layoutEmptyRecipe = findViewById(R.id.layoutEmptyRecipe);
+
         // Sprint 4: botões da toolbar
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -145,11 +144,13 @@ public class ChefIAActivity extends AppCompatActivity {
             }
         }
 
+        // Sprint 5: exibe empty state se não há ingredientes
         if (itensParaReceita.isEmpty()) {
-            mostrarErro(getString(R.string.pantry_empty_for_recipe));
+            mostrarEmptyState(true);
             return;
         }
 
+        mostrarEmptyState(false);
         mostrarCarregando(true);
 
         geminiService.gerarReceita(itensParaReceita, new GeminiService.ReceitaCallback() {
@@ -331,6 +332,19 @@ public class ChefIAActivity extends AppCompatActivity {
     // Estado de UI
     // ──────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Sprint 5: controla a visibilidade do empty state ilustrado.
+     * Quando visível, oculta progressBar e conteúdo de receita.
+     */
+    private void mostrarEmptyState(boolean vazio) {
+        if (layoutEmptyRecipe != null)
+            layoutEmptyRecipe.setVisibility(vazio ? View.VISIBLE : View.GONE);
+        if (progressBar != null)
+            progressBar.setVisibility(View.GONE);
+        if (viewConteudo != null)
+            viewConteudo.setVisibility(vazio ? View.GONE : View.VISIBLE);
+    }
+
     private void mostrarCarregando(boolean carregando) {
         if (progressBar != null)
             progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE);
@@ -357,6 +371,9 @@ public class ChefIAActivity extends AppCompatActivity {
     // ──────────────────────────────────────────────────────────────────────────
 
     private void configurarBotoes() {
+        btnNovaReceita   = findViewById(R.id.btnNovaReceita);
+        btnSalvarReceita = findViewById(R.id.btnSalvarReceita);
+
         btnNovaReceita.setOnClickListener(v -> gerarReceita());
 
         btnSalvarReceita.setOnClickListener(v -> {
@@ -377,6 +394,7 @@ public class ChefIAActivity extends AppCompatActivity {
     // ──────────────────────────────────────────────────────────────────────────
 
     private void configurarBottomNavigation() {
+        bottomNavigation = findViewById(R.id.bottomNavigation);
         bottomNavigation.setSelectedItemId(R.id.nav_chef_ia);
 
         bottomNavigation.setOnItemSelectedListener(item -> {

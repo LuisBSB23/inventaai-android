@@ -2,10 +2,6 @@ package com.example.inventaai.data.model;
 
 import java.io.Serializable;
 
-/**
- * POJO que representa um item da despensa.
- * Sprint 1: adicionado campo userId para isolamento por perfil.
- */
 public class DespensaItem implements Serializable {
 
     private static final long serialVersionUID = 1L;

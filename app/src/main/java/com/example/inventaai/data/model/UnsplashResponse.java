@@ -2,22 +2,6 @@ package com.example.inventaai.data.model;
 
 import java.util.List;
 
-/**
- * UnsplashResponse — mapeia a resposta do endpoint GET /search/photos da Unsplash API.
- *
- * Estrutura relevante do JSON retornado:
- * {
- *   "results": [
- *     {
- *       "urls": {
- *         "regular": "https://images.unsplash.com/photo-xxx?..."
- *       }
- *     }
- *   ]
- * }
- *
- * Sprint 3: usado pelo UnsplashService para extrair a URL da primeira foto.
- */
 public class UnsplashResponse {
 
     private List<Photo> results;

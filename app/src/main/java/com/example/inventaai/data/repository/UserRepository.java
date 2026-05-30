@@ -18,12 +18,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-/**
- * Encapsula todas as operações de banco de dados relacionadas a usuários.
- *
- * Sprint 1: criação, login, busca e atualização de perfil.
- * Senhas são sempre armazenadas como hash SHA-256 — nunca em texto puro.
- */
 public class UserRepository {
 
     private static final String TAG = "InventaAi.UserRepo";
