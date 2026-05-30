@@ -3,13 +3,16 @@ package com.example.inventaai.ui.dashboard;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.util.Pair;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -46,7 +49,7 @@ public class DashboardActivity extends AppCompatActivity {
     private RecyclerView         rvExpiringSoon;
     private RecyclerView         rvPantryItems;
 
-    // Sprint 5: empty state ilustrado (substitui tvEmpty)
+    // Empty state ilustrado (substitui tvEmpty)
     private LinearLayout         layoutEmptyPantry;
 
     private TextView             tvGreetingUser;
@@ -55,6 +58,9 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView             tvAvatarIniciais;
     private MaterialButton       btnGenerateRecipe;
     private BottomNavigationView bottomNavigation;
+
+    // Card de Saúde da Despensa para animação de entrada
+    private View                 cardSaudeDespensa;
 
     // Adapters
     private DespensaAdapter adapterExpiringSoon;
@@ -97,6 +103,9 @@ public class DashboardActivity extends AppCompatActivity {
         configurarBotoes();
         configurarBottomNavigation();
         configurarDrawer();
+
+        // Anima o card de Saúde da Despensa na entrada da tela
+        animarCardSaude();
     }
 
     @Override
@@ -118,7 +127,7 @@ public class DashboardActivity extends AppCompatActivity {
         rvExpiringSoon    = findViewById(R.id.rvExpiringSoon);
         rvPantryItems     = findViewById(R.id.rvPantryItems);
 
-        // Sprint 5: empty state ilustrado
+        // Empty state ilustrado
         layoutEmptyPantry = findViewById(R.id.layoutEmptyPantry);
 
         tvGreetingUser    = findViewById(R.id.tvGreetingUser);
@@ -127,6 +136,9 @@ public class DashboardActivity extends AppCompatActivity {
         tvAvatarIniciais  = findViewById(R.id.tvAvatarIniciais);
         btnGenerateRecipe = findViewById(R.id.btnGenerateRecipe);
         bottomNavigation  = findViewById(R.id.bottomNavigation);
+
+        // Card de saúde (use o ID real do card no seu layout)
+        cardSaudeDespensa = findViewById(R.id.cardPantryHealth);
     }
 
     private void configurarRecyclerViews() {
@@ -138,6 +150,30 @@ public class DashboardActivity extends AppCompatActivity {
         rvPantryItems.setLayoutManager(new LinearLayoutManager(this));
         adapterPantry = new DespensaAdapter(new ArrayList<>(), this::abrirDetalhes);
         rvPantryItems.setAdapter(adapterPantry);
+    }
+
+    // =========================================================================
+    // ANIMAÇÃO DO CARD DE SAÚDE DA DESPENSA
+    // =========================================================================
+
+    private void animarCardSaude() {
+        if (cardSaudeDespensa == null) return;
+
+        // Estado inicial: invisível e levemente menor
+        cardSaudeDespensa.setAlpha(0f);
+        cardSaudeDespensa.setScaleX(0.85f);
+        cardSaudeDespensa.setScaleY(0.85f);
+
+        // Pequeno delay para que o layout já esteja completo
+        cardSaudeDespensa.postDelayed(() ->
+                        cardSaudeDespensa.animate()
+                                .alpha(1f)
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(400)
+                                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                                .start(),
+                150);
     }
 
     // =========================================================================
@@ -157,6 +193,7 @@ public class DashboardActivity extends AppCompatActivity {
 
             if (id == R.id.nav_perfil) {
                 startActivity(new Intent(this, PerfilActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             } else if (id == R.id.nav_sair) {
                 sessionManager.encerrarSessao();
                 irParaLogin();
@@ -165,10 +202,6 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Atualiza nome e avatar no header do drawer e na toolbar.
-     * Sprint 3: GlideHelper.loadCircularImage() para cache automático.
-     */
     private void atualizarHeaderDrawer() {
         User user = userRepository.getUserById(currentUserId);
         if (user == null) return;
@@ -211,10 +244,6 @@ public class DashboardActivity extends AppCompatActivity {
     // CARREGAR / ATUALIZAR DADOS
     // =========================================================================
 
-    /**
-     * Sprint 5: usa layoutEmptyPantry (ilustrado) no lugar do tvEmpty anterior.
-     * A lógica de visibilidade é idêntica — apenas o ID do View mudou.
-     */
     private void atualizarListas() {
         List<DespensaItem> todos = despensaRepository.listarAtivos(currentUserId);
         adapterPantry.atualizarLista(todos);
@@ -233,28 +262,66 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // NAVEGAÇÃO
+    // NAVEGAÇÃO — Sprint 6: transições em todas as saídas
     // =========================================================================
 
     private void abrirDetalhes(DespensaItem item) {
         Intent intent = new Intent(this, DetalhesActivity.class);
         intent.putExtra(DetalhesActivity.EXTRA_ITEM, item);
         startActivity(intent);
+        // Sprint 6: transição padrão ao abrir detalhes
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+    }
+
+    /**
+     * versão com Shared Element Transition.
+     * Chame este método quando tiver a View do ícone do card clicado.
+     *
+     * @param item      DespensaItem selecionado
+     * @param sharedView View do elemento compartilhado (ex: ivItemIcon no card)
+     */
+    public void abrirDetalhesComSharedElement(DespensaItem item, View sharedView) {
+        Intent intent = new Intent(this, DetalhesActivity.class);
+        intent.putExtra(DetalhesActivity.EXTRA_ITEM, item);
+
+        // O transitionName deve ser definido no XML do card e no layout de Detalhes
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                this,
+                new Pair<>(sharedView, sharedView.getTransitionName())
+        );
+
+        startActivity(intent, options.toBundle());
+        // Nota: não chame overridePendingTransition com shared elements —
+        // o sistema cuida da animação automaticamente.
     }
 
     private void configurarBotoes() {
-        btnGenerateRecipe.setOnClickListener(v ->
-                startActivity(new Intent(this, ChefIAActivity.class)));
+        btnGenerateRecipe.setOnClickListener(v -> {
+            startActivity(new Intent(this, ChefIAActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        });
     }
 
     private void configurarBottomNavigation() {
         bottomNavigation.setSelectedItemId(R.id.nav_pantry);
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_pantry)   return true;
-            if (id == R.id.nav_add)      { startActivity(new Intent(this, CadastroActivity.class));  return true; }
-            if (id == R.id.nav_history)  { startActivity(new Intent(this, HistoricoActivity.class)); return true; }
-            if (id == R.id.nav_chef_ia)  { startActivity(new Intent(this, ChefIAActivity.class));    return true; }
+            if (id == R.id.nav_pantry)  return true;
+            if (id == R.id.nav_add) {
+                startActivity(new Intent(this, CadastroActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                return true;
+            }
+            if (id == R.id.nav_history) {
+                startActivity(new Intent(this, HistoricoActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                return true;
+            }
+            if (id == R.id.nav_chef_ia) {
+                startActivity(new Intent(this, ChefIAActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                return true;
+            }
             return false;
         });
     }
@@ -263,6 +330,7 @@ public class DashboardActivity extends AppCompatActivity {
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
 
@@ -272,6 +340,8 @@ public class DashboardActivity extends AppCompatActivity {
             drawerLayout.closeDrawers();
         } else {
             super.onBackPressed();
+            // Sprint 6: animação ao voltar (slide para a direita = sentido "voltar")
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         }
     }
 }

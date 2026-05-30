@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ripple effect com cor primária a 20% de opacidade (#33 = 20% de FF) -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#33006D36">
+
+    <!-- Máscara: delimita o ripple ao shape do card (cantos arredondados) -->
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+</ripple>

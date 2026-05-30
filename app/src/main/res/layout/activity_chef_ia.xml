@@ -59,14 +59,19 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- ======================== INDICADOR DE CARREGAMENTO ======================== -->
-    <ProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressBarChef"
-        style="?android:attr/progressBarStyleLarge"
+        style="@style/Widget.Material3.CircularProgressIndicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="80dp"
+        android:indeterminate="true"
         android:visibility="gone"
+        app:indicatorColor="@color/colorPrimary"
+        app:indicatorSize="56dp"
+        app:trackColor="@color/colorPrimaryContainer"
+        app:trackThickness="4dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <LinearLayout

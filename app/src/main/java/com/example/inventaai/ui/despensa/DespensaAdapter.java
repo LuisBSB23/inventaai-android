@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -30,6 +32,8 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     private final List<DespensaItem> items;
     private final OnItemClickListener listener;
 
+    private int ultimaPosicaoAnimada = -1;
+
     public DespensaAdapter(List<DespensaItem> items, OnItemClickListener listener) {
         this.items    = items != null ? items : new ArrayList<>();
         this.listener = listener;
@@ -44,6 +48,8 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         if (novaLista != null) {
             items.addAll(novaLista);
         }
+        // Reset do controle de animação para que os novos itens sejam animados
+        ultimaPosicaoAnimada = -1;
         notifyDataSetChanged();
     }
 
@@ -63,6 +69,15 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     public void onBindViewHolder(@NonNull DespensaViewHolder holder, int position) {
         DespensaItem item = items.get(position);
         holder.bind(item, listener);
+
+        // ── Anima apenas na primeira aparição do card ──────────────
+        if (position > ultimaPosicaoAnimada) {
+            Animation anim = AnimationUtils.loadAnimation(
+                    holder.itemView.getContext(), R.anim.item_appear);
+            holder.itemView.startAnimation(anim);
+            ultimaPosicaoAnimada = position;
+        }
+        // ─────────────────────────────────────────────────────────────────────
     }
 
     @Override
@@ -97,7 +112,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             // ── Sprint 2: ícone da categoria ─────────────────────────────────
             int iconRes = CategoryIconHelper.getIcon(item.getCategoria());
             ivItemIcon.setImageResource(iconRes);
-            // ─────────────────────────────────────────────────────────────────
 
             // Nome
             tvItemName.setText(item.getNome());

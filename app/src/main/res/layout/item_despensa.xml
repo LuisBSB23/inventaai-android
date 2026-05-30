@@ -43,6 +43,7 @@
                     android:layout_gravity="center"
                     android:contentDescription="@string/cd_food_icon"
                     android:src="@drawable/ic_nav_pantry"
+                    android:transitionName="transition_item_icon"
                     android:tint="@color/colorPrimary" />
             </FrameLayout>
 

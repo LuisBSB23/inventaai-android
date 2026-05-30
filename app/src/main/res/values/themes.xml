@@ -125,4 +125,12 @@
         <item name="android:color">@color/colorPrimaryContainer</item>
     </style>
 
+    <!-- ===== Tema da Splash Screen ===== -->
+    <style name="Theme.InventaAi.Splash" parent="Theme.InventaAi">
+        <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+
 </resources>

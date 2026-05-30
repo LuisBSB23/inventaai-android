@@ -7,6 +7,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
@@ -22,6 +23,8 @@ public class DetalhesActivity extends AppCompatActivity {
     /** Chave para passar o DespensaItem serializado via Intent */
     public static final String EXTRA_ITEM = "extra_despensa_item";
 
+    public static final String TRANSITION_NAME_ICON = "transition_item_icon";
+
     // Views
     private Chip          chipStatus;
     private Chip          chipCategoria;
@@ -33,7 +36,7 @@ public class DetalhesActivity extends AppCompatActivity {
     private ImageButton   btnIncrease;
     private MaterialButton btnSalvar;
     private MaterialButton btnRemover;
-    private ImageView     ivItemImage;   // Sprint 2: exibe ícone de categoria em destaque
+    private ImageView     ivItemImage;
 
     // Estado
     private DespensaItem item;
@@ -70,12 +73,14 @@ public class DetalhesActivity extends AppCompatActivity {
         btnIncrease   = findViewById(R.id.btnIncrease);
         btnSalvar     = findViewById(R.id.btnSalvar);
         btnRemover    = findViewById(R.id.btnRemover);
-        ivItemImage   = findViewById(R.id.ivItemImage);   // Sprint 2
+        ivItemImage   = findViewById(R.id.ivItemImage);
+
+        // Define o transitionName no ivItemImage para shared element
+        if (ivItemImage != null) {
+            ViewCompat.setTransitionName(ivItemImage, TRANSITION_NAME_ICON);
+        }
     }
 
-    /**
-     * Recupera o DespensaItem enviado pelo Dashboard e preenche os campos.
-     */
     @SuppressWarnings("deprecation")
     private void carregarItem() {
         if (getIntent() != null && getIntent().hasExtra(EXTRA_ITEM)) {
@@ -118,11 +123,9 @@ public class DetalhesActivity extends AppCompatActivity {
         // Imagem central em destaque (ivItemImage)
         if (ivItemImage != null) {
             ivItemImage.setImageResource(iconRes);
-            // Aplica tint verde do design system para manter identidade visual
             ivItemImage.setColorFilter(
                     androidx.core.content.ContextCompat.getColor(this, R.color.colorPrimary));
         }
-        // ─────────────────────────────────────────────────────────────────────
 
         // Status de validade
         int dias = DateUtils.calcularDiasRestantes(item.getDataValidade());
@@ -228,5 +231,16 @@ public class DetalhesActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
         }
         finish();
+    }
+
+    // =========================================================================
+    // Animação ao voltar
+    // =========================================================================
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        // Slide de volta para a esquerda ao pressionar voltar
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 }
