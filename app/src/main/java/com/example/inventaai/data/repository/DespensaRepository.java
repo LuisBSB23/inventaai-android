@@ -19,10 +19,12 @@ import java.util.List;
 public class DespensaRepository {
 
     private static final String TAG = "DespensaRepository";
+
+    // SPRINT 7 — TAREFA 1: usa Singleton em vez de new DatabaseHelper(context)
     private final DatabaseHelper dbHelper;
 
     public DespensaRepository(Context context) {
-        this.dbHelper = new DatabaseHelper(context);
+        this.dbHelper = DatabaseHelper.getInstance(context);
     }
 
     // ── INSERIR ──────────────────────────────────────────────────────────────
@@ -34,9 +36,8 @@ public class DespensaRepository {
         } catch (Exception e) {
             Log.e(TAG, "inserir: erro", e);
             return -1;
-        } finally {
-            db.close();
         }
+        // SPRINT 7: não chamamos db.close() — o Singleton gerencia a conexão.
     }
 
     // ── BUSCAR POR ID (público) ───────────────────────────────────────────────
@@ -48,12 +49,10 @@ public class DespensaRepository {
         } catch (Exception e) {
             Log.e(TAG, "buscarPorId: erro id=" + id, e);
             return null;
-        } finally {
-            db.close();
         }
     }
 
-    /** Versão interna: usa db já aberto, NÃO fecha — evita SQLiteClosable error. */
+    /** Versão interna: usa db já aberto — não fecha (Singleton cuida disso). */
     private DespensaItem buscarPorIdInterno(SQLiteDatabase db, long id) {
         Cursor cursor = null;
         try {
@@ -83,7 +82,6 @@ public class DespensaRepository {
             Log.e(TAG, "listarAtivos: erro", e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return lista;
     }
@@ -103,7 +101,6 @@ public class DespensaRepository {
             Log.e(TAG, "listarTodos: erro", e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return lista;
     }
@@ -128,7 +125,6 @@ public class DespensaRepository {
             Log.e(TAG, "listarProximosVencimento: erro", e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return lista;
     }
@@ -139,7 +135,6 @@ public class DespensaRepository {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int linhas = 0;
         try {
-            // buscarPorIdInterno não fecha o db — evita o bug de "closed object"
             DespensaItem existente = buscarPorIdInterno(db, item.getId());
             String userId = existente != null ? existente.getUserId() : null;
 
@@ -148,8 +143,6 @@ public class DespensaRepository {
             Log.d(TAG, "atualizar: id=" + item.getId() + " → " + linhas + " linha(s)");
         } catch (Exception e) {
             Log.e(TAG, "atualizar: erro id=" + item.getId(), e);
-        } finally {
-            db.close();
         }
         return linhas;
     }
@@ -181,7 +174,6 @@ public class DespensaRepository {
             return false;
         } finally {
             db.endTransaction();
-            db.close();
         }
     }
 
@@ -195,8 +187,6 @@ public class DespensaRepository {
         } catch (Exception e) {
             Log.e(TAG, "deletar: erro id=" + id, e);
             return false;
-        } finally {
-            db.close();
         }
     }
 

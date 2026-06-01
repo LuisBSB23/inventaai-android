@@ -33,11 +33,13 @@ import com.example.inventaai.ui.detalhes.DetalhesActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.ui.login.LoginActivity;
 import com.example.inventaai.ui.perfil.PerfilActivity;
+import com.example.inventaai.util.AppExecutors;
 import com.example.inventaai.util.GlideHelper;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +52,7 @@ public class DashboardActivity extends AppCompatActivity {
     private RecyclerView         rvExpiringSoon;
     private RecyclerView         rvPantryItems;
 
-    // Empty state ilustrado (substitui tvEmpty)
+    // Empty state ilustrado
     private LinearLayout         layoutEmptyPantry;
 
     private TextView             tvGreetingUser;
@@ -59,6 +61,9 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView             tvAvatarIniciais;
     private MaterialButton       btnGenerateRecipe;
     private BottomNavigationView bottomNavigation;
+
+    // SPRINT 7 — TAREFA 2: indicador de carregamento
+    private CircularProgressIndicator progressBar;
 
     // Card de Saúde da Despensa para animação de entrada
     private View                 cardSaudeDespensa;
@@ -127,19 +132,19 @@ public class DashboardActivity extends AppCompatActivity {
         navigationView    = findViewById(R.id.navigationView);
         rvExpiringSoon    = findViewById(R.id.rvExpiringSoon);
         rvPantryItems     = findViewById(R.id.rvPantryItems);
-
-        // Sprint 5: empty state ilustrado
         layoutEmptyPantry = findViewById(R.id.layoutEmptyPantry);
-
         tvGreetingUser    = findViewById(R.id.tvGreetingUser);
         ivAvatar          = findViewById(R.id.ivAvatar);
         ivAvatarImg       = findViewById(R.id.ivAvatarImg);
         tvAvatarIniciais  = findViewById(R.id.tvAvatarIniciais);
         btnGenerateRecipe = findViewById(R.id.btnGenerateRecipe);
         bottomNavigation  = findViewById(R.id.bottomNavigation);
-
-        // Sprint 6: card de saúde (use o ID real do card no seu layout)
         cardSaudeDespensa = findViewById(R.id.cardPantryHealth);
+
+        // SPRINT 7 — TAREFA 2: vincular o indicador de carregamento
+        // O layout precisa ter: <com.google.android.material.progressindicator.CircularProgressIndicator
+        //     android:id="@+id/progressBarDashboard" ... android:visibility="gone" />
+        progressBar = findViewById(R.id.progressBarDashboard);
     }
 
     private void configurarRecyclerViews() {
@@ -154,18 +159,65 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     // =========================================================================
+    // Carregar dados no background thread
+    // =========================================================================
+
+    private void atualizarListas() {
+        // Mostra indicador e oculta listas durante o carregamento
+        mostrarCarregando(true);
+
+        final String userId = currentUserId;
+
+        AppExecutors.diskIO().execute(() -> {
+            // ── Fora da UI thread: operações de banco ──────────────────────
+            final List<DespensaItem> todos =
+                    despensaRepository.listarAtivos(userId);
+            final List<DespensaItem> expirando =
+                    despensaRepository.listarProximosVencimento(7, userId);
+
+            // ── De volta na UI thread: atualizar views ─────────────────────
+            AppExecutors.mainThread().execute(() -> {
+                // Protege contra Activity destruída enquanto rodava em background
+                if (isFinishing() || isDestroyed()) return;
+
+                adapterPantry.atualizarLista(todos);
+                adapterExpiringSoon.atualizarLista(expirando);
+
+                // Controle do empty state
+                if (todos.isEmpty()) {
+                    rvPantryItems.setVisibility(View.GONE);
+                    layoutEmptyPantry.setVisibility(View.VISIBLE);
+                } else {
+                    rvPantryItems.setVisibility(View.VISIBLE);
+                    layoutEmptyPantry.setVisibility(View.GONE);
+                }
+
+                mostrarCarregando(false);
+            });
+        });
+    }
+
+    /** Exibe ou oculta o CircularProgressIndicator e as RecyclerViews. */
+    private void mostrarCarregando(boolean carregando) {
+        if (progressBar != null) {
+            progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE);
+        }
+        // Oculta as listas durante o carregamento para evitar estado vazio piscando
+        rvExpiringSoon.setVisibility(carregando ? View.INVISIBLE : View.VISIBLE);
+        rvPantryItems.setVisibility( carregando ? View.INVISIBLE : View.VISIBLE);
+    }
+
+    // =========================================================================
     // SPRINT 6: ANIMAÇÃO DO CARD DE SAÚDE DA DESPENSA
     // =========================================================================
 
     private void animarCardSaude() {
         if (cardSaudeDespensa == null) return;
 
-        // Estado inicial: invisível e levemente menor
         cardSaudeDespensa.setAlpha(0f);
         cardSaudeDespensa.setScaleX(0.85f);
         cardSaudeDespensa.setScaleY(0.85f);
 
-        // Pequeno delay para que o layout já esteja completo
         cardSaudeDespensa.postDelayed(() ->
                         cardSaudeDespensa.animate()
                                 .alpha(1f)
@@ -204,96 +256,73 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void atualizarHeaderDrawer() {
-        User user = userRepository.getUserById(currentUserId);
-        if (user == null) return;
+        // Header do Drawer também pode ser pesado (query + Glide).
+        // Mantemos em background para consistência.
+        final String userId = currentUserId;
 
-        tvGreetingUser.setText(user.getNome() + "!");
+        AppExecutors.diskIO().execute(() -> {
+            final User user = userRepository.getUserById(userId);
 
-        if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
-            GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivAvatarImg);
-            ivAvatarImg.setColorFilter(null);
-            tvAvatarIniciais.setVisibility(View.GONE);
-        } else {
-            tvAvatarIniciais.setText(user.getIniciais());
-            tvAvatarIniciais.setVisibility(View.VISIBLE);
-        }
+            AppExecutors.mainThread().execute(() -> {
+                if (isFinishing() || isDestroyed() || user == null) return;
 
-        View header = navigationView.getHeaderView(0);
-        if (header == null) return;
+                tvGreetingUser.setText(user.getNome() + "!");
 
-        TextView  tvDrawerNome        = header.findViewById(R.id.tvDrawerNome);
-        TextView  tvDrawerIdAbreviado = header.findViewById(R.id.tvDrawerIdAbreviado);
-        TextView  tvDrawerIniciais    = header.findViewById(R.id.tvDrawerIniciais);
-        ImageView ivDrawerAvatar      = header.findViewById(R.id.ivDrawerAvatar);
+                if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
+                    GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivAvatarImg);
+                    ivAvatarImg.setColorFilter(null);
+                    tvAvatarIniciais.setVisibility(View.GONE);
+                } else {
+                    tvAvatarIniciais.setText(user.getIniciais());
+                    tvAvatarIniciais.setVisibility(View.VISIBLE);
+                }
 
-        tvDrawerNome.setText(user.getNome());
-        tvDrawerIdAbreviado.setText("ID: " + user.getIdAbreviado());
+                View header = navigationView.getHeaderView(0);
+                if (header == null) return;
 
-        if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
-            GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivDrawerAvatar);
-            ivDrawerAvatar.setColorFilter(null);
-            ivDrawerAvatar.setVisibility(View.VISIBLE);
-            tvDrawerIniciais.setVisibility(View.GONE);
-        } else {
-            ivDrawerAvatar.setVisibility(View.GONE);
-            tvDrawerIniciais.setText(user.getIniciais());
-            tvDrawerIniciais.setVisibility(View.VISIBLE);
-        }
+                TextView  tvDrawerNome        = header.findViewById(R.id.tvDrawerNome);
+                TextView  tvDrawerIdAbreviado = header.findViewById(R.id.tvDrawerIdAbreviado);
+                TextView  tvDrawerIniciais    = header.findViewById(R.id.tvDrawerIniciais);
+                ImageView ivDrawerAvatar      = header.findViewById(R.id.ivDrawerAvatar);
+
+                tvDrawerNome.setText(user.getNome());
+                tvDrawerIdAbreviado.setText("ID: " + user.getIdAbreviado());
+
+                if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
+                    GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivDrawerAvatar);
+                    ivDrawerAvatar.setColorFilter(null);
+                    ivDrawerAvatar.setVisibility(View.VISIBLE);
+                    tvDrawerIniciais.setVisibility(View.GONE);
+                } else {
+                    ivDrawerAvatar.setVisibility(View.GONE);
+                    tvDrawerIniciais.setText(user.getIniciais());
+                    tvDrawerIniciais.setVisibility(View.VISIBLE);
+                }
+            });
+        });
     }
 
     // =========================================================================
-    // CARREGAR / ATUALIZAR DADOS
-    // =========================================================================
-
-    private void atualizarListas() {
-        List<DespensaItem> todos = despensaRepository.listarAtivos(currentUserId);
-        adapterPantry.atualizarLista(todos);
-
-        List<DespensaItem> expirando = despensaRepository.listarProximosVencimento(7, currentUserId);
-        adapterExpiringSoon.atualizarLista(expirando);
-
-        // Controle do empty state ilustrado
-        if (todos.isEmpty()) {
-            rvPantryItems.setVisibility(View.GONE);
-            layoutEmptyPantry.setVisibility(View.VISIBLE);
-        } else {
-            rvPantryItems.setVisibility(View.VISIBLE);
-            layoutEmptyPantry.setVisibility(View.GONE);
-        }
-    }
-
-    // =========================================================================
-    // NAVEGAÇÃO — Sprint 6: transições em todas as saídas
+    // NAVEGAÇÃO
     // =========================================================================
 
     private void abrirDetalhes(DespensaItem item) {
         Intent intent = new Intent(this, DetalhesActivity.class);
         intent.putExtra(DetalhesActivity.EXTRA_ITEM, item);
         startActivity(intent);
-        // Sprint 6: transição padrão ao abrir detalhes
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
-    /**
-     * Sprint 6: versão com Shared Element Transition.
-     * Chame este método quando tiver a View do ícone do card clicado.
-     *
-     * @param item      DespensaItem selecionado
-     * @param sharedView View do elemento compartilhado (ex: ivItemIcon no card)
-     */
     public void abrirDetalhesComSharedElement(DespensaItem item, View sharedView) {
         Intent intent = new Intent(this, DetalhesActivity.class);
         intent.putExtra(DetalhesActivity.EXTRA_ITEM, item);
 
-        // O transitionName deve ser definido no XML do card e no layout de Detalhes
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 this,
                 new Pair<>(sharedView, sharedView.getTransitionName())
         );
 
         startActivity(intent, options.toBundle());
-        // Nota: não chame overridePendingTransition com shared elements —
-        // o sistema cuida da animação automaticamente.
     }
 
     private void configurarBotoes() {
@@ -341,7 +370,6 @@ public class DashboardActivity extends AppCompatActivity {
             drawerLayout.closeDrawers();
         } else {
             super.onBackPressed();
-            // Sprint 6: animação ao voltar (slide para a direita = sentido "voltar")
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         }
     }

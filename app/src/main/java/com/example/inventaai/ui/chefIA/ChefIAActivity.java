@@ -21,8 +21,10 @@ import com.example.inventaai.data.repository.DespensaRepository;
 import com.example.inventaai.ui.cadastro.CadastroActivity;
 import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
+import com.example.inventaai.util.AppExecutors;
 import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.GlideHelper;
+import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
@@ -122,55 +124,61 @@ public class ChefIAActivity extends AppCompatActivity {
         );
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Lógica principal: gerar receita
-    // ──────────────────────────────────────────────────────────────────────────
-
     private void gerarReceita() {
-        com.example.inventaai.util.SessionManager smChef =
-                new com.example.inventaai.util.SessionManager(this);
-        String chefUserId = smChef.getUserId();
-
-        List<DespensaItem> proximosVencer =
-                despensaRepository.listarProximosVencimento(7, chefUserId);
-        List<DespensaItem> todosAtivos =
-                despensaRepository.listarAtivos(chefUserId);
-
-        // Combina sem duplicatas, priorizando os próximos do vencimento
-        List<DespensaItem> itensParaReceita = new ArrayList<>(proximosVencer);
-        for (DespensaItem item : todosAtivos) {
-            if (!contemId(itensParaReceita, item.getId())) {
-                itensParaReceita.add(item);
-            }
-        }
-
-        // Sprint 5: exibe empty state se não há ingredientes
-        if (itensParaReceita.isEmpty()) {
-            mostrarEmptyState(true);
-            return;
-        }
-
-        mostrarEmptyState(false);
+        // Mostra carregando imediatamente, antes de qualquer I/O
         mostrarCarregando(true);
 
-        geminiService.gerarReceita(itensParaReceita, new GeminiService.ReceitaCallback() {
-            @Override
-            public void onSucesso(ReceitaResponse receita) {
-                runOnUiThread(() -> {
-                    receitaAtual = receita;
-                    preencherReceita(receita, itensParaReceita);
-                    mostrarCarregando(false);
-                    buscarImagemParaReceita(receita.getTitulo());
-                });
+        final String userId = new SessionManager(this).getUserId();
+
+        AppExecutors.diskIO().execute(() -> {
+            // ── Fora da UI thread: queries no banco ────────────────────────
+            final List<DespensaItem> proximosVencer =
+                    despensaRepository.listarProximosVencimento(7, userId);
+            final List<DespensaItem> todosAtivos =
+                    despensaRepository.listarAtivos(userId);
+
+            // Combina sem duplicatas, priorizando os próximos do vencimento
+            final List<DespensaItem> itensParaReceita = new ArrayList<>(proximosVencer);
+            for (DespensaItem item : todosAtivos) {
+                if (!contemId(itensParaReceita, item.getId())) {
+                    itensParaReceita.add(item);
+                }
             }
 
-            @Override
-            public void onErro(String mensagem) {
-                runOnUiThread(() -> {
-                    mostrarCarregando(false);
-                    mostrarErro(mensagem);
+            // ── De volta na UI thread: decidir próximo passo ───────────────
+            AppExecutors.mainThread().execute(() -> {
+                if (isFinishing() || isDestroyed()) return;
+
+                // Sprint 5: exibe empty state se não há ingredientes
+                if (itensParaReceita.isEmpty()) {
+                    mostrarEmptyState(true);
+                    return;
+                }
+
+                // Há ingredientes: chama a API Gemini (já é assíncrona)
+                mostrarEmptyState(false);
+                mostrarCarregando(true);
+
+                geminiService.gerarReceita(itensParaReceita, new GeminiService.ReceitaCallback() {
+                    @Override
+                    public void onSucesso(ReceitaResponse receita) {
+                        runOnUiThread(() -> {
+                            receitaAtual = receita;
+                            preencherReceita(receita, itensParaReceita);
+                            mostrarCarregando(false);
+                            buscarImagemParaReceita(receita.getTitulo());
+                        });
+                    }
+
+                    @Override
+                    public void onErro(String mensagem) {
+                        runOnUiThread(() -> {
+                            mostrarCarregando(false);
+                            mostrarErro(mensagem);
+                        });
+                    }
                 });
-            }
+            });
         });
     }
 
@@ -332,10 +340,6 @@ public class ChefIAActivity extends AppCompatActivity {
     // Estado de UI
     // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Sprint 5: controla a visibilidade do empty state ilustrado.
-     * Quando visível, oculta progressBar e conteúdo de receita.
-     */
     private void mostrarEmptyState(boolean vazio) {
         if (layoutEmptyRecipe != null)
             layoutEmptyRecipe.setVisibility(vazio ? View.VISIBLE : View.GONE);

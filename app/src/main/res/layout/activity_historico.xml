@@ -9,6 +9,20 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.historico.HistoricoActivity">
 
+    <!-- Histórico: indicador de carregamento -->
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressBarHistorico"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:indicatorColor="@color/colorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
+
     <!-- ======================== TOP APP BAR ======================== -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"

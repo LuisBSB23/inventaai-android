@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
@@ -32,25 +33,43 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     private final List<DespensaItem> items;
     private final OnItemClickListener listener;
 
+    // Controla animação de entrada: só anima posições ainda não exibidas
     private int ultimaPosicaoAnimada = -1;
 
     public DespensaAdapter(List<DespensaItem> items, OnItemClickListener listener) {
-        this.items    = items != null ? items : new ArrayList<>();
+        this.items    = items != null ? new ArrayList<>(items) : new ArrayList<>();
         this.listener = listener;
     }
 
     // =========================================================================
-    // ATUALIZAR LISTA
+    // DiffUtil substitui notifyDataSetChanged()
     // =========================================================================
 
     public void atualizarLista(List<DespensaItem> novaLista) {
+        if (novaLista == null) novaLista = new ArrayList<>();
+
+        // Calcula o diff entre a lista atual e a nova em background seria o
+        // ideal para listas muito longas; aqui fazemos na thread que chama
+        // (que já é a main thread, após a query ter sido feita no diskIO —
+        // ver AppExecutors). Para listas de despensa típicas (<200 itens)
+        // o custo é imperceptível (<1ms).
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+                new DespensaItemDiffCallback(items, novaLista));
+
+        // Detecta se é uma substituição completa para controlar a animação
+        boolean substituicaoCompleta = items.isEmpty() || novaLista.isEmpty()
+                || novaLista.size() != items.size();
+
         items.clear();
-        if (novaLista != null) {
-            items.addAll(novaLista);
+        items.addAll(novaLista);
+
+        // Reseta animação somente em substituição completa
+        if (substituicaoCompleta) {
+            ultimaPosicaoAnimada = -1;
         }
-        // Reset do controle de animação para que os novos itens sejam animados
-        ultimaPosicaoAnimada = -1;
-        notifyDataSetChanged();
+
+        // Aplica apenas as mudanças pontuais detectadas pelo DiffUtil
+        diffResult.dispatchUpdatesTo(this);
     }
 
     // =========================================================================
@@ -70,14 +89,14 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         DespensaItem item = items.get(position);
         holder.bind(item, listener);
 
-        // ── Anima apenas na primeira aparição do card ──────────────
+        // ── Anima apenas na primeira aparição do card ──────────────────────
         if (position > ultimaPosicaoAnimada) {
             Animation anim = AnimationUtils.loadAnimation(
                     holder.itemView.getContext(), R.anim.item_appear);
             holder.itemView.startAnimation(anim);
             ultimaPosicaoAnimada = position;
         }
-        // ─────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────
     }
 
     @Override
@@ -91,7 +110,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
     static class DespensaViewHolder extends RecyclerView.ViewHolder {
 
-        private final ImageView   ivItemIcon;        // Sprint 2: ícone de categoria
+        private final ImageView   ivItemIcon;
         private final TextView    tvItemName;
         private final TextView    tvItemQuantity;
         private final TextView    tvExpiryBadge;
@@ -109,7 +128,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         void bind(DespensaItem item, OnItemClickListener listener) {
             Context ctx = itemView.getContext();
 
-            // ── Sprint 2: ícone da categoria ─────────────────────────────────
+            // ── Ícone da categoria ────────────────────────────────────────
             int iconRes = CategoryIconHelper.getIcon(item.getCategoria());
             ivItemIcon.setImageResource(iconRes);
 

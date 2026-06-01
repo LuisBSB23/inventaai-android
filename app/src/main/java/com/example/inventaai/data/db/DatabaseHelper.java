@@ -24,6 +24,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // v5: adiciona coluna "categoria" em despensa_itens
     public static final int    DATABASE_VERSION = 5;
 
+    // Padrão Singleton
+
+    /** Instância única — acesso somente via getInstance(). */
+    private static volatile DatabaseHelper instance;
+
+    public static DatabaseHelper getInstance(Context ctx) {
+        if (instance == null) {
+            synchronized (DatabaseHelper.class) {
+                if (instance == null) {
+                    // applicationContext: nunca vaza referência de Activity/Fragment
+                    instance = new DatabaseHelper(ctx.getApplicationContext());
+                    Log.d(TAG, "getInstance: instância Singleton criada.");
+                }
+            }
+        }
+        return instance;
+    }
+
+    // =========================================================================
+    // SQL de criação das tabelas
+    // =========================================================================
+
     private static final String SQL_CREATE_USERS =
             "CREATE TABLE " + UserEntry.TABLE_NAME + " ("
                     + UserEntry._ID                + " TEXT PRIMARY KEY, "
@@ -55,9 +77,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + HistoricoEntry.COLUMN_USER_ID     + " TEXT"
                     + ");";
 
-    public DatabaseHelper(Context context) {
+    // =========================================================================
+    // Construtor privado — uso exclusivo do Singleton
+    // =========================================================================
+
+    /** Privado: ninguém fora desta classe pode chamar new DatabaseHelper(). */
+    private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
+
+    // =========================================================================
+    // Ciclo de vida do SQLiteOpenHelper
+    // =========================================================================
 
     @Override
     public void onCreate(SQLiteDatabase db) {

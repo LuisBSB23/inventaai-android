@@ -1,6 +1,5 @@
 package com.example.inventaai.data.repository;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,10 +17,12 @@ import java.util.List;
 public class HistoricoRepository {
 
     private static final String TAG = Constants.LOG_TAG;
+
+    // SPRINT 7 — TAREFA 1: usa Singleton em vez de new DatabaseHelper(context)
     private final DatabaseHelper dbHelper;
 
     public HistoricoRepository(Context context) {
-        this.dbHelper = new DatabaseHelper(context);
+        this.dbHelper = DatabaseHelper.getInstance(context);
     }
 
     // =========================================================================
@@ -33,7 +34,7 @@ public class HistoricoRepository {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            // Sprint 2: JOIN para buscar categoria
+            // JOIN para buscar categoria
             String sql =
                     "SELECT h.*, d." + DespensaEntry.COLUMN_STATUS + " AS d_status "
                             + "FROM " + HistoricoEntry.TABLE_NAME + " h "
@@ -48,11 +49,11 @@ public class HistoricoRepository {
                     + " registro(s) para userId=" + userId);
         } catch (Exception e) {
             Log.e(TAG, "HistoricoRepository.listarTodos: erro", e);
-            // Fallback: query simples sem JOIN (garante que o app não quebre)
+            // Fallback: query simples sem JOIN
             lista = listarTodosSemJoin(userId);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
+            // SPRINT 7: não chamamos db.close() — Singleton gerencia a conexão.
         }
         return lista;
     }
@@ -77,7 +78,6 @@ public class HistoricoRepository {
             Log.e(TAG, "HistoricoRepository.listarTodosSemJoin: erro", e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return lista;
     }
@@ -86,9 +86,6 @@ public class HistoricoRepository {
     // LISTAR POR PERÍODO (filtrado por usuário)
     // =========================================================================
 
-    /**
-     * Também faz JOIN para popular categoria no filtro por período.
-     */
     public List<HistoricoItem> listarPorPeriodo(String dataInicio, String dataFim, String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -109,7 +106,6 @@ public class HistoricoRepository {
             Log.e(TAG, "listarPorPeriodo: erro", e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return lista;
     }
@@ -134,7 +130,7 @@ public class HistoricoRepository {
 
         int catCol = cursor.getColumnIndex("d_status");
         if (catCol >= 0 && !cursor.isNull(catCol)) {
-
+            // campo reservado para uso futuro (ex.: filtro por categoria no histórico)
         }
 
         return item;
