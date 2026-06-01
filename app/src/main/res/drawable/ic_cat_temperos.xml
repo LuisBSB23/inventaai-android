@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Corpo do frasco -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M8,8V20C8,21.1 8.9,22 10,22H14C15.1,22 16,21.1 16,20V8H8Z" />
+
+    <!-- Tampa do frasco -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M7,5H17V8H7V5Z"
+        android:fillAlpha="0.85" />
+
+    <!-- Gargalo -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M10,2H14V5H10V2Z"
+        android:fillAlpha="0.7" />
+
+    <!-- Furinhos da tampa (sinal de tempero) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="M10,6.25A0.75,0.75 0,1,1 10,5.75A0.75,0.75 0,0,1 10,6.25Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="M12,6.25A0.75,0.75 0,1,1 12,5.75A0.75,0.75 0,0,1 12,6.25Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="M14,6.25A0.75,0.75 0,1,1 14,5.75A0.75,0.75 0,0,1 14,6.25Z" />
+
+    <!-- Conteúdo (pó de tempero) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.25"
+        android:pathData="M8,15H16V20C16,21.1 15.1,22 14,22H10C8.9,22 8,21.1 8,20V15Z" />
+</vector>

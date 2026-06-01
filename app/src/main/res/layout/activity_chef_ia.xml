@@ -1,24 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    activity_chef_ia.xml  —  Sprint 4
-    Adições em relação à Sprint 2/3:
-      • ProgressBar com id progressBarChef (visível durante chamada à IA)
-      • NestedScrollView com id scrollViewConteudo (ocultado durante carregamento)
--->
+
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorSurface"
+    android:background="?attr/colorSurface"
     tools:context=".ui.chefIA.ChefIAActivity">
 
     <!-- ======================== TOP APP BAR ======================== -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorSurface"
+        android:background="?attr/colorSurface"
         app:elevation="2dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,13 +22,13 @@
             android:paddingHorizontal="24dp">
 
             <ImageButton
-                android:id="@+id/btnMenu"
+                android:id="@+id/btnBack"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/cd_menu"
-                android:src="@drawable/ic_nav_pantry"
-                android:tint="@color/colorPrimary"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_back_arrow"
+                android:tint="?attr/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -43,39 +38,91 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_bold"
                 android:text="@string/app_name"
-                android:textColor="@color/colorPrimary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="22sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/ivAvatar"
-                app:layout_constraintStart_toEndOf="@id/btnMenu"
+                app:layout_constraintEnd_toStartOf="@+id/btnSavedRecipes"
+                app:layout_constraintStart_toEndOf="@id/btnBack"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                android:id="@+id/ivAvatar"
+            <ImageButton
+                android:id="@+id/btnSavedRecipes"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:background="@drawable/bg_circle_surface"
-                android:contentDescription="@string/cd_profile"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_nav_pantry"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Receitas salvas"
+                android:src="@drawable/ic_saved_recipes"
+                android:tint="?attr/colorOnSurfaceVariant"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- ======================== INDICADOR DE CARREGAMENTO ========================
-         Visível enquanto a chamada à API do Gemini está em andamento.
-         Controlado por ChefIAActivity.mostrarCarregando(boolean).
-    -->
-    <ProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressBarChef"
-        style="?android:attr/progressBarStyleLarge"
+        style="@style/Widget.Material3.CircularProgressIndicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="80dp"
+        android:indeterminate="true"
         android:visibility="gone"
+        app:indicatorColor="@color/colorPrimary"
+        app:indicatorSize="56dp"
+        app:trackColor="@color/colorPrimaryContainer"
+        app:trackThickness="4dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <LinearLayout
+        android:id="@+id/layoutEmptyRecipe"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:paddingHorizontal="32dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_empty_recipe"
+            android:contentDescription="@null"
+            android:alpha="0.75"
+            android:tint="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_semibold"
+            android:text="@string/empty_recipe_title"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="17sp"
+            android:layout_marginTop="16dp"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_regular"
+            android:text="@string/empty_recipe_message"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnIrParaDespensa"
+            style="@style/Widget.InventaAi.Button.Pill"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:text="Adicionar Itens"
+            android:layout_marginTop="24dp"
+            app:icon="@drawable/ic_nav_add"
+            app:iconGravity="textStart" />
+
+    </LinearLayout>
 
     <!-- ======================== CONTEÚDO DA RECEITA ======================== -->
     <androidx.core.widget.NestedScrollView
@@ -124,7 +171,7 @@
                         android:layout_height="14dp"
                         android:contentDescription="@null"
                         android:src="@drawable/ic_nav_chef"
-                        android:tint="@color/colorSecondaryContainer"
+                        android:tint="?attr/colorSecondaryContainer"
                         android:layout_marginEnd="4dp" />
 
                     <TextView
@@ -134,7 +181,7 @@
                         android:letterSpacing="0.05"
                         android:text="@string/ia_badge"
                         android:textAllCaps="true"
-                        android:textColor="@color/colorOnPrimary"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="11sp" />
                 </LinearLayout>
             </FrameLayout>
@@ -147,89 +194,70 @@
                 android:paddingHorizontal="24dp"
                 android:paddingTop="20dp">
 
-                <!-- Nome da receita — preenchido dinamicamente -->
                 <TextView
                     android:id="@+id/tvRecipeTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_extrabold"
-                    android:textColor="@color/colorOnSurface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="32sp"
                     android:layout_marginBottom="8dp"
                     tools:text="Frango em Crosta de Ervas" />
 
-                <!-- Descrição — preenchida dinamicamente -->
                 <TextView
                     android:id="@+id/tvRecipeDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_regular"
-                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="15sp"
                     android:lineSpacingExtra="4dp"
                     android:layout_marginBottom="16dp"
                     tools:text="Uma transformação mágica dos itens básicos da sua despensa." />
 
-                <!-- ===== Metadados: tempo, porções, dificuldade ===== -->
+                <!-- Metadados: tempo, porções, dificuldade -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginBottom="24dp">
 
-                    <!-- Tempo -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
                         android:layout_marginEnd="24dp">
                         <ImageView android:layout_width="18dp" android:layout_height="18dp"
-                            android:src="@android:drawable/ic_menu_recent_history"
-                            android:tint="@color/colorOutline" android:contentDescription="@null"
-                            android:layout_marginEnd="4dp" />
+                            android:src="@drawable/ic_time" android:tint="?attr/colorOutline"
+                            android:contentDescription="@null" android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvTime" android:layout_width="wrap_content"
                             android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
-                            android:textColor="@color/colorOutline" android:textSize="14sp"
+                            android:textColor="?attr/colorOutline" android:textSize="14sp"
                             tools:text="25 min" />
                     </LinearLayout>
 
-                    <!-- Porções -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
                         android:layout_marginEnd="24dp">
                         <ImageView android:layout_width="18dp" android:layout_height="18dp"
-                            android:src="@android:drawable/ic_menu_share"
-                            android:tint="@color/colorOutline" android:contentDescription="@null"
-                            android:layout_marginEnd="4dp" />
+                            android:src="@drawable/ic_share" android:tint="?attr/colorOutline"
+                            android:contentDescription="@null" android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvServings" android:layout_width="wrap_content"
                             android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
-                            android:textColor="@color/colorOutline" android:textSize="14sp"
+                            android:textColor="?attr/colorOutline" android:textSize="14sp"
                             tools:text="2 porções" />
                     </LinearLayout>
 
-                    <!-- Dificuldade -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical">
                         <ImageView android:layout_width="18dp" android:layout_height="18dp"
-                            android:src="@android:drawable/star_off"
-                            android:tint="@color/colorOutline" android:contentDescription="@null"
-                            android:layout_marginEnd="4dp" />
+                            android:src="@drawable/ic_favorite" android:tint="?attr/colorOutline"
+                            android:contentDescription="@null" android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvDifficulty" android:layout_width="wrap_content"
                             android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
-                            android:textColor="@color/colorOutline" android:textSize="14sp"
+                            android:textColor="?attr/colorOutline" android:textSize="14sp"
                             tools:text="Fácil" />
                     </LinearLayout>
-
                 </LinearLayout>
 
-                <!-- Botão Salvar Receita -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSalvarReceita"
                     style="@style/Widget.InventaAi.Button.Pill"
@@ -237,24 +265,18 @@
                     android:layout_height="56dp"
                     android:text="@string/btn_save_recipe"
                     android:layout_marginBottom="32dp"
-                    app:icon="@android:drawable/ic_menu_save"
+                    app:icon="@drawable/ic_save"
                     app:iconGravity="textStart" />
 
-                <!-- ===== SEÇÃO: Ingredientes ===== -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_semibold"
                     android:text="@string/ingredients_title"
-                    android:textColor="@color/colorOnSurface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="18sp"
                     android:layout_marginBottom="16dp" />
 
-                <!--
-                    GridLayout de 2 colunas preenchido dinamicamente
-                    via ChefIAActivity.adicionarCartaoIngrediente().
-                    Os cards placeholder da Sprint 2 foram removidos.
-                -->
                 <GridLayout
                     android:id="@+id/gridIngredientes"
                     android:layout_width="match_parent"
@@ -262,20 +284,15 @@
                     android:columnCount="2"
                     android:layout_marginBottom="32dp" />
 
-                <!-- ===== SEÇÃO: Modo de Fazer ===== -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_semibold"
                     android:text="@string/steps_title"
-                    android:textColor="@color/colorOnSurface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="18sp"
                     android:layout_marginBottom="16dp" />
 
-                <!--
-                    LinearLayout vertical preenchido dinamicamente
-                    via ChefIAActivity.adicionarPasso().
-                -->
                 <LinearLayout
                     android:id="@+id/llSteps"
                     android:layout_width="match_parent"
@@ -283,7 +300,6 @@
                     android:orientation="vertical"
                     android:layout_marginBottom="32dp" />
 
-                <!-- Botão Gerar Nova Receita -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnNovaReceita"
                     style="@style/Widget.InventaAi.Button.Pill"
@@ -304,7 +320,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/colorSurface"
+        android:background="?attr/colorSurface"
         app:itemIconTint="@color/selector_nav_item"
         app:itemTextColor="@color/selector_nav_item"
         app:labelVisibilityMode="labeled"

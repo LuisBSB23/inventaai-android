@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Header do Navigation Drawer — Sprint 1 -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:paddingTop="48dp"
+    android:background="@color/colorSurface">
+
+    <!-- Avatar circular -->
+    <FrameLayout
+        android:id="@+id/frameDrawerAvatar"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/bg_circle_primary_container"
+        android:layout_marginBottom="12dp">
+
+        <ImageView
+            android:id="@+id/ivDrawerAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_nav_pantry"
+            android:tint="@color/colorPrimary"
+            android:contentDescription="Avatar" />
+
+        <!-- Iniciais sobrescritas quando não há foto -->
+        <TextView
+            android:id="@+id/tvDrawerIniciais"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:fontFamily="@font/inter_bold"
+            android:textSize="22sp"
+            android:textColor="@color/colorPrimary"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Nome do usuário -->
+    <TextView
+        android:id="@+id/tvDrawerNome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_semibold"
+        android:textSize="17sp"
+        android:textColor="@color/colorOnSurface"
+        android:text="Usuário" />
+
+    <!-- ID abreviado -->
+    <TextView
+        android:id="@+id/tvDrawerIdAbreviado"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_regular"
+        android:textSize="12sp"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:text="ID: ..." />
+
+</LinearLayout>

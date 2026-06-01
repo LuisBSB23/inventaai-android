@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Folha principal -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M17,8C8,10 5.9,16.17 3.82,19.77L5.71,21C6.43,19.52 7.26,18.15 8.23,16.92C8.74,17.29 9.26,17.63 9.78,17.93L10.54,16.16C10.05,15.88 9.57,15.57 9.11,15.23C10.25,13.98 11.56,12.9 13.05,12.04L13.81,13.8C14.31,13.52 14.81,13.21 15.29,12.88C15.74,13.29 16.17,13.73 16.56,14.19L18.09,12.93C17.67,12.45 17.21,11.99 16.73,11.56C17.26,11.08 17.75,10.57 18.19,10.02L16.62,8.79C16.38,9.09 16.12,9.38 15.84,9.65C15.92,9.11 15.97,8.56 15.97,8C15.97,8 17,8 17,8Z" />
+
+    <!-- Caule -->
+    <path
+        android:fillColor="#006D36"
+        android:pathData="M12,22C12,22 10,17 10,14C10,11 12,8 12,8C12,8 14,11 14,14C14,17 12,22 12,22Z"
+        android:fillAlpha="0.6"/>
+</vector>

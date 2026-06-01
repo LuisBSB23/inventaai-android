@@ -4,6 +4,9 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -13,21 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
+import com.example.inventaai.util.CategoryIconHelper;
 import com.example.inventaai.util.DateUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DespensaAdapter — adapter do RecyclerView da tela principal (Dashboard).
- *
- * Cada card exibe: nome, quantidade+unidade, badge de dias restantes
- * e barra de frescor com cor dinâmica (verde / amarelo / vermelho).
- *
- * Uso:
- *   DespensaAdapter adapter = new DespensaAdapter(itens, item -> abrirDetalhes(item));
- *   recyclerView.setAdapter(adapter);
- */
 public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.DespensaViewHolder> {
 
     // Interface de callback — Activity implementa para receber o clique
@@ -38,6 +32,8 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     private final List<DespensaItem> items;
     private final OnItemClickListener listener;
 
+    private int ultimaPosicaoAnimada = -1;
+
     public DespensaAdapter(List<DespensaItem> items, OnItemClickListener listener) {
         this.items    = items != null ? items : new ArrayList<>();
         this.listener = listener;
@@ -47,15 +43,13 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     // ATUALIZAR LISTA
     // =========================================================================
 
-    /**
-     * Substitui os dados do adapter e notifica o RecyclerView.
-     * Chamado pelo Dashboard a cada onResume().
-     */
     public void atualizarLista(List<DespensaItem> novaLista) {
         items.clear();
         if (novaLista != null) {
             items.addAll(novaLista);
         }
+        // Reset do controle de animação para que os novos itens sejam animados
+        ultimaPosicaoAnimada = -1;
         notifyDataSetChanged();
     }
 
@@ -75,6 +69,15 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     public void onBindViewHolder(@NonNull DespensaViewHolder holder, int position) {
         DespensaItem item = items.get(position);
         holder.bind(item, listener);
+
+        // ── Anima apenas na primeira aparição do card ──────────────
+        if (position > ultimaPosicaoAnimada) {
+            Animation anim = AnimationUtils.loadAnimation(
+                    holder.itemView.getContext(), R.anim.item_appear);
+            holder.itemView.startAnimation(anim);
+            ultimaPosicaoAnimada = position;
+        }
+        // ─────────────────────────────────────────────────────────────────────
     }
 
     @Override
@@ -88,6 +91,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
     static class DespensaViewHolder extends RecyclerView.ViewHolder {
 
+        private final ImageView   ivItemIcon;        // Sprint 2: ícone de categoria
         private final TextView    tvItemName;
         private final TextView    tvItemQuantity;
         private final TextView    tvExpiryBadge;
@@ -95,6 +99,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
         DespensaViewHolder(@NonNull View itemView) {
             super(itemView);
+            ivItemIcon        = itemView.findViewById(R.id.ivItemIcon);
             tvItemName        = itemView.findViewById(R.id.tvItemName);
             tvItemQuantity    = itemView.findViewById(R.id.tvItemQuantity);
             tvExpiryBadge     = itemView.findViewById(R.id.tvExpiryBadge);
@@ -103,6 +108,10 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
         void bind(DespensaItem item, OnItemClickListener listener) {
             Context ctx = itemView.getContext();
+
+            // ── Sprint 2: ícone da categoria ─────────────────────────────────
+            int iconRes = CategoryIconHelper.getIcon(item.getCategoria());
+            ivItemIcon.setImageResource(iconRes);
 
             // Nome
             tvItemName.setText(item.getNome());

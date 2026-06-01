@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícone hambúrguer (três linhas) para abrir o Navigation Drawer -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Linha superior -->
+    <path
+        android:pathData="M3,6 L21,6"
+        android:strokeWidth="2"
+        android:strokeColor="@color/colorPrimary"
+        android:strokeLineCap="round" />
+
+    <!-- Linha do meio -->
+    <path
+        android:pathData="M3,12 L21,12"
+        android:strokeWidth="2"
+        android:strokeColor="@color/colorPrimary"
+        android:strokeLineCap="round" />
+
+    <!-- Linha inferior -->
+    <path
+        android:pathData="M3,18 L21,18"
+        android:strokeWidth="2"
+        android:strokeColor="@color/colorPrimary"
+        android:strokeLineCap="round" />
+
+</vector>

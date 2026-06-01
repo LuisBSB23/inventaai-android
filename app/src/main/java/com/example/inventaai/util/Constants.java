@@ -1,9 +1,5 @@
 package com.example.inventaai.util;
 
-/**
- * Constantes globais do aplicativo InventaAí.
- * Centralizar aqui evita "magic strings/numbers" espalhados pelo código.
- */
 public final class Constants {
 
     private Constants() {}

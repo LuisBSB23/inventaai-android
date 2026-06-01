@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Fundo circular suave -->
+    <path
+        android:pathData="M60,10 A50,50 0 1,1 59.99,10 Z"
+        android:fillColor="#1A006D36" />
+
+    <!-- Prateleira superior -->
+    <path
+        android:pathData="M20,42 L100,42 Q102,42 102,44 L102,47 Q102,49 100,49 L20,49 Q18,49 18,47 L18,44 Q18,42 20,42 Z"
+        android:fillColor="#006D36"
+        android:fillAlpha="0.35" />
+
+    <!-- Suporte esquerdo prateleira superior -->
+    <path
+        android:pathData="M30,42 L30,58"
+        android:strokeWidth="3"
+        android:strokeColor="#006D36"
+        android:strokeAlpha="0.25"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Suporte direito prateleira superior -->
+    <path
+        android:pathData="M90,42 L90,58"
+        android:strokeWidth="3"
+        android:strokeColor="#006D36"
+        android:strokeAlpha="0.25"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Prateleira do meio -->
+    <path
+        android:pathData="M20,68 L100,68 Q102,68 102,70 L102,73 Q102,75 100,75 L20,75 Q18,75 18,73 L18,70 Q18,68 20,68 Z"
+        android:fillColor="#006D36"
+        android:fillAlpha="0.35" />
+
+    <!-- Suporte esquerdo prateleira do meio -->
+    <path
+        android:pathData="M30,68 L30,84"
+        android:strokeWidth="3"
+        android:strokeColor="#006D36"
+        android:strokeAlpha="0.25"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Suporte direito prateleira do meio -->
+    <path
+        android:pathData="M90,68 L90,84"
+        android:strokeWidth="3"
+        android:strokeColor="#006D36"
+        android:strokeAlpha="0.25"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Prateleira inferior -->
+    <path
+        android:pathData="M20,94 L100,94 Q102,94 102,96 L102,99 Q102,101 100,101 L20,101 Q18,101 18,99 L18,96 Q18,94 20,94 Z"
+        android:fillColor="#006D36"
+        android:fillAlpha="0.35" />
+
+    <!-- Folha seca (centro) -->
+    <path
+        android:pathData="M60,52 Q55,46 50,50 Q55,50 60,58 Q65,50 70,50 Q65,46 60,52 Z"
+        android:fillColor="#006D36"
+        android:fillAlpha="0.45" />
+
+    <!-- Haste da folha -->
+    <path
+        android:pathData="M60,52 L60,66"
+        android:strokeWidth="1.5"
+        android:strokeColor="#006D36"
+        android:strokeAlpha="0.45"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Interrogação — arco -->
+    <path
+        android:pathData="M57,77 Q57,74 60,74 Q63,74 63,77 Q63,80 60,81 L60,83"
+        android:strokeWidth="2"
+        android:strokeColor="#006D36"
+        android:strokeAlpha="0.5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Interrogação — ponto -->
+    <path
+        android:pathData="M60,85.5 A1,1 0 1,1 59.99,85.5 Z"
+        android:fillColor="#006D36"
+        android:fillAlpha="0.5" />
+
+</vector>

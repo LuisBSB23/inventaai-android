@@ -2,22 +2,16 @@ package com.example.inventaai.data.model;
 
 import java.io.Serializable;
 
-/**
- * POJO que representa um registro de histórico de consumo ou descarte.
- * Implementa Serializable para permitir passagem via Intent entre Activities.
- *
- * Sprint 3: campo nomeCached adicionado para exibir o nome do item
- * sem precisar de um JOIN extra (desnormalização intencional).
- */
 public class HistoricoItem implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L; // incrementado na Sprint 2
 
     private long   idHistorico;
     private long   idItem;
     private String dataAcao;    // formato: YYYY-MM-DD
     private String motivo;      // "CONSUMIDO" ou "DESCARTADO"
     private String nomeCached;  // nome do item no momento do registro (denormalizado)
+    private String categoria;   // Sprint 2: categoria do item (campo auxiliar UI only)
 
     // -------------------------------------------------------------------------
     // Construtores
@@ -60,6 +54,10 @@ public class HistoricoItem implements Serializable {
     public String getNomeCached()                { return nomeCached; }
     public void setNomeCached(String nome)       { this.nomeCached = nome; }
 
+    /** Categoria do item para exibição do ícone no histórico. */
+    public String getCategoria()                 { return categoria; }
+    public void setCategoria(String categoria)   { this.categoria = categoria; }
+
     // -------------------------------------------------------------------------
     // toString
     // -------------------------------------------------------------------------
@@ -72,6 +70,7 @@ public class HistoricoItem implements Serializable {
                 + ", dataAcao='" + dataAcao + '\''
                 + ", motivo='" + motivo + '\''
                 + ", nome='" + nomeCached + '\''
+                + ", categoria='" + categoria + '\''
                 + '}';
     }
 }

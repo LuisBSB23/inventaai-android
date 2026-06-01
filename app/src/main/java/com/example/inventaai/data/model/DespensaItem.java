@@ -2,11 +2,6 @@ package com.example.inventaai.data.model;
 
 import java.io.Serializable;
 
-/**
- * POJO que representa um item da despensa.
- * Implementa Serializable para permitir passagem via Intent entre Activities.
- * dataValidade deve estar no formato YYYY-MM-DD para ordenação correta no SQLite.
- */
 public class DespensaItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -17,16 +12,11 @@ public class DespensaItem implements Serializable {
     private String unidadeMedida;
     private String dataValidade;   // formato: YYYY-MM-DD
     private String status;         // ATIVO | CONSUMIDO | DESCARTADO
-    private String categoria;      // campo auxiliar (não persiste no DB ainda)
+    private String categoria;      // campo auxiliar (UI only)
+    private String userId;         // FK → users._id (Sprint 1)
 
-    // -------------------------------------------------------------------------
-    // Construtores
-    // -------------------------------------------------------------------------
-
-    /** Construtor vazio — necessário para instanciar antes de popular com setters. */
     public DespensaItem() {}
 
-    /** Construtor completo — para inserção nova (id será atribuído pelo banco). */
     public DespensaItem(String nome, double quantidade, String unidadeMedida,
                         String dataValidade, String status) {
         this.nome          = nome;
@@ -36,7 +26,6 @@ public class DespensaItem implements Serializable {
         this.status        = status;
     }
 
-    /** Construtor com id — para reconstruir objetos lidos do banco de dados. */
     public DespensaItem(long id, String nome, double quantidade, String unidadeMedida,
                         String dataValidade, String status) {
         this.id            = id;
@@ -46,10 +35,6 @@ public class DespensaItem implements Serializable {
         this.dataValidade  = dataValidade;
         this.status        = status;
     }
-
-    // -------------------------------------------------------------------------
-    // Getters e Setters
-    // -------------------------------------------------------------------------
 
     public long getId()                        { return id; }
     public void setId(long id)                 { this.id = id; }
@@ -72,19 +57,12 @@ public class DespensaItem implements Serializable {
     public String getCategoria()               { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
 
-    // -------------------------------------------------------------------------
-    // toString — útil para logs e depuração
-    // -------------------------------------------------------------------------
+    public String getUserId()                  { return userId; }
+    public void setUserId(String userId)       { this.userId = userId; }
 
     @Override
     public String toString() {
-        return "DespensaItem{"
-                + "id=" + id
-                + ", nome='" + nome + '\''
-                + ", quantidade=" + quantidade
-                + ", unidade='" + unidadeMedida + '\''
-                + ", validade='" + dataValidade + '\''
-                + ", status='" + status + '\''
-                + '}';
+        return "DespensaItem{id=" + id + ", nome='" + nome + "', status='" + status
+                + "', userId='" + userId + "'}";
     }
 }

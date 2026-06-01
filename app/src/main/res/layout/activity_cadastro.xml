@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    activity_cadastro.xml
-    Tela de cadastro de novo alimento — Design: Culinary Vitality
-    Campos pill-shaped, unidade toggle, date picker e botão salvar verde.
--->
+
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground"
+    android:background="?attr/colorSurface"
     tools:context=".ui.cadastro.CadastroActivity">
 
     <!-- ======================== TOP APP BAR ======================== -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorSurface"
+        android:background="?attr/colorSurface"
         app:elevation="2dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -31,8 +27,8 @@
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/back"
-                android:src="@android:drawable/ic_media_previous"
-                android:tint="@color/colorPrimary"
+                android:src="@drawable/ic_back_arrow"
+                android:tint="?attr/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -42,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_bold"
                 android:text="@string/app_name"
-                android:textColor="@color/colorPrimary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="22sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -73,7 +69,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_bold"
                 android:text="@string/title_add_item"
-                android:textColor="@color/colorOnSurface"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="24sp" />
 
             <TextView
@@ -81,12 +77,12 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_regular"
                 android:text="@string/subtitle_add_item"
-                android:textColor="@color/colorOnSurfaceVariant"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="32dp" />
 
-            <!-- ===== CAMPO: Nome do Alimento ===== -->
+            <!-- CAMPO: Nome do Alimento -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilNome"
                 style="@style/Widget.InventaAi.TextInputLayout.Pill"
@@ -106,7 +102,7 @@
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ===== CAMPO: Categoria (AutoComplete) ===== -->
+            <!-- CAMPO: Categoria -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilCategoria"
                 style="@style/Widget.InventaAi.TextInputLayout.Pill"
@@ -119,14 +115,16 @@
                 <AutoCompleteTextView
                     android:id="@+id/actvCategoria"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="56dp"
                     android:fontFamily="@font/inter_regular"
                     android:inputType="none"
                     android:textSize="16sp"
+                    android:paddingStart="4dp"
+                    android:gravity="center_vertical"
                     tools:text="Hortifruti" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ===== QUANTIDADE ===== -->
+            <!-- CAMPO: Quantidade -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilQuantidade"
                 style="@style/Widget.InventaAi.TextInputLayout.Pill"
@@ -146,7 +144,7 @@
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ===== UNIDADE (toggle separado) ===== -->
+            <!-- UNIDADE toggle -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -159,7 +157,7 @@
                     android:fontFamily="@font/inter_bold"
                     android:text="UNIDADE"
                     android:textAllCaps="true"
-                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:letterSpacing="0.05"
                     android:layout_marginBottom="8dp"
@@ -209,7 +207,7 @@
                 </com.google.android.material.button.MaterialButtonToggleGroup>
             </LinearLayout>
 
-            <!-- ===== CAMPO: Data de Validade ===== -->
+            <!-- CAMPO: Data de Validade -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilDataValidade"
                 style="@style/Widget.InventaAi.TextInputLayout.Pill"
@@ -218,8 +216,8 @@
                 android:layout_marginBottom="40dp"
                 android:hint="@string/hint_expiry_date"
                 app:endIconMode="custom"
-                app:endIconDrawable="@android:drawable/ic_menu_my_calendar"
-                app:endIconTint="@color/colorPrimary">
+                app:endIconDrawable="@drawable/ic_calendar"
+                app:endIconTint="?attr/colorPrimary">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etDataValidade"
@@ -233,7 +231,7 @@
                     tools:text="22/05/2026" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ===== BOTÃO SALVAR ===== -->
+            <!-- BOTÃO SALVAR -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSalvar"
                 style="@style/Widget.InventaAi.Button.Pill"
@@ -241,7 +239,7 @@
                 android:layout_height="56dp"
                 android:text="@string/btn_save"
                 android:textSize="17sp"
-                app:icon="@android:drawable/ic_menu_add"
+                app:icon="@drawable/ic_save"
                 app:iconGravity="textStart" />
 
         </LinearLayout>

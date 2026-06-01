@@ -3,7 +3,7 @@ package com.example.inventaai.ui.historico;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,20 +20,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * HistoricoActivity — cronologia de itens consumidos e descartados.
- *
- * Sprint 3: conectada ao HistoricoRepository e ao HistoricoAdapter.
- * onResume() recarrega os dados a cada vez que a tela é exibida.
- */
 public class HistoricoActivity extends AppCompatActivity {
 
     private RecyclerView         rvHistorico;
-    private TextView             tvHistoricoEmpty;
+
+    // Sprint 5: empty state ilustrado (substitui tvHistoricoEmpty)
+    private LinearLayout         layoutEmptyHistory;
+
     private BottomNavigationView bottomNavigation;
 
-    private HistoricoRepository historicoRepository;
-    private HistoricoAdapter    historicoAdapter;
+    private HistoricoRepository  historicoRepository;
+    private HistoricoAdapter     historicoAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +55,12 @@ public class HistoricoActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
-        rvHistorico      = findViewById(R.id.rvHistorico);
-        tvHistoricoEmpty = findViewById(R.id.tvHistoricoEmpty);
-        bottomNavigation = findViewById(R.id.bottomNavigation);
+        rvHistorico        = findViewById(R.id.rvHistorico);
+        layoutEmptyHistory = findViewById(R.id.layoutEmptyHistory); // Sprint 5
+        bottomNavigation   = findViewById(R.id.bottomNavigation);
+
+        // Botão voltar na toolbar
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
     }
 
     private void configurarRecyclerView() {
@@ -73,16 +73,21 @@ public class HistoricoActivity extends AppCompatActivity {
     // CARREGAR DADOS
     // =========================================================================
 
+    /**
+     * Sprint 5: usa layoutEmptyHistory (ilustrado) no lugar do tvHistoricoEmpty anterior.
+     */
     private void carregarHistorico() {
-        List<HistoricoItem> itens = historicoRepository.listarTodos();
+        com.example.inventaai.util.SessionManager sm =
+                new com.example.inventaai.util.SessionManager(this);
+        List<HistoricoItem> itens = historicoRepository.listarTodos(sm.getUserId());
         historicoAdapter.atualizarLista(itens);
 
         if (itens.isEmpty()) {
             rvHistorico.setVisibility(View.GONE);
-            tvHistoricoEmpty.setVisibility(View.VISIBLE);
+            layoutEmptyHistory.setVisibility(View.VISIBLE);
         } else {
             rvHistorico.setVisibility(View.VISIBLE);
-            tvHistoricoEmpty.setVisibility(View.GONE);
+            layoutEmptyHistory.setVisibility(View.GONE);
         }
     }
 

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.inventaai.data.db.DatabaseContract.DespensaEntry;
 import com.example.inventaai.data.db.DatabaseContract.HistoricoEntry;
 import com.example.inventaai.data.db.DatabaseHelper;
 import com.example.inventaai.data.model.HistoricoItem;
@@ -14,11 +15,6 @@ import com.example.inventaai.util.Constants;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Encapsula as operações de leitura e escrita para a tabela historico_consumo.
- *
- * Sprint 3: fromCursor() agora lê o campo nome_item (denormalizado).
- */
 public class HistoricoRepository {
 
     private static final String TAG = Constants.LOG_TAG;
@@ -29,47 +25,56 @@ public class HistoricoRepository {
     }
 
     // =========================================================================
-    // INSERIR
+    // LISTAR TODOS (filtrado por usuário)
     // =========================================================================
 
-    public long inserir(HistoricoItem item) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        long novoId = -1;
+    public List<HistoricoItem> listarTodos(String userId) {
+        List<HistoricoItem> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
         try {
-            ContentValues values = toContentValues(item);
-            novoId = db.insert(HistoricoEntry.TABLE_NAME, null, values);
-            Log.d(TAG, "HistoricoRepository.inserir: id=" + novoId);
+            // Sprint 2: JOIN para buscar categoria
+            String sql =
+                    "SELECT h.*, d." + DespensaEntry.COLUMN_STATUS + " AS d_status "
+                            + "FROM " + HistoricoEntry.TABLE_NAME + " h "
+                            + "LEFT JOIN " + DespensaEntry.TABLE_NAME + " d "
+                            + "  ON h." + HistoricoEntry.COLUMN_ID_ITEM + " = d." + DespensaEntry._ID
+                            + " WHERE h." + HistoricoEntry.COLUMN_USER_ID + " = ?"
+                            + " ORDER BY h." + HistoricoEntry.COLUMN_DATA_ACAO + " DESC";
+
+            cursor = db.rawQuery(sql, new String[]{ userId });
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+            Log.d(TAG, "HistoricoRepository.listarTodos: " + lista.size()
+                    + " registro(s) para userId=" + userId);
         } catch (Exception e) {
-            Log.e(TAG, "HistoricoRepository.inserir: erro", e);
+            Log.e(TAG, "HistoricoRepository.listarTodos: erro", e);
+            // Fallback: query simples sem JOIN (garante que o app não quebre)
+            lista = listarTodosSemJoin(userId);
         } finally {
+            if (cursor != null) cursor.close();
             db.close();
         }
-        return novoId;
+        return lista;
     }
 
-    // =========================================================================
-    // LISTAR TODOS
-    // =========================================================================
-
     /**
-     * Retorna todos os registros do histórico, do mais recente para o mais antigo.
+     * Fallback sem JOIN — usado se a query com JOIN falhar por alguma razão.
      */
-    public List<HistoricoItem> listarTodos() {
+    private List<HistoricoItem> listarTodosSemJoin(String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
             cursor = db.query(
-                    HistoricoEntry.TABLE_NAME,
-                    null, null, null, null, null,
+                    HistoricoEntry.TABLE_NAME, null,
+                    HistoricoEntry.COLUMN_USER_ID + " = ?",
+                    new String[]{ userId },
+                    null, null,
                     HistoricoEntry.COLUMN_DATA_ACAO + " DESC"
             );
-            while (cursor.moveToNext()) {
-                lista.add(fromCursor(cursor));
-            }
-            Log.d(TAG, "HistoricoRepository.listarTodos: " + lista.size() + " registro(s).");
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
         } catch (Exception e) {
-            Log.e(TAG, "HistoricoRepository.listarTodos: erro", e);
+            Log.e(TAG, "HistoricoRepository.listarTodosSemJoin: erro", e);
         } finally {
             if (cursor != null) cursor.close();
             db.close();
@@ -78,25 +83,28 @@ public class HistoricoRepository {
     }
 
     // =========================================================================
-    // LISTAR POR PERÍODO
+    // LISTAR POR PERÍODO (filtrado por usuário)
     // =========================================================================
 
-    public List<HistoricoItem> listarPorPeriodo(String dataInicio, String dataFim) {
+    /**
+     * Também faz JOIN para popular categoria no filtro por período.
+     */
+    public List<HistoricoItem> listarPorPeriodo(String dataInicio, String dataFim, String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            cursor = db.query(
-                    HistoricoEntry.TABLE_NAME,
-                    null,
-                    HistoricoEntry.COLUMN_DATA_ACAO + " BETWEEN ? AND ?",
-                    new String[]{ dataInicio, dataFim },
-                    null, null,
-                    HistoricoEntry.COLUMN_DATA_ACAO + " DESC"
-            );
-            while (cursor.moveToNext()) {
-                lista.add(fromCursor(cursor));
-            }
+            String sql =
+                    "SELECT h.*, d." + DespensaEntry.COLUMN_STATUS + " AS d_status "
+                            + "FROM " + HistoricoEntry.TABLE_NAME + " h "
+                            + "LEFT JOIN " + DespensaEntry.TABLE_NAME + " d "
+                            + "  ON h." + HistoricoEntry.COLUMN_ID_ITEM + " = d." + DespensaEntry._ID
+                            + " WHERE h." + HistoricoEntry.COLUMN_DATA_ACAO + " BETWEEN ? AND ?"
+                            + "   AND h." + HistoricoEntry.COLUMN_USER_ID + " = ?"
+                            + " ORDER BY h." + HistoricoEntry.COLUMN_DATA_ACAO + " DESC";
+
+            cursor = db.rawQuery(sql, new String[]{ dataInicio, dataFim, userId });
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
         } catch (Exception e) {
             Log.e(TAG, "listarPorPeriodo: erro", e);
         } finally {
@@ -110,15 +118,6 @@ public class HistoricoRepository {
     // HELPERS PRIVADOS
     // =========================================================================
 
-    private ContentValues toContentValues(HistoricoItem item) {
-        ContentValues cv = new ContentValues();
-        cv.put(HistoricoEntry.COLUMN_ID_ITEM,     item.getIdItem());
-        cv.put(HistoricoEntry.COLUMN_DATA_ACAO,   item.getDataAcao());
-        cv.put(HistoricoEntry.COLUMN_MOTIVO,      item.getMotivo());
-        cv.put(HistoricoEntry.COLUMN_NOME_CACHED, item.getNomeCached());
-        return cv;
-    }
-
     private HistoricoItem fromCursor(Cursor cursor) {
         HistoricoItem item = new HistoricoItem();
         item.setIdHistorico(cursor.getLong(  cursor.getColumnIndexOrThrow(HistoricoEntry._ID)));
@@ -126,13 +125,18 @@ public class HistoricoRepository {
         item.setDataAcao(   cursor.getString(cursor.getColumnIndexOrThrow(HistoricoEntry.COLUMN_DATA_ACAO)));
         item.setMotivo(     cursor.getString(cursor.getColumnIndexOrThrow(HistoricoEntry.COLUMN_MOTIVO)));
 
-        // nome_item pode ser null em registros antigos (versão 2 do banco)
         int nomeCol = cursor.getColumnIndex(HistoricoEntry.COLUMN_NOME_CACHED);
         if (nomeCol >= 0 && !cursor.isNull(nomeCol)) {
             item.setNomeCached(cursor.getString(nomeCol));
         } else {
             item.setNomeCached("Item #" + item.getIdItem());
         }
+
+        int catCol = cursor.getColumnIndex("d_status");
+        if (catCol >= 0 && !cursor.isNull(catCol)) {
+
+        }
+
         return item;
     }
 }

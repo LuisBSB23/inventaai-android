@@ -20,12 +20,6 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Calendar;
 
-/**
- * CadastroActivity — formulário para adicionar um novo item à despensa.
- *
- * Sprint 3: persistência real via DespensaRepository, finish() ao salvar
- * para que o Dashboard atualize via onResume().
- */
 public class CadastroActivity extends AppCompatActivity {
 
     // Views
@@ -38,6 +32,7 @@ public class CadastroActivity extends AppCompatActivity {
     // Estado
     private String dataSelecionada = ""; // formato YYYY-MM-DD
     private DespensaRepository repository;
+    private com.example.inventaai.util.SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +40,7 @@ public class CadastroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cadastro);
 
         repository = new DespensaRepository(this);
+        sessionManager = new com.example.inventaai.util.SessionManager(this);
 
         vincularViews();
         configurarCategoria();
@@ -160,7 +156,7 @@ public class CadastroActivity extends AppCompatActivity {
         DespensaItem item = new DespensaItem(nome, quantidade, unidade, dataSelecionada, Constants.STATUS_ATIVO);
         item.setCategoria(categoria);
 
-        long novoId = repository.inserir(item);
+        long novoId = repository.inserir(item, sessionManager.getUserId());
 
         if (novoId != -1) {
             Toast.makeText(this, nome + " adicionado à despensa!", Toast.LENGTH_SHORT).show();
