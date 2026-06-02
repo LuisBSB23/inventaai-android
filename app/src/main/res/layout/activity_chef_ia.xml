@@ -9,7 +9,6 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.chefIA.ChefIAActivity">
 
-    <!-- ======================== TOP APP BAR ======================== -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -137,7 +136,6 @@
         android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Linha título + botão Alterar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -180,9 +178,18 @@
 
         </HorizontalScrollView>
 
-    </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGerarReceitaComItens"
+            style="@style/Widget.InventaAi.Button.Pill"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:text="✦ Gerar Receita"
+            android:textSize="16sp"
+            android:visibility="gone" />
 
-    <!-- ======================== CONTEÚDO DA RECEITA ======================== -->
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layoutSelecionarIngredientes"
@@ -249,7 +256,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ===== IMAGEM DE DESTAQUE + BADGE IA ===== -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
@@ -265,7 +271,6 @@
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_nav_chef" />
 
-                <!-- Badge "CRIAÇÃO IA" sobreposto -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -297,7 +302,6 @@
                 </LinearLayout>
             </FrameLayout>
 
-            <!-- ===== CORPO DO CONTEÚDO ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -326,7 +330,6 @@
                     android:layout_marginBottom="16dp"
                     tools:text="Uma transformação mágica dos itens básicos da sua despensa." />
 
-                <!-- Metadados: tempo, porções, dificuldade -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -422,24 +425,9 @@
                     app:iconGravity="textStart" />
 
             </LinearLayout>
-
-            <!-- ===== BOTÃO GERAR RECEITA (dentro do scroll) ===== -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnGerarReceitaComItens"
-                style="@style/Widget.InventaAi.Button.Pill"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="24dp"
-                android:text="✦ Gerar Receita"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- ======================== BOTTOM NAVIGATION ======================== -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

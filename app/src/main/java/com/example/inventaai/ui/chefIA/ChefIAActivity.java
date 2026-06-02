@@ -117,8 +117,13 @@ public class ChefIAActivity extends AppCompatActivity {
 
             if (itensSelecionados != null && !itensSelecionados.isEmpty()) {
                 exibirIngredientesSelecionados(itensSelecionados);
+
                 // Fix 4: mostra o botão "Gerar Receita" abaixo dos chips
                 if (btnGerarReceitaComItens != null) btnGerarReceitaComItens.setVisibility(View.VISIBLE);
+
+                // Ocultar layout de alerta por precaução
+                if (layoutSelecionarIngredientes != null) layoutSelecionarIngredientes.setVisibility(View.GONE);
+
                 // O conteúdo da receita fica oculto até o usuário clicar em Gerar
                 mostrarEmptyState(false);
                 mostrarCarregando(false);
@@ -184,12 +189,16 @@ public class ChefIAActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
         if (viewConteudo != null)
             viewConteudo.setVisibility(View.GONE);
-        layoutIngredientesSelecionados.setVisibility(View.GONE);
+        if (layoutIngredientesSelecionados != null)
+            layoutIngredientesSelecionados.setVisibility(View.GONE);
     }
 
     private void mostrarEmptyStateSemSelecao() {
         if (layoutEmptyRecipe != null) {
             layoutEmptyRecipe.setVisibility(View.VISIBLE);
+        }
+        if (layoutSelecionarIngredientes != null) {
+            layoutSelecionarIngredientes.setVisibility(View.GONE);
         }
         if (progressBar != null) {
             progressBar.setVisibility(View.GONE);
@@ -197,7 +206,9 @@ public class ChefIAActivity extends AppCompatActivity {
         if (viewConteudo != null) {
             viewConteudo.setVisibility(View.GONE);
         }
-        layoutIngredientesSelecionados.setVisibility(View.GONE);
+        if (layoutIngredientesSelecionados != null) {
+            layoutIngredientesSelecionados.setVisibility(View.GONE);
+        }
     }
 
     // =========================================================================
@@ -462,7 +473,10 @@ public class ChefIAActivity extends AppCompatActivity {
         if (btnGerarReceitaComItens != null) {
             btnGerarReceitaComItens.setOnClickListener(v -> {
                 if (itensSelecionados != null && !itensSelecionados.isEmpty()) {
-                    btnGerarReceitaComItens.setVisibility(View.GONE);
+                    // Oculta completamente a seção cinza/verde superior para evitar sobreposição
+                    if (layoutIngredientesSelecionados != null) {
+                        layoutIngredientesSelecionados.setVisibility(View.GONE);
+                    }
                     gerarReceitaComItens(itensSelecionados);
                 }
             });
