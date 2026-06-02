@@ -34,6 +34,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                android:id="@+id/tvToolbarTitulo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_bold"
@@ -124,7 +125,117 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/layoutIngredientesSelecionados"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/colorPrimaryContainer"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Linha título + botão Alterar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvTituloIngredientesSelecionados"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/inter_semibold"
+                android:textColor="@color/colorOnPrimaryContainer"
+                android:textSize="14sp"
+                android:text="Ingredientes selecionados" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAlterar"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Alterar"
+                android:textColor="@color/colorOnPrimaryContainer"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupIngredientes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleLine="true"
+                app:chipSpacingHorizontal="4dp" />
+
+        </HorizontalScrollView>
+
+    </LinearLayout>
+
     <!-- ======================== CONTEÚDO DA RECEITA ======================== -->
+
+    <LinearLayout
+        android:id="@+id/layoutSelecionarIngredientes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingHorizontal="32dp"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_nav_chef"
+            android:contentDescription="@null"
+            android:alpha="0.6"
+            android:tint="?attr/colorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_semibold"
+            android:text="Selecionar os Ingredientes"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="17sp"
+            android:gravity="center"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_regular"
+            android:text="Volte à sua despensa, segure um item para selecionar os ingredientes e toque em &quot;Gerar Receita com Selecionados&quot;."
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnIrParaSelecao"
+            style="@style/Widget.InventaAi.Button.Pill"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:text="Ir para a Despensa"
+            android:layout_marginTop="24dp"
+            app:icon="@drawable/ic_nav_pantry"
+            app:iconGravity="textStart" />
+
+    </LinearLayout>
+
+
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollViewConteudo"
         android:layout_width="match_parent"
@@ -311,6 +422,20 @@
                     app:iconGravity="textStart" />
 
             </LinearLayout>
+
+            <!-- ===== BOTÃO GERAR RECEITA (dentro do scroll) ===== -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGerarReceitaComItens"
+                style="@style/Widget.InventaAi.Button.Pill"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp"
+                android:text="✦ Gerar Receita"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

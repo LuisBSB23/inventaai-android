@@ -46,33 +46,31 @@ import java.util.List;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    // Views principais
+    // ── Views principais ──────────────────────────────────────────────────────
     private DrawerLayout         drawerLayout;
     private NavigationView       navigationView;
     private RecyclerView         rvExpiringSoon;
     private RecyclerView         rvPantryItems;
-
-    // Empty state ilustrado
     private LinearLayout         layoutEmptyPantry;
-
     private TextView             tvGreetingUser;
     private FrameLayout          ivAvatar;
     private ImageView            ivAvatarImg;
     private TextView             tvAvatarIniciais;
     private MaterialButton       btnGenerateRecipe;
     private BottomNavigationView bottomNavigation;
-
-    // SPRINT 7 — TAREFA 2: indicador de carregamento
     private CircularProgressIndicator progressBar;
-
-    // Card de Saúde da Despensa para animação de entrada
     private View                 cardSaudeDespensa;
 
-    // Adapters
+    // Sprint 8 — Barra de modo de seleção
+    private LinearLayout         layoutBarraSelecao;
+    private TextView             tvContadorSelecao;
+    private MaterialButton       btnCancelarSelecao;
+
+    // ── Adapters ──────────────────────────────────────────────────────────────
     private DespensaAdapter adapterExpiringSoon;
     private DespensaAdapter adapterPantry;
 
-    // Dependências
+    // ── Dependências ──────────────────────────────────────────────────────────
     private DespensaRepository despensaRepository;
     private UserRepository     userRepository;
     private SessionManager     sessionManager;
@@ -91,7 +89,6 @@ public class DashboardActivity extends AppCompatActivity {
         despensaRepository = new DespensaRepository(this);
         userRepository     = new UserRepository(this);
 
-        // Verifica sessão — sem usuário logado vai para Login
         currentUserId = sessionManager.getUserId();
         if (currentUserId == null) {
             irParaLogin();
@@ -109,8 +106,6 @@ public class DashboardActivity extends AppCompatActivity {
         configurarBotoes();
         configurarBottomNavigation();
         configurarDrawer();
-
-        // Sprint 6: anima o card de Saúde da Despensa na entrada da tela
         animarCardSaude();
     }
 
@@ -140,11 +135,12 @@ public class DashboardActivity extends AppCompatActivity {
         btnGenerateRecipe = findViewById(R.id.btnGenerateRecipe);
         bottomNavigation  = findViewById(R.id.bottomNavigation);
         cardSaudeDespensa = findViewById(R.id.cardPantryHealth);
+        progressBar       = findViewById(R.id.progressBarDashboard);
 
-        // SPRINT 7 — TAREFA 2: vincular o indicador de carregamento
-        // O layout precisa ter: <com.google.android.material.progressindicator.CircularProgressIndicator
-        //     android:id="@+id/progressBarDashboard" ... android:visibility="gone" />
-        progressBar = findViewById(R.id.progressBarDashboard);
+        // barra de seleção
+        layoutBarraSelecao = findViewById(R.id.layoutBarraSelecao);
+        tvContadorSelecao  = findViewById(R.id.tvContadorSelecao);
+        btnCancelarSelecao = findViewById(R.id.btnCancelarSelecao);
     }
 
     private void configurarRecyclerViews() {
@@ -156,34 +152,60 @@ public class DashboardActivity extends AppCompatActivity {
         rvPantryItems.setLayoutManager(new GridLayoutManager(this, 2));
         adapterPantry = new DespensaAdapter(new ArrayList<>(), this::abrirDetalhes);
         rvPantryItems.setAdapter(adapterPantry);
+
+        // ── registra long click para ativar modo de seleção ─────
+        adapterPantry.setOnItemLongClickListener(item -> {
+            if (!adapterPantry.isModoSelecao()) {
+                adapterPantry.setModoSelecao(true);
+            }
+            // Seleciona o próprio item que sofreu long click
+            // Simula um clique para acionar o toggle interno do adapter
+            adapterPantry.selecionarItem(item.getId());
+            atualizarBarraSelecao();
+        });
+
+        // Fix 2: atualiza o contador na barra a cada toggle de item
+        adapterPantry.setOnSelecaoChangedListener(total -> {
+            tvContadorSelecao.setText(total + " selecionado(s)");
+        });
     }
 
     // =========================================================================
-    // Carregar dados no background thread
+    // BARRA DE SELEÇÃO
+    // =========================================================================
+
+    private void atualizarBarraSelecao() {
+        boolean modoAtivo = adapterPantry.isModoSelecao();
+        int quantidade    = adapterPantry.getQuantidadeSelecionados();
+
+        if (modoAtivo) {
+            layoutBarraSelecao.setVisibility(View.VISIBLE);
+            tvContadorSelecao.setText(quantidade + " selecionado(s)");
+            btnGenerateRecipe.setText("Gerar Receita com Selecionados");
+        } else {
+            layoutBarraSelecao.setVisibility(View.GONE);
+            btnGenerateRecipe.setText(getString(R.string.generate_recipe));
+        }
+    }
+
+    // =========================================================================
+    // CARREGAR DADOS
     // =========================================================================
 
     private void atualizarListas() {
-        // Mostra indicador e oculta listas durante o carregamento
         mostrarCarregando(true);
-
         final String userId = currentUserId;
 
         AppExecutors.diskIO().execute(() -> {
-            // ── Fora da UI thread: operações de banco ──────────────────────
-            final List<DespensaItem> todos =
-                    despensaRepository.listarAtivos(userId);
-            final List<DespensaItem> expirando =
-                    despensaRepository.listarProximosVencimento(7, userId);
+            final List<DespensaItem> todos     = despensaRepository.listarAtivos(userId);
+            final List<DespensaItem> expirando = despensaRepository.listarProximosVencimento(7, userId);
 
-            // ── De volta na UI thread: atualizar views ─────────────────────
             AppExecutors.mainThread().execute(() -> {
-                // Protege contra Activity destruída enquanto rodava em background
                 if (isFinishing() || isDestroyed()) return;
 
                 adapterPantry.atualizarLista(todos);
                 adapterExpiringSoon.atualizarLista(expirando);
 
-                // Controle do empty state
                 if (todos.isEmpty()) {
                     rvPantryItems.setVisibility(View.GONE);
                     layoutEmptyPantry.setVisibility(View.VISIBLE);
@@ -197,32 +219,26 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    /** Exibe ou oculta o CircularProgressIndicator e as RecyclerViews. */
     private void mostrarCarregando(boolean carregando) {
         if (progressBar != null) {
             progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE);
         }
-        // Oculta as listas durante o carregamento para evitar estado vazio piscando
         rvExpiringSoon.setVisibility(carregando ? View.INVISIBLE : View.VISIBLE);
         rvPantryItems.setVisibility( carregando ? View.INVISIBLE : View.VISIBLE);
     }
 
     // =========================================================================
-    // SPRINT 6: ANIMAÇÃO DO CARD DE SAÚDE DA DESPENSA
+    // ANIMAÇÃO CARD DE SAÚDE
     // =========================================================================
 
     private void animarCardSaude() {
         if (cardSaudeDespensa == null) return;
-
         cardSaudeDespensa.setAlpha(0f);
         cardSaudeDespensa.setScaleX(0.85f);
         cardSaudeDespensa.setScaleY(0.85f);
-
         cardSaudeDespensa.postDelayed(() ->
                         cardSaudeDespensa.animate()
-                                .alpha(1f)
-                                .scaleX(1f)
-                                .scaleY(1f)
+                                .alpha(1f).scaleX(1f).scaleY(1f)
                                 .setDuration(400)
                                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                                 .start(),
@@ -243,7 +259,6 @@ public class DashboardActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             drawerLayout.closeDrawers();
-
             if (id == R.id.nav_perfil) {
                 startActivity(new Intent(this, PerfilActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -256,13 +271,9 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void atualizarHeaderDrawer() {
-        // Header do Drawer também pode ser pesado (query + Glide).
-        // Mantemos em background para consistência.
         final String userId = currentUserId;
-
         AppExecutors.diskIO().execute(() -> {
             final User user = userRepository.getUserById(userId);
-
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed() || user == null) return;
 
@@ -307,6 +318,12 @@ public class DashboardActivity extends AppCompatActivity {
     // =========================================================================
 
     private void abrirDetalhes(DespensaItem item) {
+        // Se o modo de seleção está ativo, clique normal seleciona/desseleciona
+        // (tratado no adapter). Só abre detalhes fora do modo de seleção.
+        if (adapterPantry.isModoSelecao()) {
+            atualizarBarraSelecao();
+            return;
+        }
         Intent intent = new Intent(this, DetalhesActivity.class);
         intent.putExtra(DetalhesActivity.EXTRA_ITEM, item);
         startActivity(intent);
@@ -316,19 +333,44 @@ public class DashboardActivity extends AppCompatActivity {
     public void abrirDetalhesComSharedElement(DespensaItem item, View sharedView) {
         Intent intent = new Intent(this, DetalhesActivity.class);
         intent.putExtra(DetalhesActivity.EXTRA_ITEM, item);
-
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                this,
-                new Pair<>(sharedView, sharedView.getTransitionName())
-        );
-
+                this, new Pair<>(sharedView, sharedView.getTransitionName()));
         startActivity(intent, options.toBundle());
     }
 
     private void configurarBotoes() {
+        // ── Botão "Gerar Receita" / "Gerar Receita com Selecionados" ──────
         btnGenerateRecipe.setOnClickListener(v -> {
-            startActivity(new Intent(this, ChefIAActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            if (adapterPantry.isModoSelecao()) {
+                // Sprint 8: há modo de seleção ativo — envia itens para o Chef IA
+                List<DespensaItem> selecionados = adapterPantry.getItensSelecionados();
+
+                Intent intent = new Intent(this, ChefIAActivity.class);
+
+                if (!selecionados.isEmpty()) {
+                    // Serializa a lista como ArrayList (DespensaItem implementa Serializable)
+                    intent.putExtra(
+                            ChefIAActivity.EXTRA_ITENS_SELECIONADOS,
+                            new ArrayList<>(selecionados));
+                }
+                // Limpa a seleção antes de abrir
+                adapterPantry.limparSelecao();
+                atualizarBarraSelecao();
+
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
+            } else {
+                // Comportamento de "descoberta": abre o Chef IA sem itens pré-selecionados
+                startActivity(new Intent(this, ChefIAActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }
+        });
+
+        // ── Sprint 8: botão cancelar seleção ──────────────────────────────
+        btnCancelarSelecao.setOnClickListener(v -> {
+            adapterPantry.limparSelecao();
+            atualizarBarraSelecao();
         });
     }
 
@@ -368,6 +410,10 @@ public class DashboardActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawers();
+        } else if (adapterPantry.isModoSelecao()) {
+            // Sprint 8: back cancela a seleção antes de fechar a tela
+            adapterPantry.limparSelecao();
+            atualizarBarraSelecao();
         } else {
             super.onBackPressed();
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);

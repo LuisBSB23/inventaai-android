@@ -37,6 +37,7 @@ public class DetalhesActivity extends AppCompatActivity {
     private MaterialButton btnSalvar;
     private MaterialButton btnRemover;
     private ImageView     ivItemImage;
+    private ImageButton   btnVoltarDetalhes; // Fix 5
 
     // Estado
     private DespensaItem item;
@@ -74,10 +75,14 @@ public class DetalhesActivity extends AppCompatActivity {
         btnSalvar     = findViewById(R.id.btnSalvar);
         btnRemover    = findViewById(R.id.btnRemover);
         ivItemImage   = findViewById(R.id.ivItemImage);
+        btnVoltarDetalhes = findViewById(R.id.btnVoltarDetalhes); // Fix 5
 
-        // Define o transitionName no ivItemImage para shared element
-        if (ivItemImage != null) {
-            ViewCompat.setTransitionName(ivItemImage, TRANSITION_NAME_ICON);
+        // Fix 5: botão voltar
+        if (btnVoltarDetalhes != null) {
+            btnVoltarDetalhes.setOnClickListener(v -> {
+                finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            });
         }
     }
 

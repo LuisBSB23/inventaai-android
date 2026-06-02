@@ -341,7 +341,7 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- Sprint 6: bloco inferior fixo — botão ACIMA do BottomNav, sem sobreposição -->
+        <!-- Sprint 6/8: bloco inferior fixo — botão ACIMA do BottomNav, sem sobreposição -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -354,6 +354,39 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/colorSurfaceContainerHighest" />
+
+
+            <LinearLayout
+                android:id="@+id/layoutBarraSelecao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:background="@color/colorPrimaryContainer"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvContadorSelecao"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/inter_semibold"
+                    android:textColor="@color/colorOnPrimaryContainer"
+                    android:textSize="14sp"
+                    android:text="0 selecionado(s)" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancelarSelecao"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="✕ Cancelar seleção"
+                    android:textColor="@color/colorOnPrimaryContainer"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
 
             <!-- Botão Gerar Receita -->
             <com.google.android.material.button.MaterialButton
