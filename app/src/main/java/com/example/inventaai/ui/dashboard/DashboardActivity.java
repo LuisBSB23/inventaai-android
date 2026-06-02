@@ -51,32 +51,32 @@ import java.util.List;
 public class DashboardActivity extends AppCompatActivity {
 
     // ── Views principais ──────────────────────────────────────────────────────
-    private DrawerLayout             drawerLayout;
-    private NavigationView           navigationView;
-    private RecyclerView             rvExpiringSoon;
-    private RecyclerView             rvPantryItems;
-    private LinearLayout             layoutEmptyPantry;
-    private TextView                 tvGreetingUser;
-    private FrameLayout              ivAvatar;
-    private ImageView                ivAvatarImg;
-    private TextView                 tvAvatarIniciais;
-    private MaterialButton           btnGenerateRecipe;
-    private BottomNavigationView     bottomNavigation;
+    private DrawerLayout              drawerLayout;
+    private NavigationView            navigationView;
+    private RecyclerView              rvExpiringSoon;
+    private RecyclerView              rvPantryItems;
+    private LinearLayout              layoutEmptyPantry;
+    private TextView                  tvGreetingUser;
+    private FrameLayout               ivAvatar;
+    private ImageView                 ivAvatarImg;
+    private TextView                  tvAvatarIniciais;
+    private MaterialButton            btnGenerateRecipe;
+    private BottomNavigationView      bottomNavigation;
     private CircularProgressIndicator progressBar;
-    private View                     cardSaudeDespensa;
+    private View                      cardSaudeDespensa;
 
     // Barra de modo de seleção
-    private LinearLayout             layoutBarraSelecao;
-    private TextView                 tvContadorSelecao;
-    private MaterialButton           btnCancelarSelecao;
+    private LinearLayout  layoutBarraSelecao;
+    private TextView      tvContadorSelecao;
+    private MaterialButton btnCancelarSelecao;
 
     // ── Card de Saúde dinâmico ──────────────────────────────────
-    private TextView                 tvSaudePercent;
-    private TextView                 tvSaudeLabel;
-    private ImageView                ivSaudeIcon;
+    private TextView  tvSaudePercent;
+    private TextView  tvSaudeLabel;
+    private ImageView ivSaudeIcon;
 
     // ── Seção "Vencendo Logo" ocultável ─────────────────────────
-    private LinearLayout             layoutSectionVencendo;
+    private LinearLayout layoutSectionVencendo;
 
     // ── Adapters ──────────────────────────────────────────────────────────────
     private DespensaAdapter adapterExpiringSoon;
@@ -126,6 +126,14 @@ public class DashboardActivity extends AppCompatActivity {
         super.onResume();
         currentUserId = sessionManager.getUserId();
         if (currentUserId == null) { irParaLogin(); return; }
+
+        // Tarefa 1: garante que o indicador correto fique sempre
+        // selecionado ao voltar para esta tela (ex: após pressionar Voltar
+        // vindo de outra aba ou de DetalhesActivity).
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_pantry);
+        }
+
         atualizarListas();
         atualizarHeaderDrawer();
     }
@@ -216,7 +224,6 @@ public class DashboardActivity extends AppCompatActivity {
 
         AppExecutors.diskIO().execute(() -> {
             final List<DespensaItem> todos     = despensaRepository.listarAtivos(userId);
-            // passa Constants.DIAS_ALERTA_AMARELO (agora = 7) explicitamente
             final List<DespensaItem> expirando =
                     despensaRepository.listarProximosVencimento(Constants.DIAS_ALERTA_AMARELO, userId);
 
@@ -226,11 +233,9 @@ public class DashboardActivity extends AppCompatActivity {
                 adapterPantry.atualizarLista(todos);
                 adapterExpiringSoon.atualizarLista(expirando);
 
-                // recalcula e exibe saúde da despensa com dados reais
                 int percent = calcularSaudePercent(todos);
                 atualizarCardSaude(percent);
 
-                // oculta/exibe seção "Vencendo Logo" conforme lista
                 atualizarVisibilidadeSectionVencendo(expirando);
 
                 if (todos.isEmpty()) {
@@ -277,7 +282,6 @@ public class DashboardActivity extends AppCompatActivity {
     private void atualizarCardSaude(int percent) {
         if (tvSaudePercent == null || tvSaudeLabel == null) return;
 
-        // Define texto do label, cor e ícone conforme faixa
         final String label;
         final int    corPercent;
         final int    drawableIcon;
@@ -303,7 +307,6 @@ public class DashboardActivity extends AppCompatActivity {
             ivSaudeIcon.setColorFilter(corPercent);
         }
 
-        // Animação de 0 → percent usando ValueAnimator
         ValueAnimator animator = ValueAnimator.ofInt(0, percent);
         animator.setDuration(700);
         animator.setInterpolator(new DecelerateInterpolator());
@@ -325,7 +328,6 @@ public class DashboardActivity extends AppCompatActivity {
         if (expirando.isEmpty()) {
             layoutSectionVencendo.setVisibility(View.GONE);
         } else {
-            // Aplica fade-in apenas se a seção estava oculta
             if (layoutSectionVencendo.getVisibility() != View.VISIBLE) {
                 layoutSectionVencendo.setAlpha(0f);
                 layoutSectionVencendo.setVisibility(View.VISIBLE);
@@ -476,22 +478,37 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void configurarBottomNavigation() {
-        bottomNavigation.setSelectedItemId(R.id.nav_pantry);
+        // tarefa 2: singleTop + REORDER_TO_FRONT evitam duplicatas.
+        // O setSelectedItemId inicial é removido daqui e movido para onResume(),
+        // onde é garantido a cada vez que a tela volta ao primeiro plano.
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_pantry)  return true;
+
+            if (id == R.id.nav_pantry) {
+                // Já estamos aqui — não faz nada
+                return true;
+            }
             if (id == R.id.nav_add) {
-                startActivity(new Intent(this, CadastroActivity.class));
+                Intent intent = new Intent(this, CadastroActivity.class);
+                // CadastroActivity não faz parte do ciclo singleTop do BottomNav,
+                // por isso não usamos REORDER_TO_FRONT aqui.
+                startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }
             if (id == R.id.nav_history) {
-                startActivity(new Intent(this, HistoricoActivity.class));
+                Intent intent = new Intent(this, HistoricoActivity.class);
+                // Tarefa 2: reutiliza instância existente em vez de criar nova.
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }
             if (id == R.id.nav_chef_ia) {
-                startActivity(new Intent(this, ChefIAActivity.class));
+                Intent intent = new Intent(this, ChefIAActivity.class);
+                // Tarefa 2: reutiliza instância existente em vez de criar nova.
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }

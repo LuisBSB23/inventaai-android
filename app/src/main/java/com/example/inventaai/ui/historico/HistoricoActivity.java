@@ -25,15 +25,13 @@ import java.util.List;
 
 public class HistoricoActivity extends AppCompatActivity {
 
-    private RecyclerView         rvHistorico;
-    private LinearLayout         layoutEmptyHistory;
-    private BottomNavigationView bottomNavigation;
-
-    // SPRINT 7 — TAREFA 2: indicador de carregamento
+    private RecyclerView              rvHistorico;
+    private LinearLayout              layoutEmptyHistory;
+    private BottomNavigationView      bottomNavigation;
     private CircularProgressIndicator progressBar;
 
-    private HistoricoRepository  historicoRepository;
-    private HistoricoAdapter     historicoAdapter;
+    private HistoricoRepository historicoRepository;
+    private HistoricoAdapter    historicoAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +48,11 @@ public class HistoricoActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Tarefa 1: garante que o indicador correto fique sempre
+        // selecionado ao voltar para esta tela (ex: após pressionar Voltar).
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_history);
+        }
         carregarHistorico();
     }
 
@@ -61,13 +64,13 @@ public class HistoricoActivity extends AppCompatActivity {
         rvHistorico        = findViewById(R.id.rvHistorico);
         layoutEmptyHistory = findViewById(R.id.layoutEmptyHistory);
         bottomNavigation   = findViewById(R.id.bottomNavigation);
+        progressBar        = findViewById(R.id.progressBarHistorico);
 
-        // SPRINT 7 — TAREFA 2: indicador de carregamento
-        // O layout precisa ter: <com.google.android.material.progressindicator.CircularProgressIndicator
-        //     android:id="@+id/progressBarHistorico" ... android:visibility="gone" />
-        progressBar = findViewById(R.id.progressBarHistorico);
-
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        // Tarefa 3: btnBack aciona finish() com animação de "voltar".
+        findViewById(R.id.btnBack).setOnClickListener(v -> {
+            finish();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        });
     }
 
     private void configurarRecyclerView() {
@@ -77,20 +80,17 @@ public class HistoricoActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // SPRINT 7 — TAREFA 2: Carregar histórico no background thread
+    // CARREGAR HISTÓRICO (background thread)
     // =========================================================================
 
     private void carregarHistorico() {
         mostrarCarregando(true);
 
-        // Captura userId antes de entrar no background thread
         final String userId = new SessionManager(this).getUserId();
 
         AppExecutors.diskIO().execute(() -> {
-            // ── Fora da UI thread: query no banco ──────────────────────────
             final List<HistoricoItem> itens = historicoRepository.listarTodos(userId);
 
-            // ── De volta na UI thread: atualizar views ─────────────────────
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed()) return;
 
@@ -109,7 +109,6 @@ public class HistoricoActivity extends AppCompatActivity {
         });
     }
 
-    /** Exibe ou oculta o CircularProgressIndicator e a lista. */
     private void mostrarCarregando(boolean carregando) {
         if (progressBar != null) {
             progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE);
@@ -122,22 +121,32 @@ public class HistoricoActivity extends AppCompatActivity {
     // =========================================================================
 
     private void configurarBottomNavigation() {
-        bottomNavigation.setSelectedItemId(R.id.nav_history);
+        // Tarefa 1: setSelectedItemId movido para onResume().
+        // Mantemos aqui apenas o listener de cliques.
 
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
             if (id == R.id.nav_history) {
+                // Já estamos aqui — não faz nada
                 return true;
             } else if (id == R.id.nav_pantry) {
-                startActivity(new Intent(this, DashboardActivity.class));
-                finish();
+                // Tarefa 2: CLEAR_TOP para o Dashboard (home).
+                Intent intent = new Intent(this, DashboardActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 return true;
             } else if (id == R.id.nav_add) {
                 startActivity(new Intent(this, CadastroActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             } else if (id == R.id.nav_chef_ia) {
-                startActivity(new Intent(this, ChefIAActivity.class));
+                // Tarefa 2: reutiliza instância existente.
+                Intent intent = new Intent(this, ChefIAActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }
 

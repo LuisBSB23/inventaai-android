@@ -60,15 +60,15 @@ public class ChefIAActivity extends AppCompatActivity {
     private LinearLayout         layoutEmptyRecipe;
 
     // Sprint 8 — seção de ingredientes selecionados
-    private LinearLayout         layoutIngredientesSelecionados;
-    private ChipGroup            chipGroupIngredientes;
-    private MaterialButton       btnAlterar;
+    private LinearLayout  layoutIngredientesSelecionados;
+    private ChipGroup     chipGroupIngredientes;
+    private MaterialButton btnAlterar;
 
     // Fix 3 — empty state "selecionar ingredientes"
-    private LinearLayout         layoutSelecionarIngredientes;
+    private LinearLayout layoutSelecionarIngredientes;
 
     // Fix 4 — botão gerar receita visível quando há itens selecionados
-    private MaterialButton       btnGerarReceitaComItens;
+    private MaterialButton btnGerarReceitaComItens;
 
     // ── Dependências ──────────────────────────────────────────────────────────
     private DespensaRepository despensaRepository;
@@ -78,7 +78,7 @@ public class ChefIAActivity extends AppCompatActivity {
     // Receita atual em memória (para o botão Salvar)
     private ReceitaResponse receitaAtual;
 
-    // Sprint 8 — lista de itens recebidos da Despensa (pode ser nula)
+    // lista de itens recebidos da Despensa (pode ser nula)
     private List<DespensaItem> itensSelecionados;
 
     // =========================================================================
@@ -98,8 +98,18 @@ public class ChefIAActivity extends AppCompatActivity {
         configurarBotoes();
         configurarBottomNavigation();
 
-        // Sprint 8: verifica se viemos com itens selecionados da Despensa
+        // verifica se viemos com itens selecionados da Despensa
         verificarIntentEConfigurarTela();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Tarefa 1: garante que o indicador correto fique sempre
+        // selecionado ao voltar para esta tela (ex: após pressionar Voltar).
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_chef_ia);
+        }
     }
 
     // =========================================================================
@@ -146,10 +156,8 @@ public class ChefIAActivity extends AppCompatActivity {
                     : 0;
             AppExecutors.mainThread().execute(() -> {
                 if (totalItens > 0) {
-                    // Despensa com itens: orienta o usuário a selecionar
                     mostrarEstadoSelecionarIngredientes();
                 } else {
-                    // Despensa vazia: empty state original
                     mostrarEmptyStateSemSelecao();
                 }
             });
@@ -164,7 +172,6 @@ public class ChefIAActivity extends AppCompatActivity {
             Chip chip = new Chip(this);
             chip.setText(item.getNome());
 
-            // Ícone da categoria via CategoryIconHelper
             int iconRes = CategoryIconHelper.getIcon(item.getCategoria());
             chip.setChipIconResource(iconRes);
             chip.setChipIconVisible(true);
@@ -174,7 +181,6 @@ public class ChefIAActivity extends AppCompatActivity {
             chipGroupIngredientes.addView(chip);
         }
 
-        // Atualiza o título da toolbar: "Chef IA · N ingredientes"
         int n = itens.size();
         String sufixo = n == 1 ? "1 ingrediente" : n + " ingredientes";
         tvToolbarTitulo.setText("Chef IA · " + sufixo);
@@ -194,21 +200,16 @@ public class ChefIAActivity extends AppCompatActivity {
     }
 
     private void mostrarEmptyStateSemSelecao() {
-        if (layoutEmptyRecipe != null) {
+        if (layoutEmptyRecipe != null)
             layoutEmptyRecipe.setVisibility(View.VISIBLE);
-        }
-        if (layoutSelecionarIngredientes != null) {
+        if (layoutSelecionarIngredientes != null)
             layoutSelecionarIngredientes.setVisibility(View.GONE);
-        }
-        if (progressBar != null) {
+        if (progressBar != null)
             progressBar.setVisibility(View.GONE);
-        }
-        if (viewConteudo != null) {
+        if (viewConteudo != null)
             viewConteudo.setVisibility(View.GONE);
-        }
-        if (layoutIngredientesSelecionados != null) {
+        if (layoutIngredientesSelecionados != null)
             layoutIngredientesSelecionados.setVisibility(View.GONE);
-        }
     }
 
     // =========================================================================
@@ -460,7 +461,11 @@ public class ChefIAActivity extends AppCompatActivity {
         btnGerarReceitaComItens      = findViewById(R.id.btnGerarReceitaComItens);
 
         // Botões da toolbar
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        // Tarefa 3: finish() com animação correta de "voltar"
+        findViewById(R.id.btnBack).setOnClickListener(v -> {
+            finish();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        });
         findViewById(R.id.btnSavedRecipes).setOnClickListener(v ->
                 Toast.makeText(this, "Receitas salvas — em breve!", Toast.LENGTH_SHORT).show());
     }
@@ -473,7 +478,6 @@ public class ChefIAActivity extends AppCompatActivity {
         if (btnGerarReceitaComItens != null) {
             btnGerarReceitaComItens.setOnClickListener(v -> {
                 if (itensSelecionados != null && !itensSelecionados.isEmpty()) {
-                    // Oculta completamente a seção cinza/verde superior para evitar sobreposição
                     if (layoutIngredientesSelecionados != null) {
                         layoutIngredientesSelecionados.setVisibility(View.GONE);
                     }
@@ -486,6 +490,8 @@ public class ChefIAActivity extends AppCompatActivity {
         View btnIrParaSelecao = findViewById(R.id.btnIrParaSelecao);
         if (btnIrParaSelecao != null) {
             btnIrParaSelecao.setOnClickListener(v -> {
+                // Tarefa 2: usa CLEAR_TOP para garantir pilha limpa
+                // ao voltar ao Dashboard (tela principal).
                 Intent intent = new Intent(this, DashboardActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
@@ -496,10 +502,8 @@ public class ChefIAActivity extends AppCompatActivity {
         // ── "Gerar Nova Receita" (botão dentro do scroll — pós geração) ───
         btnNovaReceita.setOnClickListener(v -> {
             if (itensSelecionados != null && !itensSelecionados.isEmpty()) {
-                // usa os itens recebidos da Despensa
                 gerarReceitaComItens(itensSelecionados);
             } else {
-                // sem itens — orienta o usuário a voltar para a Despensa
                 Toast.makeText(this,
                         "Selecione ingredientes na despensa primeiro",
                         Toast.LENGTH_SHORT).show();
@@ -549,21 +553,31 @@ public class ChefIAActivity extends AppCompatActivity {
 
     private void configurarBottomNavigation() {
         bottomNavigation = findViewById(R.id.bottomNavigation);
-        bottomNavigation.setSelectedItemId(R.id.nav_chef_ia);
+        // Tarefa 1: setSelectedItemId movido para onResume().
+        // Mantemos aqui apenas o listener de cliques.
 
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.nav_chef_ia) {
+                // Já estamos aqui — não faz nada
                 return true;
             } else if (id == R.id.nav_pantry) {
-                startActivity(new Intent(this, DashboardActivity.class));
-                finish();
+                // tarefa 2: CLEAR_TOP para o Dashboard (home).
+                Intent intent = new Intent(this, DashboardActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 return true;
             } else if (id == R.id.nav_add) {
                 startActivity(new Intent(this, CadastroActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             } else if (id == R.id.nav_history) {
-                startActivity(new Intent(this, HistoricoActivity.class));
+                Intent intent = new Intent(this, HistoricoActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }
             return false;

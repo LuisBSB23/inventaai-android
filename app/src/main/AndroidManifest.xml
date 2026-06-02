@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Login — agora é uma Activity interna (não mais launcher) -->
+        <!-- Login — não é o launcher -->
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="false"
@@ -50,12 +50,13 @@
             android:label="Meu Perfil"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Dashboard (aberto após login; não é mais o launcher) -->
+        <!-- Tarefa 2: launchMode="singleTop" nas três Activities do BottomNav. -->
         <activity
             android:name=".ui.dashboard.DashboardActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop" />
 
-        <!-- Cadastro de novo item -->
+        <!-- Cadastro de novo item (não faz parte do ciclo singleTop do BottomNav) -->
         <activity
             android:name=".ui.cadastro.CadastroActivity"
             android:exported="false"
@@ -69,13 +70,13 @@
             android:label="Detalhes do Item"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Histórico de consumo e descarte -->
+        <!-- Tarefa 2: launchMode="singleTop" + Tarefa 1: indicador do BottomNav corrigido via onResume(). -->
         <activity
             android:name=".ui.historico.HistoricoActivity"
             android:exported="false"
-            android:label="Histórico" />
+            android:label="Histórico"
+            android:launchMode="singleTop" />
 
-        <!-- Chef IA — geração de receitas -->
         <activity
             android:name=".ui.chefIA.ChefIAActivity"
             android:exported="false"
