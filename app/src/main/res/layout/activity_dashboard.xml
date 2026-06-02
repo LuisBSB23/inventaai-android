@@ -17,7 +17,7 @@
         android:layout_height="match_parent"
         android:background="?attr/colorSurface">
 
-        <!-- Dashboard: indicador de carregamento -->
+        <!-- Indicador de carregamento -->
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progressBarDashboard"
             android:layout_width="wrap_content"
@@ -25,10 +25,6 @@
             android:layout_gravity="center"
             android:visibility="gone"
             app:indicatorColor="@color/colorPrimary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             tools:visibility="visible" />
 
         <!-- TOP APP BAR -->
@@ -155,7 +151,10 @@
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
 
-                <!-- CARD SAÚDE -->
+                <!-- ============================================================ -->
+                <!-- CARD SAÚDE DA DESPENSA                                       -->
+                <!-- Adicionados: tvSaudePercent, tvSaudeLabel, ivSaudeIcon       -->
+                <!-- ============================================================ -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardPantryHealth"
                     android:layout_width="match_parent"
@@ -178,10 +177,11 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@id/ivHealthIcon"
+                            app:layout_constraintEnd_toStartOf="@id/flHealthIconContainer"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
+                            <!-- Label "SAÚDE DA DESPENSA" -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -193,18 +193,29 @@
                                 android:textSize="11sp" />
 
                             <TextView
-                                android:id="@+id/tvHealthValue"
+                                android:id="@+id/tvSaudePercent"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/inter_extrabold"
+                                android:textSize="32sp"
+                                android:textColor="?attr/colorPrimary"
+                                android:layout_marginTop="4dp"
+                                tools:text="87%" />
+
+                            <TextView
+                                android:id="@+id/tvSaudeLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/inter_semibold"
-                                android:text="@string/pantry_health_value"
-                                android:textColor="?attr/colorOnSurface"
-                                android:textSize="20sp"
-                                android:layout_marginTop="4dp" />
+                                android:textSize="16sp"
+                                android:textColor="?attr/colorPrimary"
+                                android:layout_marginTop="2dp"
+                                tools:text="Ideal" />
+
                         </LinearLayout>
 
                         <FrameLayout
-                            android:id="@+id/ivHealthIcon"
+                            android:id="@+id/flHealthIconContainer"
                             android:layout_width="64dp"
                             android:layout_height="64dp"
                             android:background="@drawable/bg_circle_primary_container"
@@ -213,22 +224,30 @@
                             app:layout_constraintTop_toTopOf="parent">
 
                             <ImageView
+                                android:id="@+id/ivSaudeIcon"
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:layout_gravity="center"
                                 android:contentDescription="@null"
-                                android:src="@drawable/ic_nav_chef"
+                                android:src="@drawable/ic_saude_sparkles"
                                 android:tint="?attr/colorPrimary" />
                         </FrameLayout>
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- VENCENDO LOGO -->
+                <!-- ============================================================ -->
+                <!-- SEÇÃO "VENCENDO LOGO" —                       -->
+                <!-- Agrupada em layoutSectionVencendo para ocultar quando vazia  -->
+                <!-- ============================================================ -->
                 <LinearLayout
+                    android:id="@+id/layoutSectionVencendo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -268,6 +287,7 @@
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/item_despensa"
                         tools:itemCount="3" />
+
                 </LinearLayout>
 
                 <!-- TODOS OS ITENS -->
@@ -286,7 +306,7 @@
                         android:textSize="18sp"
                         android:layout_marginBottom="16dp" />
 
-                    <!-- Sprint 6: GridLayoutManager 2 colunas — 2 itens por linha -->
+                    <!-- GridLayoutManager 2 colunas -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvPantryItems"
                         android:layout_width="match_parent"
@@ -341,7 +361,7 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- Sprint 6/8: bloco inferior fixo — botão ACIMA do BottomNav, sem sobreposição -->
+        <!-- Bloco inferior fixo -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -349,12 +369,10 @@
             android:orientation="vertical"
             android:background="?attr/colorSurface">
 
-            <!-- Divisor sutil -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/colorSurfaceContainerHighest" />
-
 
             <LinearLayout
                 android:id="@+id/layoutBarraSelecao"

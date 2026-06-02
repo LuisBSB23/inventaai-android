@@ -1,9 +1,10 @@
 package com.example.inventaai.ui.dashboard;
 
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.util.Pair;
 import androidx.core.view.GravityCompat;
@@ -34,6 +36,8 @@ import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.ui.login.LoginActivity;
 import com.example.inventaai.ui.perfil.PerfilActivity;
 import com.example.inventaai.util.AppExecutors;
+import com.example.inventaai.util.Constants;
+import com.example.inventaai.util.DateUtils;
 import com.example.inventaai.util.GlideHelper;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -47,24 +51,32 @@ import java.util.List;
 public class DashboardActivity extends AppCompatActivity {
 
     // ── Views principais ──────────────────────────────────────────────────────
-    private DrawerLayout         drawerLayout;
-    private NavigationView       navigationView;
-    private RecyclerView         rvExpiringSoon;
-    private RecyclerView         rvPantryItems;
-    private LinearLayout         layoutEmptyPantry;
-    private TextView             tvGreetingUser;
-    private FrameLayout          ivAvatar;
-    private ImageView            ivAvatarImg;
-    private TextView             tvAvatarIniciais;
-    private MaterialButton       btnGenerateRecipe;
-    private BottomNavigationView bottomNavigation;
+    private DrawerLayout             drawerLayout;
+    private NavigationView           navigationView;
+    private RecyclerView             rvExpiringSoon;
+    private RecyclerView             rvPantryItems;
+    private LinearLayout             layoutEmptyPantry;
+    private TextView                 tvGreetingUser;
+    private FrameLayout              ivAvatar;
+    private ImageView                ivAvatarImg;
+    private TextView                 tvAvatarIniciais;
+    private MaterialButton           btnGenerateRecipe;
+    private BottomNavigationView     bottomNavigation;
     private CircularProgressIndicator progressBar;
-    private View                 cardSaudeDespensa;
+    private View                     cardSaudeDespensa;
 
-    // Sprint 8 — Barra de modo de seleção
-    private LinearLayout         layoutBarraSelecao;
-    private TextView             tvContadorSelecao;
-    private MaterialButton       btnCancelarSelecao;
+    // Barra de modo de seleção
+    private LinearLayout             layoutBarraSelecao;
+    private TextView                 tvContadorSelecao;
+    private MaterialButton           btnCancelarSelecao;
+
+    // ── Card de Saúde dinâmico ──────────────────────────────────
+    private TextView                 tvSaudePercent;
+    private TextView                 tvSaudeLabel;
+    private ImageView                ivSaudeIcon;
+
+    // ── Seção "Vencendo Logo" ocultável ─────────────────────────
+    private LinearLayout             layoutSectionVencendo;
 
     // ── Adapters ──────────────────────────────────────────────────────────────
     private DespensaAdapter adapterExpiringSoon;
@@ -137,10 +149,18 @@ public class DashboardActivity extends AppCompatActivity {
         cardSaudeDespensa = findViewById(R.id.cardPantryHealth);
         progressBar       = findViewById(R.id.progressBarDashboard);
 
-        // barra de seleção
+        // Barra de seleção (Sprint 8)
         layoutBarraSelecao = findViewById(R.id.layoutBarraSelecao);
         tvContadorSelecao  = findViewById(R.id.tvContadorSelecao);
         btnCancelarSelecao = findViewById(R.id.btnCancelarSelecao);
+
+        // Card de Saúde dinâmico
+        tvSaudePercent = findViewById(R.id.tvSaudePercent);
+        tvSaudeLabel   = findViewById(R.id.tvSaudeLabel);
+        ivSaudeIcon    = findViewById(R.id.ivSaudeIcon);
+
+        // Container da seção "Vencendo Logo"
+        layoutSectionVencendo = findViewById(R.id.layoutSectionVencendo);
     }
 
     private void configurarRecyclerViews() {
@@ -153,18 +173,16 @@ public class DashboardActivity extends AppCompatActivity {
         adapterPantry = new DespensaAdapter(new ArrayList<>(), this::abrirDetalhes);
         rvPantryItems.setAdapter(adapterPantry);
 
-        // ── registra long click para ativar modo de seleção ─────
+        // Registra long click para ativar modo de seleção
         adapterPantry.setOnItemLongClickListener(item -> {
             if (!adapterPantry.isModoSelecao()) {
                 adapterPantry.setModoSelecao(true);
             }
-            // Seleciona o próprio item que sofreu long click
-            // Simula um clique para acionar o toggle interno do adapter
             adapterPantry.selecionarItem(item.getId());
             atualizarBarraSelecao();
         });
 
-        // Fix 2: atualiza o contador na barra a cada toggle de item
+        // Atualiza o contador na barra a cada toggle de item
         adapterPantry.setOnSelecaoChangedListener(total -> {
             tvContadorSelecao.setText(total + " selecionado(s)");
         });
@@ -198,13 +216,22 @@ public class DashboardActivity extends AppCompatActivity {
 
         AppExecutors.diskIO().execute(() -> {
             final List<DespensaItem> todos     = despensaRepository.listarAtivos(userId);
-            final List<DespensaItem> expirando = despensaRepository.listarProximosVencimento(7, userId);
+            // passa Constants.DIAS_ALERTA_AMARELO (agora = 7) explicitamente
+            final List<DespensaItem> expirando =
+                    despensaRepository.listarProximosVencimento(Constants.DIAS_ALERTA_AMARELO, userId);
 
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed()) return;
 
                 adapterPantry.atualizarLista(todos);
                 adapterExpiringSoon.atualizarLista(expirando);
+
+                // recalcula e exibe saúde da despensa com dados reais
+                int percent = calcularSaudePercent(todos);
+                atualizarCardSaude(percent);
+
+                // oculta/exibe seção "Vencendo Logo" conforme lista
+                atualizarVisibilidadeSectionVencendo(expirando);
 
                 if (todos.isEmpty()) {
                     rvPantryItems.setVisibility(View.GONE);
@@ -228,7 +255,93 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // ANIMAÇÃO CARD DE SAÚDE
+    // SAÚDE DA DESPENSA DINÂMICA
+    // =========================================================================
+
+    private int calcularSaudePercent(List<DespensaItem> itens) {
+        if (itens == null || itens.isEmpty()) return 100;
+
+        int total     = itens.size();
+        int saudaveis = 0;
+
+        for (DespensaItem item : itens) {
+            int dias = DateUtils.calcularDiasRestantes(item.getDataValidade());
+            if (dias > Constants.DIAS_ALERTA_AMARELO) {
+                saudaveis++;
+            }
+        }
+
+        return (saudaveis * 100) / total;
+    }
+
+    private void atualizarCardSaude(int percent) {
+        if (tvSaudePercent == null || tvSaudeLabel == null) return;
+
+        // Define texto do label, cor e ícone conforme faixa
+        final String label;
+        final int    corPercent;
+        final int    drawableIcon;
+
+        if (percent >= 85) {
+            label        = getString(R.string.saude_label_ideal);
+            corPercent   = ContextCompat.getColor(this, R.color.colorPrimary);
+            drawableIcon = R.drawable.ic_saude_sparkles;
+        } else if (percent >= 60) {
+            label        = getString(R.string.saude_label_bom);
+            corPercent   = ContextCompat.getColor(this, R.color.colorSecondary);
+            drawableIcon = R.drawable.ic_saude_alerta;
+        } else {
+            label        = getString(R.string.saude_label_atencao);
+            corPercent   = ContextCompat.getColor(this, R.color.colorError);
+            drawableIcon = R.drawable.ic_saude_perigo;
+        }
+
+        tvSaudeLabel.setText(label);
+        tvSaudeLabel.setTextColor(corPercent);
+        if (ivSaudeIcon != null) {
+            ivSaudeIcon.setImageResource(drawableIcon);
+            ivSaudeIcon.setColorFilter(corPercent);
+        }
+
+        // Animação de 0 → percent usando ValueAnimator
+        ValueAnimator animator = ValueAnimator.ofInt(0, percent);
+        animator.setDuration(700);
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.addUpdateListener(animation -> {
+            int valor = (int) animation.getAnimatedValue();
+            tvSaudePercent.setText(valor + "%");
+            tvSaudePercent.setTextColor(corPercent);
+        });
+        animator.start();
+    }
+
+    // =========================================================================
+    // VISIBILIDADE DA SEÇÃO "VENCENDO LOGO"
+    // =========================================================================
+
+    private void atualizarVisibilidadeSectionVencendo(List<DespensaItem> expirando) {
+        if (layoutSectionVencendo == null) return;
+
+        if (expirando.isEmpty()) {
+            layoutSectionVencendo.setVisibility(View.GONE);
+        } else {
+            // Aplica fade-in apenas se a seção estava oculta
+            if (layoutSectionVencendo.getVisibility() != View.VISIBLE) {
+                layoutSectionVencendo.setAlpha(0f);
+                layoutSectionVencendo.setVisibility(View.VISIBLE);
+                layoutSectionVencendo.animate()
+                        .alpha(1f)
+                        .setDuration(350)
+                        .setInterpolator(new DecelerateInterpolator())
+                        .start();
+            } else {
+                layoutSectionVencendo.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    // =========================================================================
+    // ANIMAÇÃO CARD DE SAÚDE (entrada da tela)
     // =========================================================================
 
     private void animarCardSaude() {
@@ -240,7 +353,7 @@ public class DashboardActivity extends AppCompatActivity {
                         cardSaudeDespensa.animate()
                                 .alpha(1f).scaleX(1f).scaleY(1f)
                                 .setDuration(400)
-                                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                                .setInterpolator(new DecelerateInterpolator())
                                 .start(),
                 150);
     }
@@ -318,8 +431,6 @@ public class DashboardActivity extends AppCompatActivity {
     // =========================================================================
 
     private void abrirDetalhes(DespensaItem item) {
-        // Se o modo de seleção está ativo, clique normal seleciona/desseleciona
-        // (tratado no adapter). Só abre detalhes fora do modo de seleção.
         if (adapterPantry.isModoSelecao()) {
             atualizarBarraSelecao();
             return;
@@ -339,35 +450,25 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void configurarBotoes() {
-        // ── Botão "Gerar Receita" / "Gerar Receita com Selecionados" ──────
         btnGenerateRecipe.setOnClickListener(v -> {
             if (adapterPantry.isModoSelecao()) {
-                // Sprint 8: há modo de seleção ativo — envia itens para o Chef IA
                 List<DespensaItem> selecionados = adapterPantry.getItensSelecionados();
-
                 Intent intent = new Intent(this, ChefIAActivity.class);
-
                 if (!selecionados.isEmpty()) {
-                    // Serializa a lista como ArrayList (DespensaItem implementa Serializable)
                     intent.putExtra(
                             ChefIAActivity.EXTRA_ITENS_SELECIONADOS,
                             new ArrayList<>(selecionados));
                 }
-                // Limpa a seleção antes de abrir
                 adapterPantry.limparSelecao();
                 atualizarBarraSelecao();
-
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-
             } else {
-                // Comportamento de "descoberta": abre o Chef IA sem itens pré-selecionados
                 startActivity(new Intent(this, ChefIAActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
 
-        // ── Sprint 8: botão cancelar seleção ──────────────────────────────
         btnCancelarSelecao.setOnClickListener(v -> {
             adapterPantry.limparSelecao();
             atualizarBarraSelecao();
@@ -411,7 +512,6 @@ public class DashboardActivity extends AppCompatActivity {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawers();
         } else if (adapterPantry.isModoSelecao()) {
-            // Sprint 8: back cancela a seleção antes de fechar a tela
             adapterPantry.limparSelecao();
             atualizarBarraSelecao();
         } else {
