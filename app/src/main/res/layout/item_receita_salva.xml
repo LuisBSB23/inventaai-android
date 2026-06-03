@@ -19,7 +19,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <!-- Miniatura da receita -->
         <ImageView
             android:id="@+id/ivReceitaThumb"
             android:layout_width="88dp"
@@ -29,16 +28,13 @@
             android:src="@drawable/ic_empty_recipe"
             android:contentDescription="Imagem da receita" />
 
-        <!-- Conteúdo textual -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:padding="12dp"
-            android:justifyContent="space_between">
+            android:padding="12dp">
 
-            <!-- Título -->
             <TextView
                 android:id="@+id/tvReceitaTitulo"
                 android:layout_width="match_parent"
@@ -50,7 +46,6 @@
                 android:textSize="15sp"
                 tools:text="Risoto de Cogumelos com Ervas" />
 
-            <!-- Linha de metadata: tempo + dificuldade -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -93,7 +88,11 @@
 
             </LinearLayout>
 
-            <!-- Data salva -->
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
             <TextView
                 android:id="@+id/tvDataSalvo"
                 android:layout_width="match_parent"
@@ -106,7 +105,6 @@
 
         </LinearLayout>
 
-        <!-- Botão de deletar (ícone lixeira) -->
         <ImageButton
             android:id="@+id/btnDeletarReceita"
             android:layout_width="40dp"

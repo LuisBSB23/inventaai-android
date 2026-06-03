@@ -3,121 +3,123 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground">
+    android:background="?attr/colorSurface">
 
-    <!-- ===== Toolbar ===== -->
-    <LinearLayout
-        android:id="@+id/toolbar"
+    <!-- ===== AppBar (mesma estrutura do ChefIAActivity) ===== -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="12dp"
-        android:background="@color/colorBackground"
-        android:elevation="2dp">
+        android:background="?attr/colorSurface"
+        app:elevation="2dp">
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_back_arrow"
-            android:tint="@color/colorOnSurface"
-            android:contentDescription="Voltar" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:paddingHorizontal="24dp">
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:fontFamily="@font/inter_bold"
-            android:text="Receitas Salvas"
-            android:textColor="@color/colorOnSurface"
-            android:textSize="20sp" />
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Voltar"
+                android:src="@drawable/ic_back_arrow"
+                android:tint="?attr/colorPrimary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:fontFamily="@font/inter_bold"
+                android:text="Receitas Salvas"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="22sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/btnBack"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- ===== Conteúdo principal ===== -->
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ===== ProgressBar ===== -->
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressBarReceitas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:indicatorColor="?attr/colorPrimary"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:visibility="gone" />
+
+    <!-- ===== RecyclerView ===== -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvReceitas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/item_receita_salva"
+        tools:visibility="visible" />
+
+    <!-- ===== Empty State ===== -->
     <LinearLayout
+        android:id="@+id/layoutEmptyReceitas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="64dp">
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:visibility="gone">
 
-        <!-- ProgressBar de carregamento -->
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/progressBarReceitas"
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_empty_recipe"
+            android:alpha="0.6"
+            android:tint="?attr/colorOnSurfaceVariant"
+            android:contentDescription="Nenhuma receita salva" />
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:indicatorColor="@color/colorPrimary"
-            tools:visibility="visible" />
+            android:layout_marginTop="24dp"
+            android:fontFamily="@font/inter_semibold"
+            android:text="Nenhuma receita salva"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="17sp"
+            android:gravity="center" />
 
-        <!-- RecyclerView com a lista de receitas -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvReceitas"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="16dp"
-            android:clipToPadding="false"
-            android:visibility="gone"
-            tools:visibility="visible"
-            tools:listitem="@layout/item_receita_salva" />
-
-        <!-- Empty State -->
-        <LinearLayout
-            android:id="@+id/layoutEmptyReceitas"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/inter_regular"
             android:gravity="center"
-            android:padding="32dp"
-            android:visibility="gone"
-            tools:visibility="visible">
+            android:text="Gere receitas com o Chef IA e salve as suas favoritas para acessá-las aqui!"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp" />
 
-            <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:src="@drawable/ic_empty_recipe"
-                android:alpha="0.6"
-                android:contentDescription="Nenhuma receita salva" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="Nenhuma receita salva"
-                android:textColor="@color/colorOnSurface"
-                android:textSize="20sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:fontFamily="@font/inter_regular"
-                android:gravity="center"
-                android:text="Gere receitas com o Chef IA e salve as suas favoritas para acessá-las aqui!"
-                android:textColor="@color/colorOnSurfaceVariant"
-                android:textSize="14sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnIrParaChefIA"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Abrir Chef IA"
-                app:cornerRadius="24dp" />
-
-        </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnIrParaChefIA"
+            style="@style/Widget.InventaAi.Button.Pill"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
+            android:text="Abrir Chef IA"
+            app:icon="@drawable/ic_nav_chef"
+            app:iconGravity="textStart" />
 
     </LinearLayout>
 
@@ -127,10 +129,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/colorSurfaceContainerLowest"
-        app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled"
+        android:background="?attr/colorSurface"
         app:itemIconTint="@color/selector_nav_item"
-        app:itemTextColor="@color/selector_nav_item" />
+        app:itemTextColor="@color/selector_nav_item"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
