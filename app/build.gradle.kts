@@ -2,14 +2,12 @@ import java.util.Properties
 
 // ── Sprint 4: Lê a chave do Gemini do local.properties ──────────────────────
 // ── Sprint 3: Lê também a chave do Unsplash ──────────────────────────────────
-// Feito aqui, fora do bloco android {}, para que o import de Properties
-// seja resolvido corretamente pelo Kotlin DSL em todas as versões do Gradle.
 val localProps = Properties()
 val localPropsFile = rootProject.file("local.properties")
 if (localPropsFile.exists()) {
     localProps.load(localPropsFile.inputStream())
 }
-val geminiApiKey: String    = localProps.getProperty("GEMINI_API_KEY", "")
+val geminiApiKey: String      = localProps.getProperty("GEMINI_API_KEY", "")
 val unsplashAccessKey: String = localProps.getProperty("UNSPLASH_ACCESS_KEY", "")
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -80,6 +78,9 @@ dependencies {
     // ── Sprint 3: Glide (carregamento e cache de imagens) ───────────────────
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    // ── Sprint 12: WorkManager (background tasks / notificações de vencimento)
+    implementation("androidx.work:work-runtime:2.9.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)

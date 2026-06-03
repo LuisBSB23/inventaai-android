@@ -3,6 +3,8 @@ package com.example.inventaai.ui.dashboard;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -30,6 +32,7 @@ import com.example.inventaai.data.repository.DespensaRepository;
 import com.example.inventaai.data.repository.UserRepository;
 import com.example.inventaai.ui.cadastro.CadastroActivity;
 import com.example.inventaai.ui.chefIA.ChefIAActivity;
+import com.example.inventaai.ui.configuracoes.ConfiguracoesActivity;
 import com.example.inventaai.ui.despensa.DespensaAdapter;
 import com.example.inventaai.ui.detalhes.DetalhesActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
@@ -44,6 +47,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,8 +70,8 @@ public class DashboardActivity extends AppCompatActivity {
     private View                      cardSaudeDespensa;
 
     // Barra de modo de seleção
-    private LinearLayout  layoutBarraSelecao;
-    private TextView      tvContadorSelecao;
+    private LinearLayout   layoutBarraSelecao;
+    private TextView       tvContadorSelecao;
     private MaterialButton btnCancelarSelecao;
 
     // ── Card de Saúde dinâmico ──────────────────────────────────
@@ -77,6 +81,14 @@ public class DashboardActivity extends AppCompatActivity {
 
     // ── Seção "Vencendo Logo" ocultável ─────────────────────────
     private LinearLayout layoutSectionVencendo;
+
+    // ── Sprint 12: Busca ──────────────────────────────────────────────────────
+    /** Container (LinearLayout) que envolve o SearchBar — oculto por padrão. */
+    private LinearLayout      layoutSearchBar;
+    /** Campo de texto da busca. */
+    private TextInputEditText etBusca;
+    /** Botão de lupa na toolbar. */
+    private View              btnBuscar;
 
     // ── Adapters ──────────────────────────────────────────────────────────────
     private DespensaAdapter adapterExpiringSoon;
@@ -109,7 +121,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, 0, systemBars.right, 0); // Modificado para ajustar o preenchimento!
+            v.setPadding(systemBars.left, 0, systemBars.right, 0);
             return insets;
         });
 
@@ -118,6 +130,7 @@ public class DashboardActivity extends AppCompatActivity {
         configurarBotoes();
         configurarBottomNavigation();
         configurarDrawer();
+        configurarBusca();  // Sprint 12
         animarCardSaude();
     }
 
@@ -127,14 +140,18 @@ public class DashboardActivity extends AppCompatActivity {
         currentUserId = sessionManager.getUserId();
         if (currentUserId == null) { irParaLogin(); return; }
 
-        // Tarefa 1: garante que o indicador correto fique sempre
-        // selecionado ao voltar para esta tela (ex: após pressionar Voltar
-        // vindo de outra aba ou de DetalhesActivity).
         if (bottomNavigation != null) {
             bottomNavigation.setSelectedItemId(R.id.nav_pantry);
         }
 
-        atualizarListas();
+        // Se há texto na busca, reaplica o filtro; senão carrega tudo
+        if (etBusca != null && etBusca.getText() != null
+                && !etBusca.getText().toString().trim().isEmpty()) {
+            filtrarLista(etBusca.getText().toString().trim());
+        } else {
+            atualizarListas();
+        }
+
         atualizarHeaderDrawer();
     }
 
@@ -169,6 +186,11 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Container da seção "Vencendo Logo"
         layoutSectionVencendo = findViewById(R.id.layoutSectionVencendo);
+
+        // Sprint 12: Busca
+        layoutSearchBar = findViewById(R.id.layoutSearchBar);
+        etBusca         = findViewById(R.id.etBusca);
+        btnBuscar       = findViewById(R.id.btnBuscar);
     }
 
     private void configurarRecyclerViews() {
@@ -191,8 +213,98 @@ public class DashboardActivity extends AppCompatActivity {
         });
 
         // Atualiza o contador na barra a cada toggle de item
-        adapterPantry.setOnSelecaoChangedListener(total -> {
-            tvContadorSelecao.setText(total + " selecionado(s)");
+        adapterPantry.setOnSelecaoChangedListener(total ->
+                tvContadorSelecao.setText(total + " selecionado(s)")
+        );
+    }
+
+    // =========================================================================
+    // SPRINT 12 — BUSCA E FILTRO
+    // =========================================================================
+
+    private void configurarBusca() {
+        if (layoutSearchBar == null || etBusca == null || btnBuscar == null) return;
+
+        // Lupa: alterna visibilidade do campo com animação slide-down/up de 250ms
+        btnBuscar.setOnClickListener(v -> {
+            if (layoutSearchBar.getVisibility() == View.VISIBLE) {
+                // Fechar: slide-up + fade-out
+                layoutSearchBar.animate()
+                        .translationY(-layoutSearchBar.getHeight())
+                        .alpha(0f)
+                        .setDuration(250)
+                        .withEndAction(() -> {
+                            layoutSearchBar.setVisibility(View.GONE);
+                            layoutSearchBar.setTranslationY(0f);
+                            layoutSearchBar.setAlpha(1f);
+                            // Limpa o campo e restaura a lista completa
+                            etBusca.setText("");
+                            atualizarListas();
+                        })
+                        .start();
+            } else {
+                // Abrir: slide-down + fade-in
+                layoutSearchBar.setTranslationY(-layoutSearchBar.getHeight() > 0
+                        ? -layoutSearchBar.getHeight() : -120);
+                layoutSearchBar.setAlpha(0f);
+                layoutSearchBar.setVisibility(View.VISIBLE);
+                layoutSearchBar.animate()
+                        .translationY(0f)
+                        .alpha(1f)
+                        .setDuration(250)
+                        .start();
+                etBusca.requestFocus();
+            }
+        });
+
+        // TextWatcher: filtra a cada caractere digitado
+        etBusca.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String query = s != null ? s.toString().trim() : "";
+                if (query.isEmpty()) {
+                    atualizarListas();
+                } else {
+                    filtrarLista(query);
+                }
+            }
+        });
+    }
+
+    /**
+     * Executa a busca filtrada no banco e atualiza apenas a lista principal (rvPantryItems).
+     * A seção "Vencendo Logo" é ocultada durante a busca para evitar confusão.
+     */
+    private void filtrarLista(String query) {
+        final String userId = currentUserId;
+        AppExecutors.diskIO().execute(() -> {
+            final List<DespensaItem> resultado =
+                    despensaRepository.listarAtivosFiltrado(query, userId);
+
+            AppExecutors.mainThread().execute(() -> {
+                if (isFinishing() || isDestroyed()) return;
+
+                adapterPantry.atualizarLista(resultado);
+
+                // Oculta seção "Vencendo Logo" durante busca ativa
+                if (layoutSectionVencendo != null) {
+                    layoutSectionVencendo.setVisibility(View.GONE);
+                }
+
+                if (resultado.isEmpty()) {
+                    rvPantryItems.setVisibility(View.GONE);
+                    layoutEmptyPantry.setVisibility(View.VISIBLE);
+                } else {
+                    rvPantryItems.setVisibility(View.VISIBLE);
+                    layoutEmptyPantry.setVisibility(View.GONE);
+                }
+            });
         });
     }
 
@@ -374,9 +486,16 @@ public class DashboardActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             drawerLayout.closeDrawers();
+
             if (id == R.id.nav_perfil) {
                 startActivity(new Intent(this, PerfilActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
+            } else if (id == R.id.nav_configuracoes) {
+                // Sprint 12: abre a tela de configurações
+                startActivity(new Intent(this, ConfiguracoesActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
             } else if (id == R.id.nav_sair) {
                 sessionManager.encerrarSessao();
                 irParaLogin();
@@ -478,27 +597,19 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void configurarBottomNavigation() {
-        // tarefa 2: singleTop + REORDER_TO_FRONT evitam duplicatas.
-        // O setSelectedItemId inicial é removido daqui e movido para onResume(),
-        // onde é garantido a cada vez que a tela volta ao primeiro plano.
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
             if (id == R.id.nav_pantry) {
-                // Já estamos aqui — não faz nada
                 return true;
             }
             if (id == R.id.nav_add) {
-                Intent intent = new Intent(this, CadastroActivity.class);
-                // CadastroActivity não faz parte do ciclo singleTop do BottomNav,
-                // por isso não usamos REORDER_TO_FRONT aqui.
-                startActivity(intent);
+                startActivity(new Intent(this, CadastroActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }
             if (id == R.id.nav_history) {
                 Intent intent = new Intent(this, HistoricoActivity.class);
-                // Tarefa 2: reutiliza instância existente em vez de criar nova.
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -506,7 +617,6 @@ public class DashboardActivity extends AppCompatActivity {
             }
             if (id == R.id.nav_chef_ia) {
                 Intent intent = new Intent(this, ChefIAActivity.class);
-                // Tarefa 2: reutiliza instância existente em vez de criar nova.
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -528,6 +638,10 @@ public class DashboardActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawers();
+        } else if (layoutSearchBar != null
+                && layoutSearchBar.getVisibility() == View.VISIBLE) {
+            // Fecha a busca com Back
+            btnBuscar.performClick();
         } else if (adapterPantry.isModoSelecao()) {
             adapterPantry.limparSelecao();
             atualizarBarraSelecao();

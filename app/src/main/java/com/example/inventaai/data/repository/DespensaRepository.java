@@ -86,6 +86,48 @@ public class DespensaRepository {
         return lista;
     }
 
+    // ── LISTAR ATIVOS FILTRADO (Sprint 12) ────────────────────────────────────
+
+    /**
+     * Retorna itens ativos do usuário cujo nome OU categoria contenham {@code query}.
+     * A busca é case-insensitive por padrão no SQLite com texto ASCII/Latin-1.
+     *
+     * @param query  Texto digitado pelo usuário (pode ser vazio ou null).
+     * @param userId ID do usuário logado.
+     * @return Lista filtrada, ordenada por data de validade ASC.
+     */
+    public List<DespensaItem> listarAtivosFiltrado(String query, String userId) {
+        // Query vazia ou nula → retorna lista completa
+        if (query == null || query.trim().isEmpty()) {
+            return listarAtivos(userId);
+        }
+
+        List<DespensaItem> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String filtro = "%" + query.trim() + "%";
+            cursor = db.query(
+                    DespensaEntry.TABLE_NAME,
+                    null,
+                    DespensaEntry.COLUMN_STATUS   + " = ? AND "
+                            + DespensaEntry.COLUMN_USER_ID + " = ? AND ("
+                            + DespensaEntry.COLUMN_NOME    + " LIKE ? OR "
+                            + DespensaEntry.COLUMN_CATEGORIA + " LIKE ?)",
+                    new String[]{ Constants.STATUS_ATIVO, userId, filtro, filtro },
+                    null, null,
+                    DespensaEntry.COLUMN_DATA_VALIDADE + " ASC"
+            );
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+            Log.d(TAG, "listarAtivosFiltrado: query=\"" + query + "\" → " + lista.size() + " resultado(s).");
+        } catch (Exception e) {
+            Log.e(TAG, "listarAtivosFiltrado: erro", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return lista;
+    }
+
     // ── LISTAR TODOS ──────────────────────────────────────────────────────────
 
     public List<DespensaItem> listarTodos(String userId) {
@@ -214,7 +256,7 @@ public class DespensaRepository {
         v.put(DespensaEntry.COLUMN_UNIDADE,       item.getUnidadeMedida());
         v.put(DespensaEntry.COLUMN_DATA_VALIDADE, item.getDataValidade());
         v.put(DespensaEntry.COLUMN_STATUS,        item.getStatus() != null ? item.getStatus() : Constants.STATUS_ATIVO);
-        v.put(DespensaEntry.COLUMN_CATEGORIA,     item.getCategoria());   // Sprint 6
+        v.put(DespensaEntry.COLUMN_CATEGORIA,     item.getCategoria()); // Sprint 6
         if (userId != null) v.put(DespensaEntry.COLUMN_USER_ID, userId);
         return v;
     }

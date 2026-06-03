@@ -2,8 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permissões existentes -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Sprint 12: Notificações locais (obrigatório para Android 13 / API 33+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -76,6 +80,13 @@
             android:name=".ui.receitas.ReceitasActivity"
             android:exported="false"
             android:label="Receitas Salvas" />
+
+        <!-- Sprint 12: Tela de Configurações -->
+        <activity
+            android:name=".ui.configuracoes.ConfiguracoesActivity"
+            android:exported="false"
+            android:label="Configurações"
+            android:windowSoftInputMode="adjustResize" />
 
     </application>
 
