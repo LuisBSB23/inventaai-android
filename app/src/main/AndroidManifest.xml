@@ -2,9 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Internet: integração Gemini IA -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Galeria de imagens: seleção de avatar -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <application
@@ -29,53 +27,44 @@
             </intent-filter>
         </activity>
 
-        <!-- Login — não é o launcher -->
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="false"
             android:label="Login"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Cadastro de novo perfil -->
         <activity
             android:name=".ui.login.CadastroPerfilActivity"
             android:exported="false"
             android:label="Criar Perfil"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Tela de perfil -->
         <activity
             android:name=".ui.perfil.PerfilActivity"
             android:exported="false"
             android:label="Meu Perfil"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Tarefa 2: launchMode="singleTop" nas três Activities do BottomNav. -->
         <activity
             android:name=".ui.dashboard.DashboardActivity"
-            android:exported="false"
-            android:launchMode="singleTop" />
+            android:exported="false" />
 
-        <!-- Cadastro de novo item (não faz parte do ciclo singleTop do BottomNav) -->
         <activity
             android:name=".ui.cadastro.CadastroActivity"
             android:exported="false"
             android:label="Adicionar Alimento"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Detalhes e edição de item -->
         <activity
             android:name=".ui.detalhes.DetalhesActivity"
             android:exported="false"
             android:label="Detalhes do Item"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Tarefa 2: launchMode="singleTop" + Tarefa 1: indicador do BottomNav corrigido via onResume(). -->
         <activity
             android:name=".ui.historico.HistoricoActivity"
             android:exported="false"
-            android:label="Histórico"
-            android:launchMode="singleTop" />
+            android:label="Histórico" />
 
         <activity
             android:name=".ui.chefIA.ChefIAActivity"
@@ -83,12 +72,17 @@
             android:label="Chef IA"
             android:launchMode="singleTop" />
 
-        <!-- Tela de Receitas Salvas -->
         <activity
             android:name=".ui.receitas.ReceitasActivity"
             android:exported="false"
-            android:label="Receitas Salvas"
-            android:launchMode="singleTop" />
+            android:label="Receitas Salvas" />
+
+        <!-- SEED DE TESTE — REMOVER ANTES DA BUILD DE PRODUÇÃO -->
+        <activity
+            android:name=".ui.dashboard.SeedTestActivity"
+            android:exported="true"
+            android:label="Seed Teste Sprint 7" />
+
 
     </application>
 

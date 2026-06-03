@@ -65,10 +65,8 @@ public class ReceitasActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Mantém o ícone do Chef IA selecionado, pois ReceitasActivity é
-        // uma extensão da funcionalidade do Chef IA.
         if (bottomNavigation != null) {
-            bottomNavigation.setSelectedItemId(R.id.nav_chef_ia);
+            bottomNavigation.getMenu().findItem(R.id.nav_chef_ia).setChecked(true);
         }
         carregarReceitas();
     }
@@ -105,9 +103,7 @@ public class ReceitasActivity extends AppCompatActivity {
         View btnIrParaChefIA = findViewById(R.id.btnIrParaChefIA);
         if (btnIrParaChefIA != null) {
             btnIrParaChefIA.setOnClickListener(v -> {
-                Intent intent = new Intent(this, ChefIAActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                finish(); // Apenas fechamos para voltar à tela anterior do ChefIA
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             });
         }
@@ -162,12 +158,10 @@ public class ReceitasActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // ABRIR DETALHES (futuramente expandido para BottomSheet)
+    // ABRIR DETALHES
     // =========================================================================
 
     private void abrirDetalheReceita(ReceitaSalva receita) {
-        // Por ora exibe um Toast com o título; pode ser expandido para
-        // um BottomSheetDialogFragment em sprint futura.
         Toast.makeText(this,
                 "\"" + receita.getTitulo() + "\" — em breve detalhes completos!",
                 Toast.LENGTH_SHORT).show();
@@ -197,10 +191,9 @@ public class ReceitasActivity extends AppCompatActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_chef_ia) {
-                // Já estamos na área do Chef IA — volta para ChefIAActivity
-                Intent intent = new Intent(this, ChefIAActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                // CORREÇÃO: Já estamos na extensão do Chef IA, se clicar de novo aqui,
+                // fechamos as receitas para mostrar a ecrã inicial do ChefIA.
+                finish();
                 overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 return true;
             } else if (id == R.id.nav_pantry) {
