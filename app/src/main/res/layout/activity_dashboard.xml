@@ -10,14 +10,12 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.dashboard.DashboardActivity">
 
-    <!-- ======================= CONTEÚDO PRINCIPAL ======================= -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/colorSurface">
 
-        <!-- Indicador de carregamento -->
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progressBarDashboard"
             android:layout_width="wrap_content"
@@ -27,7 +25,6 @@
             app:indicatorColor="@color/colorPrimary"
             tools:visibility="visible" />
 
-        <!-- TOP APP BAR -->
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
@@ -40,7 +37,6 @@
                 android:layout_height="64dp"
                 android:paddingHorizontal="24dp">
 
-                <!-- Ícone Hambúrguer -->
                 <ImageButton
                     android:id="@+id/btnMenu"
                     android:layout_width="40dp"
@@ -65,7 +61,6 @@
                     app:layout_constraintStart_toEndOf="@id/btnMenu"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- Avatar -->
                 <FrameLayout
                     android:id="@+id/ivAvatar"
                     android:layout_width="40dp"
@@ -97,7 +92,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <!-- CONTEÚDO SCROLLÁVEL -->
         <androidx.core.widget.NestedScrollView
             android:id="@+id/nestedScrollView"
             android:layout_width="match_parent"
@@ -113,7 +107,6 @@
                 android:paddingHorizontal="24dp"
                 android:paddingTop="24dp">
 
-                <!-- SAUDAÇÃO -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -151,10 +144,6 @@
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
 
-                <!-- ============================================================ -->
-                <!-- CARD SAÚDE DA DESPENSA                                       -->
-                <!-- Adicionados: tvSaudePercent, tvSaudeLabel, ivSaudeIcon       -->
-                <!-- ============================================================ -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardPantryHealth"
                     android:layout_width="match_parent"
@@ -181,7 +170,6 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
-                            <!-- Label "SAÚDE DA DESPENSA" -->
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -236,10 +224,6 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- ============================================================ -->
-                <!-- SEÇÃO "VENCENDO LOGO" —                       -->
-                <!-- Agrupada em layoutSectionVencendo para ocultar quando vazia  -->
-                <!-- ============================================================ -->
                 <LinearLayout
                     android:id="@+id/layoutSectionVencendo"
                     android:layout_width="match_parent"
@@ -290,7 +274,6 @@
 
                 </LinearLayout>
 
-                <!-- TODOS OS ITENS -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -306,7 +289,6 @@
                         android:textSize="18sp"
                         android:layout_marginBottom="16dp" />
 
-                    <!-- GridLayoutManager 2 colunas -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvPantryItems"
                         android:layout_width="match_parent"
@@ -361,18 +343,13 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- Bloco inferior fixo -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:orientation="vertical"
-            android:background="?attr/colorSurface">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/colorSurfaceContainerHighest" />
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:id="@+id/layoutBarraSelecao"
@@ -383,7 +360,8 @@
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="8dp"
                 android:background="@color/colorPrimaryContainer"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="2dp">
 
                 <TextView
                     android:id="@+id/tvContadorSelecao"
@@ -406,7 +384,6 @@
 
             </LinearLayout>
 
-            <!-- Botão Gerar Receita -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGenerateRecipe"
                 style="@style/Widget.InventaAi.Button.Pill"
@@ -414,13 +391,18 @@
                 android:layout_height="56dp"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="12dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:text="@string/generate_recipe"
                 android:textSize="18sp"
+                app:elevation="4dp"
                 app:icon="@drawable/ic_nav_chef"
                 app:iconGravity="textStart" />
 
-            <!-- Bottom Navigation -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorSurfaceVariant" />
+
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottomNavigation"
                 android:layout_width="match_parent"
@@ -436,7 +418,6 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- ======================= NAVIGATION DRAWER ======================= -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="300dp"

@@ -77,13 +77,6 @@
             android:exported="false"
             android:label="Receitas Salvas" />
 
-        <!-- SEED DE TESTE — REMOVER ANTES DA BUILD DE PRODUÇÃO -->
-        <activity
-            android:name=".ui.dashboard.SeedTestActivity"
-            android:exported="true"
-            android:label="Seed Teste Sprint 7" />
-
-
     </application>
 
 </manifest>

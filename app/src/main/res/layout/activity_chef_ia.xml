@@ -81,6 +81,8 @@
         android:gravity="center"
         android:visibility="gone"
         android:paddingHorizontal="32dp"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <ImageView
@@ -131,6 +133,8 @@
         android:gravity="center"
         android:visibility="gone"
         android:paddingHorizontal="32dp"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <ImageView
@@ -180,6 +184,8 @@
         android:visibility="gone"
         android:paddingHorizontal="24dp"
         android:paddingTop="32dp"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <TextView
@@ -218,7 +224,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="Alterar Ingredientes"
-            android:layout_marginBottom="80dp"/>
+            android:layout_marginBottom="16dp"/>
     </LinearLayout>
 
 
