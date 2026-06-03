@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardReceita"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/colorSurfaceContainerLowest"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/colorSurfaceContainerHighest"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Miniatura da receita -->
+        <ImageView
+            android:id="@+id/ivReceitaThumb"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:scaleType="centerCrop"
+            android:background="@color/colorSurfaceContainerHigh"
+            android:src="@drawable/ic_empty_recipe"
+            android:contentDescription="Imagem da receita" />
+
+        <!-- Conteúdo textual -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:justifyContent="space_between">
+
+            <!-- Título -->
+            <TextView
+                android:id="@+id/tvReceitaTitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_semibold"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:textColor="@color/colorOnSurface"
+                android:textSize="15sp"
+                tools:text="Risoto de Cogumelos com Ervas" />
+
+            <!-- Linha de metadata: tempo + dificuldade -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_time"
+                    android:tint="@color/colorOnSurfaceVariant"
+                    android:contentDescription="Tempo" />
+
+                <TextView
+                    android:id="@+id/tvReceitaTempo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/inter_regular"
+                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textSize="12sp"
+                    tools:text="30 min" />
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="4dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:background="@color/colorOnSurfaceVariant"
+                    android:alpha="0.5" />
+
+                <TextView
+                    android:id="@+id/tvReceitaDificuldade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12sp"
+                    tools:text="Fácil" />
+
+            </LinearLayout>
+
+            <!-- Data salva -->
+            <TextView
+                android:id="@+id/tvDataSalvo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/inter_regular"
+                android:textColor="@color/colorOnSurfaceVariant"
+                android:textSize="11sp"
+                tools:text="Salva em 02/06/2026" />
+
+        </LinearLayout>
+
+        <!-- Botão de deletar (ícone lixeira) -->
+        <ImageButton
+            android:id="@+id/btnDeletarReceita"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_delete"
+            android:tint="@color/colorOnSurfaceVariant"
+            android:contentDescription="Deletar receita" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

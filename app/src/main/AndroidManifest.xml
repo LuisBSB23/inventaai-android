@@ -83,6 +83,13 @@
             android:label="Chef IA"
             android:launchMode="singleTop" />
 
+        <!-- Tela de Receitas Salvas -->
+        <activity
+            android:name=".ui.receitas.ReceitasActivity"
+            android:exported="false"
+            android:label="Receitas Salvas"
+            android:launchMode="singleTop" />
+
     </application>
 
 </manifest>

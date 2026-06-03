@@ -100,4 +100,13 @@
     <string name="saude_label_bom">Bom</string>
     <string name="saude_label_atencao">Atenção</string>
 
+    <!-- Receitas Salvas -->
+    <string name="title_receitas_salvas">Receitas Salvas</string>
+    <string name="empty_receitas_title">Nenhuma receita salva</string>
+    <string name="empty_receitas_message">Gere receitas com o Chef IA e salve as suas favoritas para acessá-las aqui!</string>
+    <string name="btn_ir_chef_ia">Abrir Chef IA</string>
+    <string name="btn_save_recipe_done">Salva! ✓</string>
+    <string name="dialog_delete_receita_title">Remover receita</string>
+    <string name="cd_recipe_thumb">Imagem da receita</string>
+
 </resources>

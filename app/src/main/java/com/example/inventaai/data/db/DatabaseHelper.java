@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.example.inventaai.data.db.DatabaseContract.DespensaEntry;
 import com.example.inventaai.data.db.DatabaseContract.HistoricoEntry;
+import com.example.inventaai.data.db.DatabaseContract.ReceitaEntry;
 import com.example.inventaai.data.db.DatabaseContract.UserEntry;
 
 import java.text.SimpleDateFormat;
@@ -21,19 +22,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "InventaAi.DB";
 
     public static final String DATABASE_NAME    = "inventaai.db";
-    // v5: adiciona coluna "categoria" em despensa_itens
-    public static final int    DATABASE_VERSION = 5;
+    // v6: adiciona tabela "receitas_salvas"
+    public static final int    DATABASE_VERSION = 6;
 
-    // Padrão Singleton
+    // =========================================================================
+    // Singleton
+    // =========================================================================
 
-    /** Instância única — acesso somente via getInstance(). */
     private static volatile DatabaseHelper instance;
 
     public static DatabaseHelper getInstance(Context ctx) {
         if (instance == null) {
             synchronized (DatabaseHelper.class) {
                 if (instance == null) {
-                    // applicationContext: nunca vaza referência de Activity/Fragment
                     instance = new DatabaseHelper(ctx.getApplicationContext());
                     Log.d(TAG, "getInstance: instância Singleton criada.");
                 }
@@ -64,7 +65,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + DespensaEntry.COLUMN_DATA_VALIDADE + " TEXT, "
                     + DespensaEntry.COLUMN_STATUS        + " TEXT NOT NULL DEFAULT 'ATIVO', "
                     + DespensaEntry.COLUMN_USER_ID       + " TEXT, "
-                    + DespensaEntry.COLUMN_CATEGORIA     + " TEXT"   // Sprint 6
+                    + DespensaEntry.COLUMN_CATEGORIA     + " TEXT"
                     + ");";
 
     private static final String SQL_CREATE_HISTORICO =
@@ -77,11 +78,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + HistoricoEntry.COLUMN_USER_ID     + " TEXT"
                     + ");";
 
+    // Tabela de receitas salvas
+    private static final String SQL_CREATE_RECEITAS =
+            "CREATE TABLE " + ReceitaEntry.TABLE_NAME + " ("
+                    + ReceitaEntry._ID                  + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + ReceitaEntry.COLUMN_TITULO        + " TEXT NOT NULL, "
+                    + ReceitaEntry.COLUMN_DESCRICAO     + " TEXT, "
+                    + ReceitaEntry.COLUMN_TEMPO_PREPARO + " TEXT, "
+                    + ReceitaEntry.COLUMN_PORCOES       + " TEXT, "
+                    + ReceitaEntry.COLUMN_DIFICULDADE   + " TEXT, "
+                    + ReceitaEntry.COLUMN_INGREDIENTES  + " TEXT, "    // JSON
+                    + ReceitaEntry.COLUMN_PASSOS        + " TEXT, "    // JSON
+                    + ReceitaEntry.COLUMN_IMAGEM_URL    + " TEXT, "
+                    + ReceitaEntry.COLUMN_DATA_SALVO    + " TEXT NOT NULL, "
+                    + ReceitaEntry.COLUMN_USER_ID       + " TEXT"
+                    + ");";
+
     // =========================================================================
-    // Construtor privado — uso exclusivo do Singleton
+    // Construtor privado
     // =========================================================================
 
-    /** Privado: ninguém fora desta classe pode chamar new DatabaseHelper(). */
     private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -95,6 +111,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_USERS);
         db.execSQL(SQL_CREATE_DESPENSA);
         db.execSQL(SQL_CREATE_HISTORICO);
+        db.execSQL(SQL_CREATE_RECEITAS);  // Sprint 11
         Log.d(TAG, "onCreate: tabelas criadas (v" + DATABASE_VERSION + ").");
     }
 
@@ -103,9 +120,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d(TAG, "onUpgrade: " + oldVersion + " → " + newVersion);
         if (oldVersion < 4) migrarParaV4(db);
         if (oldVersion < 5) migrarParaV5(db);
+        if (oldVersion < 6) migrarParaV6(db);  // Sprint 11
     }
 
-    // ── Migração v4: adiciona users + user_id ────────────────────────────────
+    // =========================================================================
+    // Migrações
+    // =========================================================================
+
     private void migrarParaV4(SQLiteDatabase db) {
         try { db.execSQL(SQL_CREATE_USERS); }
         catch (Exception e) { Log.w(TAG, "v4: users já existe"); }
@@ -148,7 +169,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d(TAG, "migrarParaV4: concluída.");
     }
 
-    // ── Migração v5: adiciona coluna categoria em despensa_itens ─────────────
     private void migrarParaV5(SQLiteDatabase db) {
         try {
             db.execSQL("ALTER TABLE " + DespensaEntry.TABLE_NAME
@@ -156,6 +176,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d(TAG, "migrarParaV5: coluna 'categoria' adicionada.");
         } catch (Exception e) {
             Log.w(TAG, "migrarParaV5: coluna já existe — " + e.getMessage());
+        }
+    }
+
+    private void migrarParaV6(SQLiteDatabase db) {
+        try {
+            db.execSQL(SQL_CREATE_RECEITAS);
+            Log.d(TAG, "migrarParaV6: tabela 'receitas_salvas' criada.");
+        } catch (Exception e) {
+            Log.w(TAG, "migrarParaV6: tabela já existe — " + e.getMessage());
         }
     }
 }

@@ -6,6 +6,10 @@ public final class DatabaseContract {
 
     private DatabaseContract() {}
 
+    // =========================================================================
+    // Tabela: users
+    // =========================================================================
+
     public static class UserEntry implements BaseColumns {
         public static final String TABLE_NAME        = "users";
         public static final String COLUMN_NOME       = "nome";
@@ -13,6 +17,10 @@ public final class DatabaseContract {
         public static final String COLUMN_AVATAR     = "avatar_path";
         public static final String COLUMN_CREATED_AT = "created_at";
     }
+
+    // =========================================================================
+    // Tabela: despensa_itens
+    // =========================================================================
 
     public static class DespensaEntry implements BaseColumns {
         public static final String TABLE_NAME           = "despensa_itens";
@@ -25,6 +33,10 @@ public final class DatabaseContract {
         public static final String COLUMN_CATEGORIA     = "categoria";
     }
 
+    // =========================================================================
+    // Tabela: historico_consumo
+    // =========================================================================
+
     public static class HistoricoEntry implements BaseColumns {
         public static final String TABLE_NAME         = "historico_consumo";
         public static final String COLUMN_ID_ITEM     = "id_item";
@@ -32,5 +44,23 @@ public final class DatabaseContract {
         public static final String COLUMN_MOTIVO      = "motivo";
         public static final String COLUMN_NOME_CACHED = "nome_item";
         public static final String COLUMN_USER_ID     = "user_id";
+    }
+
+    // =========================================================================
+    // Tabela: receitas_salvas
+    // =========================================================================
+
+    public static class ReceitaEntry implements BaseColumns {
+        public static final String TABLE_NAME           = "receitas_salvas";
+        public static final String COLUMN_TITULO        = "titulo";
+        public static final String COLUMN_DESCRICAO     = "descricao";
+        public static final String COLUMN_TEMPO_PREPARO = "tempo_preparo";
+        public static final String COLUMN_PORCOES       = "porcoes";
+        public static final String COLUMN_DIFICULDADE   = "dificuldade";
+        public static final String COLUMN_INGREDIENTES  = "ingredientes";
+        public static final String COLUMN_PASSOS        = "passos";
+        public static final String COLUMN_IMAGEM_URL    = "imagem_url";
+        public static final String COLUMN_DATA_SALVO    = "data_salvo";
+        public static final String COLUMN_USER_ID       = "user_id";
     }
 }
