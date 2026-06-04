@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Menu do Navigation Drawer — Sprint 1 -->
+
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <group android:checkableBehavior="none">
 
         <item
             android:id="@+id/nav_perfil"
-            android:icon="@drawable/ic_nav_pantry"
+            android:icon="@drawable/ic_profile"
             android:title="Meu Perfil" />
+
+        <item
+            android:id="@+id/nav_receitas_salvas"
+            android:icon="@drawable/ic_saved_recipes"
+            android:title="Receitas Salvas" />
 
         <item
             android:id="@+id/nav_configuracoes"
@@ -18,11 +23,14 @@
 
     <item android:title="Sessão">
         <menu>
-            <item
-                android:id="@+id/nav_sair"
-                android:icon="@drawable/ic_nav_pantry"
-                android:title="Sair"
-                android:iconTint="@color/colorError" />
+            <group>
+                <item
+                    android:id="@+id/nav_sair"
+                    android:icon="@drawable/ic_logout"
+                    android:title="Sair"
+                    android:iconTint="@color/colorError" />
+
+            </group>
         </menu>
     </item>
 

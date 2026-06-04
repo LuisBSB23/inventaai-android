@@ -485,6 +485,13 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, PerfilActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
+            } else if (id == R.id.nav_receitas_salvas) {
+                // Abre o ChefIAActivity e envia a flag informando para exibir as receitas salvas
+                Intent intent = new Intent(this, ChefIAActivity.class);
+                intent.putExtra("ABRIR_SALVAS", true);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
             } else if (id == R.id.nav_configuracoes) {
                 // Sprint 12: abre a tela de configurações
                 startActivity(new Intent(this, ConfiguracoesActivity.class));

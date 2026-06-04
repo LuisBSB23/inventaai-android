@@ -124,6 +124,15 @@ public class ChefIAActivity extends AppCompatActivity {
     private void verificarIntentEConfigurarTela() {
         Intent intent = getIntent();
 
+        boolean abrirSalvas = intent.getBooleanExtra("ABRIR_SALVAS", false);
+        if (abrirSalvas) {
+
+            startActivity(new Intent(this, ReceitasActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            finish();
+            return;
+        }
+
         if (intent != null && intent.hasExtra(EXTRA_ITENS_SELECIONADOS)) {
             itensSelecionados = (ArrayList<DespensaItem>)
                     intent.getSerializableExtra(EXTRA_ITENS_SELECIONADOS);
