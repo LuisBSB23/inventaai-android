@@ -21,15 +21,6 @@ import android.database.sqlite.SQLiteDatabase;
 import com.example.inventaai.data.db.DatabaseContract.HistoricoEntry;
 import com.google.android.material.snackbar.Snackbar;
 
-/**
- * Sprint 12 — Tela de Configurações do InventaAí.
- *
- * Permite ao usuário ajustar:
- *  - Dias de alerta amarelo (1–30)
- *  - Dias de antecedência da notificação (1, 2, 3, 5 ou 7)
- *  - Ativar/Desativar notificações locais
- *  - Limpar o histórico de consumo/descarte
- */
 public class ConfiguracoesActivity extends AppCompatActivity {
 
     // ── Views ─────────────────────────────────────────────────────────────────

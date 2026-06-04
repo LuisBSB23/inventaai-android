@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Sprint 12 — Layout da Tela de Configurações -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <!-- Toolbar com botão de voltar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,7 +23,6 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Conteúdo scrollável -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -39,10 +36,6 @@
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingTop="24dp">
-
-            <!-- ══════════════════════════════════════════════════════════════ -->
-            <!-- SEÇÃO: ALERTAS DE VENCIMENTO                                   -->
-            <!-- ══════════════════════════════════════════════════════════════ -->
 
             <TextView
                 android:layout_width="wrap_content"
@@ -71,7 +64,6 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Dias de alerta amarelo -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -102,11 +94,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Itens dentro deste prazo aparecem na seção "Vencendo Logo"."
-                    android:fontFamily="@font/inter_regular"
-                    android:textSize="13sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:layout_marginBottom="12dp" />
+                        android:text="Itens dentro deste prazo aparecem na seção 'Vencendo Logo'."
+                        android:fontFamily="@font/inter_regular"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="12dp" />
 
                     <SeekBar
                         android:id="@+id/seekBarDiasAlerta"
@@ -145,10 +137,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ══════════════════════════════════════════════════════════════ -->
-            <!-- SEÇÃO: NOTIFICAÇÕES                                            -->
-            <!-- ══════════════════════════════════════════════════════════════ -->
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -176,7 +164,6 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Switch: Ativar notificações -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -217,14 +204,12 @@
 
                     </LinearLayout>
 
-                    <!-- Divider -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:background="?attr/colorOutlineVariant"
                         android:layout_marginBottom="20dp" />
 
-                    <!-- SeekBar: Antecedência -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -297,10 +282,6 @@
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- ══════════════════════════════════════════════════════════════ -->
-            <!-- SEÇÃO: DADOS                                                    -->
-            <!-- ══════════════════════════════════════════════════════════════ -->
 
             <TextView
                 android:layout_width="wrap_content"

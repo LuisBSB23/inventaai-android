@@ -21,7 +21,7 @@
         <FrameLayout
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:background="@drawable/bg_circle_primary_container"
+            android:background="@drawable/bg_pill_primary"
             android:layout_marginBottom="32dp">
 
             <ImageView
@@ -29,7 +29,7 @@
                 android:layout_height="52dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_nav_chef"
-                android:tint="?attr/colorPrimary"
+                android:tint="@color/colorInversePrimary"
                 android:contentDescription="@null" />
         </FrameLayout>
 
@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Seu nome"
-            app:startIconDrawable="@drawable/ic_nav_pantry"
+            app:startIconDrawable="@drawable/ic_profile"
             android:layout_marginBottom="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -80,7 +80,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Senha"
-            app:startIconDrawable="@drawable/ic_nav_history"
+            app:startIconDrawable="@drawable/ic_senha_chave"
             app:endIconMode="password_toggle"
             android:layout_marginBottom="32dp">
 

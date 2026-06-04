@@ -29,20 +29,13 @@ import com.example.inventaai.worker.VencimentoWorker;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * Sprint 12: Adicionado agendamento do VencimentoWorker e pedido de permissão
- * de notificação (Android 13+). As demais funcionalidades do Splash são preservadas.
- */
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
 
-    /** Duração exata do fade conforme especificado na Sprint 6. */
     private static final long DURACAO_FADE_MS = 1200L;
 
-    /** Pequena pausa extra após o fade para o usuário ver o logo estático. */
     private static final long PAUSA_EXTRA_MS  = 300L;
 
-    /** Tag única para o Worker — evita duplicação de jobs no WorkManager. */
     private static final String WORKER_TAG = "VencimentoWorkerPeriodico";
 
     // Launcher para o diálogo de permissão de notificação (Android 13+)
@@ -50,9 +43,12 @@ public class SplashActivity extends AppCompatActivity {
             registerForActivityResult(
                     new ActivityResultContracts.RequestPermission(),
                     granted -> {
-                        // Independente do resultado, continuamos o fluxo normal.
-                        // O Worker só emitirá notificações se a permissão for concedida.
+                        // Independente do resultado, agendamos o Worker.
+                        // O Worker só emitirá notificações se a permissão foi concedida.
                         agendarWorkerVencimento();
+
+                        // Só navegamos DEPOIS que o usuário responder a caixinha
+                        navegarParaProximaTela();
                     }
             );
 
@@ -86,10 +82,6 @@ public class SplashActivity extends AppCompatActivity {
         ivLogo.startAnimation(fadeIn);
     }
 
-    /**
-     * Solicita permissão de notificação no Android 13+ antes de navegar.
-     * Em versões anteriores, apenas agenda o Worker e navega diretamente.
-     */
     private void solicitarPermissaoENavegar() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             boolean permissaoConcedida = ContextCompat.checkSelfPermission(
@@ -97,23 +89,18 @@ public class SplashActivity extends AppCompatActivity {
                     == PackageManager.PERMISSION_GRANTED;
 
             if (!permissaoConcedida) {
-                // Solicita permissão — o launcher chama agendarWorkerVencimento() no callback
+                // Solicita permissão e para por aqui.
+                // O fluxo continuará dentro do 'permissaoNotifLauncher' acima.
                 permissaoNotifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-                // Navega para a próxima tela em paralelo (não bloqueia o usuário)
-                navegarParaProximaTela();
                 return;
             }
         }
 
-        // Android 12 ou inferior, ou permissão já concedida
+        // Android 12 ou inferior, ou permissão já concedida em testes anteriores
         agendarWorkerVencimento();
         navegarParaProximaTela();
     }
 
-    /**
-     * Agenda o PeriodicWorkRequest do VencimentoWorker (24h, sem restrição de rede).
-     * Usa KEEP para não substituir um job já agendado (ex: abertura dupla do app).
-     */
     private void agendarWorkerVencimento() {
         Constraints constraints = new Constraints.Builder()
                 .build(); // NETWORK_NOT_REQUIRED é o padrão — não precisa de rede

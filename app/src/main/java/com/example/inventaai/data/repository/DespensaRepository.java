@@ -20,7 +20,7 @@ public class DespensaRepository {
 
     private static final String TAG = "DespensaRepository";
 
-    // SPRINT 7 — TAREFA 1: usa Singleton em vez de new DatabaseHelper(context)
+    // TAREFA 1: usa Singleton em vez de new DatabaseHelper(context)
     private final DatabaseHelper dbHelper;
 
     public DespensaRepository(Context context) {
@@ -37,7 +37,7 @@ public class DespensaRepository {
             Log.e(TAG, "inserir: erro", e);
             return -1;
         }
-        // SPRINT 7: não chamamos db.close() — o Singleton gerencia a conexão.
+        // Não chamamos db.close() — o Singleton gerencia a conexão.
     }
 
     // ── BUSCAR POR ID (público) ───────────────────────────────────────────────
@@ -52,7 +52,6 @@ public class DespensaRepository {
         }
     }
 
-    /** Versão interna: usa db já aberto — não fecha (Singleton cuida disso). */
     private DespensaItem buscarPorIdInterno(SQLiteDatabase db, long id) {
         Cursor cursor = null;
         try {
@@ -86,16 +85,8 @@ public class DespensaRepository {
         return lista;
     }
 
-    // ── LISTAR ATIVOS FILTRADO (Sprint 12) ────────────────────────────────────
+    // ── LISTAR ATIVOS FILTRADO
 
-    /**
-     * Retorna itens ativos do usuário cujo nome OU categoria contenham {@code query}.
-     * A busca é case-insensitive por padrão no SQLite com texto ASCII/Latin-1.
-     *
-     * @param query  Texto digitado pelo usuário (pode ser vazio ou null).
-     * @param userId ID do usuário logado.
-     * @return Lista filtrada, ordenada por data de validade ASC.
-     */
     public List<DespensaItem> listarAtivosFiltrado(String query, String userId) {
         // Query vazia ou nula → retorna lista completa
         if (query == null || query.trim().isEmpty()) {

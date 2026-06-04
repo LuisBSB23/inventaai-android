@@ -82,12 +82,10 @@ public class DashboardActivity extends AppCompatActivity {
     // ── Seção "Vencendo Logo" ocultável ─────────────────────────
     private LinearLayout layoutSectionVencendo;
 
-    // ── Sprint 12: Busca ──────────────────────────────────────────────────────
-    /** Container (LinearLayout) que envolve o SearchBar — oculto por padrão. */
+    // ── Busca
+
     private LinearLayout      layoutSearchBar;
-    /** Campo de texto da busca. */
     private TextInputEditText etBusca;
-    /** Botão de lupa na toolbar. */
     private View              btnBuscar;
 
     // ── Adapters ──────────────────────────────────────────────────────────────
@@ -219,7 +217,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // SPRINT 12 — BUSCA E FILTRO
+    // BUSCA E FILTRO
     // =========================================================================
 
     private void configurarBusca() {
@@ -277,10 +275,6 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Executa a busca filtrada no banco e atualiza apenas a lista principal (rvPantryItems).
-     * A seção "Vencendo Logo" é ocultada durante a busca para evitar confusão.
-     */
     private void filtrarLista(String query) {
         final String userId = currentUserId;
         AppExecutors.diskIO().execute(() -> {
