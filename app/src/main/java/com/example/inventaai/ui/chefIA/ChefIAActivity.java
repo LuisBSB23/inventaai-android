@@ -12,6 +12,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
@@ -99,7 +102,14 @@ public class ChefIAActivity extends AppCompatActivity {
         despensaRepository = new DespensaRepository(this);
         geminiService      = new GeminiService();
         unsplashService    = new UnsplashService();
-        receitaRepository  = new ReceitaRepository(this);  // Sprint 11
+        receitaRepository  = new ReceitaRepository(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
+
+            return insets;
+        });
 
         vincularViews();
         configurarBotoes();

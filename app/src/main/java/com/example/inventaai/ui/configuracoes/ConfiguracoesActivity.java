@@ -6,6 +6,9 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.db.DatabaseHelper;
@@ -47,6 +50,13 @@ public class ConfiguracoesActivity extends AppCompatActivity {
         appPrefs       = AppPrefs.getInstance(this);
         sessionManager = new SessionManager(this);
         dbHelper       = DatabaseHelper.getInstance(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+
+            return insets;
+        });
 
         vincularViews();
         configurarToolbar();

@@ -50,6 +50,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <!-- Sprint 12: Botão de Lupa para abrir/fechar campo de busca -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -59,10 +60,10 @@
                     android:textSize="22sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/btnBuscar"
+                    app:layout_constraintHorizontal_bias="0.638"
                     app:layout_constraintStart_toEndOf="@id/btnMenu"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- Sprint 12: Botão de Lupa para abrir/fechar campo de busca -->
                 <ImageButton
                     android:id="@+id/btnBuscar"
                     android:layout_width="40dp"

@@ -8,6 +8,9 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
@@ -41,6 +44,13 @@ public class CadastroActivity extends AppCompatActivity {
 
         repository     = new DespensaRepository(this);
         sessionManager = new com.example.inventaai.util.SessionManager(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+
+            return insets;
+        });
 
         vincularViews();
         configurarCategoria();
