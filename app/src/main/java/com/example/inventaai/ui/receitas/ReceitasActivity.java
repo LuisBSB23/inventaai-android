@@ -19,6 +19,7 @@ import com.example.inventaai.data.model.ReceitaSalva;
 import com.example.inventaai.data.repository.ReceitaRepository;
 import com.example.inventaai.ui.cadastro.CadastroActivity;
 import com.example.inventaai.ui.chefIA.ChefIAActivity;
+import com.example.inventaai.ui.receitas.ReceitaDetalheActivity;
 import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.util.AppExecutors;
@@ -172,9 +173,10 @@ public class ReceitasActivity extends AppCompatActivity {
     // =========================================================================
 
     private void abrirDetalheReceita(ReceitaSalva receita) {
-        Toast.makeText(this,
-                "\"" + receita.getTitulo() + "\" — em breve detalhes completos!",
-                Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, ReceitaDetalheActivity.class);
+        intent.putExtra(ReceitaDetalheActivity.EXTRA_RECEITA, receita);
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     // =========================================================================

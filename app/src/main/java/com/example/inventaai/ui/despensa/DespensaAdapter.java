@@ -232,6 +232,8 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             if (modoSelecao) {
                 checkboxItem.setVisibility(View.VISIBLE);
                 checkboxItem.setChecked(selecionado);
+                tvExpiryBadge.setVisibility(View.GONE);
+                progressFreshness.setVisibility(View.GONE);
 
                 if (selecionado) {
                     cardItem.setStrokeColor(ContextCompat.getColor(ctx, R.color.colorPrimary));
@@ -247,6 +249,8 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
                 }
             } else {
                 checkboxItem.setVisibility(View.GONE);
+                tvExpiryBadge.setVisibility(View.VISIBLE);
+                progressFreshness.setVisibility(View.VISIBLE);
                 cardItem.setStrokeColor(
                         ContextCompat.getColor(ctx, R.color.colorSurfaceContainerHighest));
                 cardItem.setStrokeWidth(dpToPx(ctx, 1));

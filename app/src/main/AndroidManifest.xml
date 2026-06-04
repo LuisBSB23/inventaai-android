@@ -79,6 +79,12 @@
             android:exported="false"
             android:label="Receitas Salvas" />
 
+        <activity
+            android:name=".ui.receitas.ReceitaDetalheActivity"
+            android:exported="false"
+            android:label="Detalhes da Receita"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- Tela de Configurações -->
         <activity
             android:name=".ui.configuracoes.ConfiguracoesActivity"
