@@ -16,6 +16,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ReceitaRepository {
@@ -48,6 +49,81 @@ public class ReceitaRepository {
             Log.e(TAG, "ReceitaRepository.salvar: erro", e);
             return -1;
         }
+    }
+
+    // =========================================================================
+    // VERIFICAR DUPLICIDADE  —  Sprint 13
+    // =========================================================================
+
+    /**
+     * Verifica se já existe uma receita com o mesmo título E a mesma lista de
+     * ingredientes (comparação via JSON com ingredientes ordenados
+     * alfabeticamente para evitar falsos negativos por diferença de ordem).
+     *
+     * @param receita A receita candidata a ser salva.
+     * @return {@code true} se já existir uma receita idêntica; {@code false} caso contrário.
+     */
+    public boolean receitaJaExiste(ReceitaSalva receita) {
+        if (receita == null || receita.getTitulo() == null) return false;
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            // Busca todas as receitas do mesmo usuário com o mesmo título
+            cursor = db.query(
+                    ReceitaEntry.TABLE_NAME,
+                    new String[]{ ReceitaEntry._ID, ReceitaEntry.COLUMN_INGREDIENTES },
+                    ReceitaEntry.COLUMN_TITULO   + " = ? AND "
+                            + ReceitaEntry.COLUMN_USER_ID + " = ?",
+                    new String[]{ receita.getTitulo(), receita.getUserId() },
+                    null, null, null
+            );
+
+            // Se não há receita com mesmo título, não é duplicata
+            if (!cursor.moveToFirst()) return false;
+
+            // Normaliza os ingredientes da nova receita (ordenados) para comparar
+            String jsonNova = normalizarIngredientes(receita.getIngredientes());
+
+            // Compara ingredientes com cada receita existente de mesmo título
+            do {
+                int col = cursor.getColumnIndex(ReceitaEntry.COLUMN_INGREDIENTES);
+                if (col < 0) continue;
+
+                String jsonExistente = cursor.getString(col);
+                if (jsonExistente == null) continue;
+
+                // Desserializa e normaliza os ingredientes existentes
+                List<String> listaExistente = gson.fromJson(jsonExistente, LIST_STRING_TYPE);
+                String jsonExistenteNorm    = normalizarIngredientes(listaExistente);
+
+                if (jsonNova.equals(jsonExistenteNorm)) {
+                    Log.d(TAG, "receitaJaExiste: duplicata detectada para título='"
+                            + receita.getTitulo() + "'");
+                    return true;
+                }
+            } while (cursor.moveToNext());
+
+            return false;
+
+        } catch (Exception e) {
+            Log.e(TAG, "receitaJaExiste: erro ao verificar duplicidade", e);
+            return false;
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+    }
+
+    /**
+     * Serializa uma lista de ingredientes em JSON com os itens ordenados
+     * alfabeticamente (case-insensitive), garantindo comparação consistente
+     * independente da ordem original retornada pela IA.
+     */
+    private String normalizarIngredientes(List<String> ingredientes) {
+        if (ingredientes == null || ingredientes.isEmpty()) return "[]";
+        List<String> copia = new ArrayList<>(ingredientes);
+        Collections.sort(copia, String.CASE_INSENSITIVE_ORDER);
+        return gson.toJson(copia);
     }
 
     // =========================================================================

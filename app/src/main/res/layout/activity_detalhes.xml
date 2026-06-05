@@ -16,7 +16,7 @@
         android:orientation="vertical"
         android:paddingBottom="32dp">
 
-        <!-- ── Fix 5: Barra superior com botão Voltar ── -->
+        <!-- ── Barra superior com botão Voltar ── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
@@ -51,7 +51,7 @@
 
         </LinearLayout>
 
-        <!-- Drag Handle (mantido para compatibilidade com BottomSheet se usado) -->
+        <!-- Drag Handle -->
         <View
             android:layout_width="48dp"
             android:layout_height="4dp"
@@ -128,14 +128,14 @@
                 android:layout_marginBottom="8dp"
                 tools:text="Abacate Hass" />
 
-            <!-- Data de validade -->
+            <!-- Data de validade (label) -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="32dp">
+                android:layout_marginBottom="16dp">
 
                 <ImageView
                     android:layout_width="18dp"
@@ -155,7 +155,40 @@
                     tools:text="Validade: 22/05/2026" />
             </LinearLayout>
 
-            <!-- STEPPER de Quantidade -->
+            <!-- Sprint 13: Campo editável de data de validade com DatePickerDialog -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilDataValidadeDetalhes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:boxCornerRadiusBottomStart="16dp"
+                app:boxCornerRadiusTopEnd="16dp"
+                app:boxCornerRadiusTopStart="16dp"
+                app:startIconDrawable="@drawable/ic_calendar"
+                app:startIconTint="?attr/colorPrimary"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/ic_calendar"
+                app:endIconTint="?attr/colorPrimary"
+                app:endIconContentDescription="Selecionar data"
+                android:hint="Data de Validade">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDataValidadeDetalhes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_regular"
+                    android:textSize="15sp"
+                    android:focusable="false"
+                    android:cursorVisible="false"
+                    android:inputType="none"
+                    tools:text="22/05/2026" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- STEPPER de Quantidade
+                 Sprint 13: container com minWidth para evitar quebra de linha em 3+ dígitos -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -175,26 +208,34 @@
                     android:src="@drawable/ic_decrease"
                     android:tint="?attr/colorPrimary" />
 
+                <!--
+                    Sprint 13 FIX: largura aumentada de 96dp para 120dp e
+                    minWidth definido para garantir espaço para 3+ dígitos
+                    sem quebrar a linha.
+                -->
                 <LinearLayout
-                    android:layout_width="96dp"
+                    android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:paddingHorizontal="12dp">
+                    android:paddingHorizontal="12dp"
+                    android:minWidth="120dp">
 
                     <TextView
                         android:id="@+id/tvQuantidade"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/inter_extrabold"
                         android:gravity="center"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="40sp"
+                        android:maxLines="1"
+                        android:adjustViewBounds="false"
                         tools:text="2" />
 
                     <TextView
                         android:id="@+id/tvUnidade"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/inter_bold"
                         android:gravity="center"
@@ -202,6 +243,7 @@
                         android:textColor="?attr/colorOutline"
                         android:textSize="11sp"
                         android:letterSpacing="0.05"
+                        android:maxLines="1"
                         tools:text="UNIDADES" />
                 </LinearLayout>
 
@@ -216,7 +258,7 @@
 
             </LinearLayout>
 
-            <!-- Fix 5: BOTÕES — Remover e Salvar com altura e padding generosos -->
+            <!-- BOTÕES — Remover e Salvar -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

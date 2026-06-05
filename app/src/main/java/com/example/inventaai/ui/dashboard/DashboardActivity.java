@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
@@ -83,7 +84,6 @@ public class DashboardActivity extends AppCompatActivity {
     private LinearLayout layoutSectionVencendo;
 
     // ── Busca
-
     private LinearLayout      layoutSearchBar;
     private TextInputEditText etBusca;
     private View              btnBuscar;
@@ -120,7 +120,6 @@ public class DashboardActivity extends AppCompatActivity {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
-
             return insets;
         });
 
@@ -129,8 +128,11 @@ public class DashboardActivity extends AppCompatActivity {
         configurarBotoes();
         configurarBottomNavigation();
         configurarDrawer();
-        configurarBusca();  // Sprint 12
+        configurarBusca();
         animarCardSaude();
+
+        // Sprint 13: exibe mensagem caso venha do ChefIA com flag de redirecionamento
+        verificarMensagemDeRetorno();
     }
 
     @Override
@@ -143,7 +145,6 @@ public class DashboardActivity extends AppCompatActivity {
             bottomNavigation.setSelectedItemId(R.id.nav_pantry);
         }
 
-        // Se há texto na busca, reaplica o filtro; senão carrega tudo
         if (etBusca != null && etBusca.getText() != null
                 && !etBusca.getText().toString().trim().isEmpty()) {
             filtrarLista(etBusca.getText().toString().trim());
@@ -152,6 +153,25 @@ public class DashboardActivity extends AppCompatActivity {
         }
 
         atualizarHeaderDrawer();
+    }
+
+    // =========================================================================
+    // SPRINT 13: mensagem de retorno do ChefIA
+    // =========================================================================
+
+    /**
+     * Verifica se o Intent que abriu esta Activity contém a flag enviada pela
+     * ChefIAActivity ao pressionar "Gerar Nova Receita". Se sim, exibe um Toast
+     * orientando o usuário a selecionar ou adicionar itens.
+     */
+    private void verificarMensagemDeRetorno() {
+        Intent intent = getIntent();
+        if (intent != null
+                && intent.getBooleanExtra(ChefIAActivity.EXTRA_MOSTRAR_MSG_SELECAO, false)) {
+            Toast.makeText(this,
+                    "Selecione ou adicione novos itens para gerar uma receita",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     // =========================================================================
@@ -190,6 +210,11 @@ public class DashboardActivity extends AppCompatActivity {
         layoutSearchBar = findViewById(R.id.layoutSearchBar);
         etBusca         = findViewById(R.id.etBusca);
         btnBuscar       = findViewById(R.id.btnBuscar);
+
+        // Sprint 13: avatar na toolbar → navega para PerfilActivity
+        ivAvatar.setOnClickListener(v ->
+                startActivity(new Intent(this, PerfilActivity.class))
+        );
     }
 
     private void configurarRecyclerViews() {
@@ -224,10 +249,8 @@ public class DashboardActivity extends AppCompatActivity {
     private void configurarBusca() {
         if (layoutSearchBar == null || etBusca == null || btnBuscar == null) return;
 
-        // Lupa: alterna visibilidade do campo com animação slide-down/up de 250ms
         btnBuscar.setOnClickListener(v -> {
             if (layoutSearchBar.getVisibility() == View.VISIBLE) {
-                // Fechar: slide-up + fade-out
                 layoutSearchBar.animate()
                         .translationY(-layoutSearchBar.getHeight())
                         .alpha(0f)
@@ -236,13 +259,11 @@ public class DashboardActivity extends AppCompatActivity {
                             layoutSearchBar.setVisibility(View.GONE);
                             layoutSearchBar.setTranslationY(0f);
                             layoutSearchBar.setAlpha(1f);
-                            // Limpa o campo e restaura a lista completa
                             etBusca.setText("");
                             atualizarListas();
                         })
                         .start();
             } else {
-                // Abrir: slide-down + fade-in
                 layoutSearchBar.setTranslationY(-layoutSearchBar.getHeight() > 0
                         ? -layoutSearchBar.getHeight() : -120);
                 layoutSearchBar.setAlpha(0f);
@@ -256,13 +277,9 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
 
-        // TextWatcher: filtra a cada caractere digitado
         etBusca.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -287,7 +304,6 @@ public class DashboardActivity extends AppCompatActivity {
 
                 adapterPantry.atualizarLista(resultado);
 
-                // Oculta seção "Vencendo Logo" durante busca ativa
                 if (layoutSectionVencendo != null) {
                     layoutSectionVencendo.setVisibility(View.GONE);
                 }
@@ -314,7 +330,8 @@ public class DashboardActivity extends AppCompatActivity {
         if (modoAtivo) {
             layoutBarraSelecao.setVisibility(View.VISIBLE);
             tvContadorSelecao.setText(quantidade + " selecionado(s)");
-            btnGenerateRecipe.setText("Gerar Receita com Selecionados");
+            // Sprint 13: texto do botão simplificado para "Gerar Receita"
+            btnGenerateRecipe.setText("Gerar Receita");
         } else {
             layoutBarraSelecao.setVisibility(View.GONE);
             btnGenerateRecipe.setText(getString(R.string.generate_recipe));
@@ -475,8 +492,8 @@ public class DashboardActivity extends AppCompatActivity {
         findViewById(R.id.btnMenu).setOnClickListener(v ->
                 drawerLayout.openDrawer(GravityCompat.START));
 
-        ivAvatar.setOnClickListener(v ->
-                drawerLayout.openDrawer(GravityCompat.START));
+        // Sprint 13: o ivAvatar agora navega para PerfilActivity (configurado em vincularViews)
+        // Mantemos a abertura do drawer apenas pelo botão hamburger.
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -487,14 +504,12 @@ public class DashboardActivity extends AppCompatActivity {
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
             } else if (id == R.id.nav_receitas_salvas) {
-                // Abre o ChefIAActivity e envia a flag informando para exibir as receitas salvas
                 Intent intent = new Intent(this, ChefIAActivity.class);
                 intent.putExtra("ABRIR_SALVAS", true);
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
             } else if (id == R.id.nav_configuracoes) {
-                // Sprint 12: abre a tela de configurações
                 startActivity(new Intent(this, ConfiguracoesActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
@@ -515,6 +530,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                 tvGreetingUser.setText(user.getNome() + "!");
 
+                // Sprint 13: avatar na toolbar usa circleCrop via GlideHelper
                 if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
                     GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivAvatarImg);
                     ivAvatarImg.setColorFilter(null);
@@ -524,6 +540,7 @@ public class DashboardActivity extends AppCompatActivity {
                     tvAvatarIniciais.setVisibility(View.VISIBLE);
                 }
 
+                // Cabeçalho do drawer
                 View header = navigationView.getHeaderView(0);
                 if (header == null) return;
 
@@ -535,6 +552,7 @@ public class DashboardActivity extends AppCompatActivity {
                 tvDrawerNome.setText(user.getNome());
                 tvDrawerIdAbreviado.setText("ID: " + user.getIdAbreviado());
 
+                // Sprint 13: foto do drawer também usa circleCrop para evitar bordas quadradas
                 if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
                     GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivDrawerAvatar);
                     ivDrawerAvatar.setColorFilter(null);
@@ -575,20 +593,42 @@ public class DashboardActivity extends AppCompatActivity {
     private void configurarBotoes() {
         btnGenerateRecipe.setOnClickListener(v -> {
             if (adapterPantry.isModoSelecao()) {
+                // Modo de seleção ativo → verifica se há itens selecionados
                 List<DespensaItem> selecionados = adapterPantry.getItensSelecionados();
-                Intent intent = new Intent(this, ChefIAActivity.class);
-                if (!selecionados.isEmpty()) {
-                    intent.putExtra(
-                            ChefIAActivity.EXTRA_ITENS_SELECIONADOS,
-                            new ArrayList<>(selecionados));
+                if (selecionados.isEmpty()) {
+                    // Sprint 13: nenhum item selecionado → orienta o usuário
+                    Toast.makeText(this,
+                            "Selecione pelo menos 1 item para gerar a receita",
+                            Toast.LENGTH_SHORT).show();
+                    return;
                 }
+                Intent intent = new Intent(this, ChefIAActivity.class);
+                intent.putExtra(
+                        ChefIAActivity.EXTRA_ITENS_SELECIONADOS,
+                        new ArrayList<>(selecionados));
                 adapterPantry.limparSelecao();
                 atualizarBarraSelecao();
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             } else {
-                startActivity(new Intent(this, ChefIAActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                // Modo normal → verifica se a despensa tem itens
+                final String userId = currentUserId;
+                AppExecutors.diskIO().execute(() -> {
+                    final List<DespensaItem> ativos = despensaRepository.listarAtivos(userId);
+                    AppExecutors.mainThread().execute(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (ativos.isEmpty()) {
+                            // Sprint 13: despensa vazia → vai para Cadastro
+                            startActivity(new Intent(this, CadastroActivity.class));
+                            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                        } else {
+                            // Sprint 13: há itens mas nenhum selecionado → orienta
+                            Toast.makeText(this,
+                                    "Selecione pelo menos 1 item para gerar a receita",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
             }
         });
 
@@ -642,7 +682,6 @@ public class DashboardActivity extends AppCompatActivity {
             drawerLayout.closeDrawers();
         } else if (layoutSearchBar != null
                 && layoutSearchBar.getVisibility() == View.VISIBLE) {
-            // Fecha a busca com Back
             btnBuscar.performClick();
         } else if (adapterPantry.isModoSelecao()) {
             adapterPantry.limparSelecao();

@@ -47,6 +47,9 @@ public class ChefIAActivity extends AppCompatActivity {
 
     public static final String EXTRA_ITENS_SELECIONADOS = "extra_itens_selecionados";
 
+    // ── Extra para sinalizar ao Dashboard que deve exibir mensagem  ──────────
+    public static final String EXTRA_MOSTRAR_MSG_SELECAO = "extra_mostrar_msg_selecao";
+
     // ── Views ─────────────────────────────────────────────────────────────────
     private TextView             tvToolbarTitulo;
     private TextView             tvRecipeTitle;
@@ -79,7 +82,6 @@ public class ChefIAActivity extends AppCompatActivity {
     private DespensaRepository despensaRepository;
     private GeminiService      geminiService;
     private UnsplashService    unsplashService;
-    // repositório de receitas salvas
     private ReceitaRepository  receitaRepository;
 
     // Receita atual em memória (para o botão Salvar)
@@ -107,7 +109,6 @@ public class ChefIAActivity extends AppCompatActivity {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
-
             return insets;
         });
 
@@ -136,7 +137,6 @@ public class ChefIAActivity extends AppCompatActivity {
 
         boolean abrirSalvas = intent.getBooleanExtra("ABRIR_SALVAS", false);
         if (abrirSalvas) {
-
             startActivity(new Intent(this, ReceitasActivity.class));
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             finish();
@@ -220,8 +220,7 @@ public class ChefIAActivity extends AppCompatActivity {
     // =========================================================================
 
     private void gerarReceitaComItens(List<DespensaItem> itens) {
-        // Cada nova geração reseta o estado do botão Salvar
-        receitaAtual  = null;
+        receitaAtual   = null;
         imagemUrlAtual = null;
         resetarBotaoSalvar();
 
@@ -250,7 +249,7 @@ public class ChefIAActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // SALVAR RECEITA  —  Sprint 11
+    // SALVAR RECEITA  —  Sprint 11 + Sprint 13 (bloqueio de duplicidade)
     // =========================================================================
 
     private void salvarReceitaAtual() {
@@ -266,7 +265,24 @@ public class ChefIAActivity extends AppCompatActivity {
         ReceitaSalva receitaSalva = new ReceitaSalva(receitaAtual, userId);
         receitaSalva.setImagemUrl(imagemUrlAtual);
 
-        // Persiste em background
+        // Sprint 13: verifica duplicidade antes de salvar (em background)
+        AppExecutors.diskIO().execute(() -> {
+            boolean jaExiste = receitaRepository.receitaJaExiste(receitaSalva);
+            AppExecutors.mainThread().execute(() -> {
+                if (jaExiste) {
+                    // Bloqueia inserção e avisa o usuário
+                    Toast.makeText(this, "Esta receita já está salva.", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "salvarReceitaAtual: inserção bloqueada — receita duplicada.");
+                    return;
+                }
+                // Receita nova → persiste
+                persistirReceita(receitaSalva);
+            });
+        });
+    }
+
+    /** Persiste a receita no banco após confirmação de que não é duplicata. */
+    private void persistirReceita(ReceitaSalva receitaSalva) {
         AppExecutors.diskIO().execute(() -> {
             long id = receitaRepository.salvar(receitaSalva);
             AppExecutors.mainThread().execute(() -> {
@@ -274,7 +290,6 @@ public class ChefIAActivity extends AppCompatActivity {
                     Toast.makeText(this,
                             "\"" + receitaAtual.getTitulo() + "\" salva!",
                             Toast.LENGTH_SHORT).show();
-                    // Muda texto e desabilita para evitar duplicatas
                     btnSalvarReceita.setText("Salva! ✓");
                     btnSalvarReceita.setEnabled(false);
                 } else {
@@ -302,7 +317,7 @@ public class ChefIAActivity extends AppCompatActivity {
             @Override
             public void onSucesso(String imageUrl) {
                 runOnUiThread(() -> {
-                    imagemUrlAtual = imageUrl;  // Sprint 11: guarda para persistência
+                    imagemUrlAtual = imageUrl;
                     Log.d(TAG, "ChefIA: carregando imagem → " + imageUrl);
                     GlideHelper.loadImage(ChefIAActivity.this, imageUrl, ivRecipeImage);
                 });
@@ -511,7 +526,7 @@ public class ChefIAActivity extends AppCompatActivity {
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         });
 
-        // botão "Receitas Salvas" na toolbar → abre ReceitasActivity
+        // Botão "Receitas Salvas" na toolbar → abre ReceitasActivity
         View btnSavedRecipes = findViewById(R.id.btnSavedRecipes);
         if (btnSavedRecipes != null) {
             btnSavedRecipes.setOnClickListener(v -> {
@@ -547,20 +562,19 @@ public class ChefIAActivity extends AppCompatActivity {
             });
         }
 
-        // "Gerar Nova Receita"
+        // ── Sprint 13: "Gerar Nova Receita" redireciona para o Dashboard
+        //    em vez de disparar nova requisição à API.
         btnNovaReceita.setOnClickListener(v -> {
-            if (itensSelecionados != null && !itensSelecionados.isEmpty()) {
-                gerarReceitaComItens(itensSelecionados);
-            } else {
-                Toast.makeText(this, "Selecione ingredientes na despensa primeiro", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(this, DashboardActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-            }
+            Intent intent = new Intent(this, DashboardActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            // Sinaliza ao Dashboard para exibir a mensagem orientativa
+            intent.putExtra(EXTRA_MOSTRAR_MSG_SELECAO, true);
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            finish();
         });
 
-        // "Salvar Receita" → persiste no banco
+        // "Salvar Receita" → verifica duplicidade e persiste
         btnSalvarReceita.setOnClickListener(v -> salvarReceitaAtual());
 
         // "Alterar" → volta para a Despensa
