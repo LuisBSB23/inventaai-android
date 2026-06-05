@@ -2,6 +2,9 @@ package com.example.inventaai.ui.detalhes;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.InputType;
+import android.view.MotionEvent;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,9 +30,7 @@ import java.util.Calendar;
 
 public class DetalhesActivity extends AppCompatActivity {
 
-    /** Chave para passar o DespensaItem serializado via Intent */
     public static final String EXTRA_ITEM = "extra_despensa_item";
-
     public static final String TRANSITION_NAME_ICON = "transition_item_icon";
 
     // Views
@@ -46,17 +47,18 @@ public class DetalhesActivity extends AppCompatActivity {
     private ImageView     ivItemImage;
     private ImageButton   btnVoltarDetalhes;
 
-    // Sprint 13: campo para editar data de validade mapeado do TextInputLayout/TextInputEditText
     private TextInputLayout    tilDataValidade;
     private TextInputEditText  etDataValidade;
 
     // Estado
     private DespensaItem item;
     private double       quantidadeAtual;
-    /** Data de validade selecionada no formato YYYY-MM-DD (pode mudar via DatePicker). */
     private String       dataValidadeAtual;
     private DespensaRepository repository;
     private com.example.inventaai.util.SessionManager sessionManagerDetalhes;
+
+    // Handler para clique longo contínuo
+    private android.os.Handler autoUpdateHandler = new android.os.Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +77,7 @@ public class DetalhesActivity extends AppCompatActivity {
         vincularViews();
         carregarItem();
         configurarStepper();
-        configurarDatePicker();  // Sprint 13
+        configurarDatePicker();
         configurarBotoes();
     }
 
@@ -97,7 +99,6 @@ public class DetalhesActivity extends AppCompatActivity {
         ivItemImage   = findViewById(R.id.ivItemImage);
         btnVoltarDetalhes = findViewById(R.id.btnVoltarDetalhes);
 
-        // Sprint 13: campo de data de validade editável do novo layout xml
         tilDataValidade = findViewById(R.id.tilDataValidadeDetalhes);
         etDataValidade  = findViewById(R.id.etDataValidadeDetalhes);
 
@@ -123,7 +124,7 @@ public class DetalhesActivity extends AppCompatActivity {
             return;
         }
 
-        dataValidadeAtual = item.getDataValidade(); // guarda para edição
+        dataValidadeAtual = item.getDataValidade();
         preencherItem(item);
     }
 
@@ -163,62 +164,139 @@ public class DetalhesActivity extends AppCompatActivity {
 
         tvAddedDate.setText("Validade: " + DateUtils.formatarParaExibicao(item.getDataValidade()));
 
-        // Sprint 13: preenche o campo de data editável com a data atual do item
         if (etDataValidade != null) {
             etDataValidade.setText(DateUtils.formatarParaExibicao(item.getDataValidade()));
         }
     }
 
     // =========================================================================
-    // STEPPER
+    // STEPPER (Aumentar, Diminuir e Digitar)
     // =========================================================================
 
     private void configurarStepper() {
         atualizarDisplayQuantidade();
 
-        btnDecrease.setOnClickListener(v -> {
-            if (quantidadeAtual > 0) {
-                quantidadeAtual = Math.max(0, quantidadeAtual - 1);
-                atualizarDisplayQuantidade();
+        // Segurar para diminuir
+        btnDecrease.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    v.setPressed(true);
+                    diminuirQuantidade();
+                    autoUpdateHandler.postDelayed(autoDecrementRunnable, 400); // 400ms antes de começar a repetir
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    v.setPressed(false);
+                    autoUpdateHandler.removeCallbacks(autoDecrementRunnable);
+                    return true;
             }
+            return false;
         });
 
-        btnIncrease.setOnClickListener(v -> {
-            quantidadeAtual++;
-            atualizarDisplayQuantidade();
+        // Segurar para aumentar
+        btnIncrease.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    v.setPressed(true);
+                    aumentarQuantidade();
+                    autoUpdateHandler.postDelayed(autoIncrementRunnable, 400);
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    v.setPressed(false);
+                    autoUpdateHandler.removeCallbacks(autoIncrementRunnable);
+                    return true;
+            }
+            return false;
         });
+
+        // Clicar para digitar o valor direto
+        tvQuantidade.setOnClickListener(v -> abrirDialogEdicaoQuantidade());
     }
+
+    private void diminuirQuantidade() {
+        if (quantidadeAtual > 0) {
+            quantidadeAtual = Math.max(0, quantidadeAtual - 1);
+            atualizarDisplayQuantidade();
+        }
+    }
+
+    private void aumentarQuantidade() {
+        quantidadeAtual++;
+        atualizarDisplayQuantidade();
+    }
+
+    private Runnable autoDecrementRunnable = new Runnable() {
+        @Override
+        public void run() {
+            diminuirQuantidade();
+            autoUpdateHandler.postDelayed(this, 100); // Repete a cada 100ms
+        }
+    };
+
+    private Runnable autoIncrementRunnable = new Runnable() {
+        @Override
+        public void run() {
+            aumentarQuantidade();
+            autoUpdateHandler.postDelayed(this, 100);
+        }
+    };
 
     private void atualizarDisplayQuantidade() {
         if (quantidadeAtual == Math.floor(quantidadeAtual)) {
             tvQuantidade.setText(String.valueOf((int) quantidadeAtual));
         } else {
-            tvQuantidade.setText(String.valueOf(quantidadeAtual));
+            tvQuantidade.setText(String.format(java.util.Locale.US, "%.1f", quantidadeAtual));
         }
     }
 
+    private void abrirDialogEdicaoQuantidade() {
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setPadding(48, 48, 48, 48);
+
+        if (quantidadeAtual == Math.floor(quantidadeAtual)) {
+            input.setText(String.valueOf((int) quantidadeAtual));
+        } else {
+            input.setText(String.valueOf(quantidadeAtual));
+        }
+        input.setSelection(input.getText().length());
+        input.requestFocus();
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Editar Quantidade")
+                .setView(input)
+                .setPositiveButton("Confirmar", (dialog, which) -> {
+                    String val = input.getText().toString().replace(",", ".");
+                    if (!val.isEmpty()) {
+                        try {
+                            quantidadeAtual = Double.parseDouble(val);
+                            if (quantidadeAtual < 0) quantidadeAtual = 0;
+                            atualizarDisplayQuantidade();
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(this, "Valor inválido", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
     // =========================================================================
-    // DATE PICKER  —  Sprint 13
+    // DATE PICKER
     // =========================================================================
 
-    /**
-     * Configura o campo de data editável e o botão calendário para abrir o
-     * DatePickerDialog, permitindo alterar a data de validade do item.
-     */
     private void configurarDatePicker() {
-        if (etDataValidade == null) return; // views não existem no layout atual → sem-op
+        if (etDataValidade == null) return;
 
-        // Clique no próprio campo de texto
         etDataValidade.setOnClickListener(v -> abrirDatePicker());
 
-        // O end icon (ícone de calendário à direita no TextInputLayout) também abre o picker
         if (tilDataValidade != null) {
             tilDataValidade.setEndIconOnClickListener(v -> abrirDatePicker());
         }
     }
 
     private void abrirDatePicker() {
-        // Parte do valor atual (YYYY-MM-DD) para inicializar o picker na data certa
         Calendar cal = Calendar.getInstance();
         if (dataValidadeAtual != null && dataValidadeAtual.matches("\\d{4}-\\d{2}-\\d{2}")) {
             try {
@@ -226,19 +304,16 @@ public class DetalhesActivity extends AppCompatActivity {
                 cal.set(Integer.parseInt(partes[0]),
                         Integer.parseInt(partes[1]) - 1,
                         Integer.parseInt(partes[2]));
-            } catch (Exception ignored) { /* usa a data de hoje */ }
+            } catch (Exception ignored) { }
         }
 
         new DatePickerDialog(
                 this,
                 (view, year, month, dayOfMonth) -> {
-                    // Persiste internamente no formato ISO
                     dataValidadeAtual = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
-                    // Exibe no campo em formato brasileiro
                     String exibicao = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year);
                     etDataValidade.setText(exibicao);
 
-                    // Atualiza o chip de status com o novo prazo
                     int dias = DateUtils.calcularDiasRestantes(dataValidadeAtual);
                     if (dias < 0)       chipStatus.setText("Vencido");
                     else if (dias == 0) chipStatus.setText("Vence hoje");
@@ -267,7 +342,6 @@ public class DetalhesActivity extends AppCompatActivity {
 
         item.setQuantidade(quantidadeAtual);
 
-        // Sprint 13: persiste a nova data de validade se foi alterada
         if (dataValidadeAtual != null && !dataValidadeAtual.isEmpty()) {
             item.setDataValidade(dataValidadeAtual);
         }
@@ -318,10 +392,6 @@ public class DetalhesActivity extends AppCompatActivity {
         }
         finish();
     }
-
-    // =========================================================================
-    // Animação ao voltar
-    // =========================================================================
 
     @Override
     public void onBackPressed() {
