@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ReceitaSalva implements Serializable {
 
-    private static final long serialVersionUID = 11L;
+    private static final long serialVersionUID = 14L; // bumped para Sprint 14
 
     private long         id;
     private String       titulo;
@@ -21,6 +21,8 @@ public class ReceitaSalva implements Serializable {
     /** Data em que foi salva (formato YYYY-MM-DD). */
     private String       dataSalvo;
     private String       userId;
+    /** Sprint 14: status de execução — SALVA | EM_ANDAMENTO | FINALIZADA */
+    private String       status;
 
     // -------------------------------------------------------------------------
     // Construtores
@@ -37,6 +39,7 @@ public class ReceitaSalva implements Serializable {
         this.ingredientes = response.getIngredientes();
         this.passos       = response.getPassos();
         this.userId       = userId;
+        this.status       = "SALVA";
     }
 
     // -------------------------------------------------------------------------
@@ -76,8 +79,18 @@ public class ReceitaSalva implements Serializable {
     public String getUserId()                     { return userId; }
     public void setUserId(String userId)          { this.userId = userId; }
 
+    /** Sprint 14 */
+    public String getStatus()                     { return status != null ? status : "SALVA"; }
+    public void setStatus(String status)          { this.status = status; }
+
+    /** Conveniência para a UI. */
+    public boolean isEmAndamento() {
+        return "EM_ANDAMENTO".equals(status);
+    }
+
     @Override
     public String toString() {
-        return "ReceitaSalva{id=" + id + ", titulo='" + titulo + "', dataSalvo='" + dataSalvo + "'}";
+        return "ReceitaSalva{id=" + id + ", titulo='" + titulo
+                + "', status='" + status + "', dataSalvo='" + dataSalvo + "'}";
     }
 }

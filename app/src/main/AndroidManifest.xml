@@ -91,7 +91,6 @@
             android:exported="false"
             android:label="Configurações"
             android:windowSoftInputMode="adjustResize" />
-
     </application>
 
 </manifest>

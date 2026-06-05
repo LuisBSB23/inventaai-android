@@ -24,7 +24,6 @@ public class ReceitaRepository {
 
     private final DatabaseHelper dbHelper;
     private final Gson           gson;
-    /** Tipo para TypeToken de List<String>. */
     private static final Type LIST_STRING_TYPE = new TypeToken<List<String>>() {}.getType();
 
     public ReceitaRepository(Context context) {
@@ -41,8 +40,7 @@ public class ReceitaRepository {
         try {
             long id = db.insertOrThrow(ReceitaEntry.TABLE_NAME, null, toContentValues(receita));
             receita.setId(id);
-            Log.d(TAG, "ReceitaRepository.salvar: receita id=" + id
-                    + " — '" + receita.getTitulo() + "'");
+            Log.d(TAG, "ReceitaRepository.salvar: id=" + id + " — '" + receita.getTitulo() + "'");
             return id;
         } catch (Exception e) {
             Log.e(TAG, "ReceitaRepository.salvar: erro", e);
@@ -51,23 +49,14 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
-    // VERIFICAR DUPLICIDADE  —  Sprint 13
+    // VERIFICAR DUPLICIDADE
     // =========================================================================
 
-    /**
-     * Verifica se já existe uma receita com o mesmo título para o mesmo usuário.
-     * Comparar ingredientes gerados por IA via JSON é falho devido a variações sutis.
-     *
-     * @param receita A receita candidata a ser salva.
-     * @return {@code true} se já existir uma receita com mesmo título; {@code false} caso contrário.
-     */
     public boolean receitaJaExiste(ReceitaSalva receita) {
         if (receita == null || receita.getTitulo() == null) return false;
-
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            // Checa apenas o título exato e o ID do usuário.
             cursor = db.query(
                     ReceitaEntry.TABLE_NAME,
                     new String[]{ ReceitaEntry._ID },
@@ -76,16 +65,13 @@ public class ReceitaRepository {
                     new String[]{ receita.getTitulo().trim(), receita.getUserId() },
                     null, null, null
             );
-
-            // Se encontrou algum registro com o mesmo título, bloqueia
             if (cursor != null && cursor.moveToFirst()) {
-                Log.d(TAG, "receitaJaExiste: duplicata detectada para título='" + receita.getTitulo() + "'");
+                Log.d(TAG, "receitaJaExiste: duplicata detectada — '" + receita.getTitulo() + "'");
                 return true;
             }
-
             return false;
         } catch (Exception e) {
-            Log.e(TAG, "receitaJaExiste: erro ao verificar duplicidade", e);
+            Log.e(TAG, "receitaJaExiste: erro", e);
             return false;
         } finally {
             if (cursor != null) cursor.close();
@@ -102,8 +88,7 @@ public class ReceitaRepository {
         Cursor cursor = null;
         try {
             cursor = db.query(
-                    ReceitaEntry.TABLE_NAME,
-                    null,
+                    ReceitaEntry.TABLE_NAME, null,
                     ReceitaEntry.COLUMN_USER_ID + " = ?",
                     new String[]{ userId },
                     null, null,
@@ -120,6 +105,37 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
+    // BUSCAR POR TÍTULO OU INGREDIENTE — Sprint 14
+    // =========================================================================
+
+    public List<ReceitaSalva> buscarPorTituloOuIngrediente(String query, String userId) {
+        if (query == null || query.trim().isEmpty()) return listarTodas(userId);
+
+        List<ReceitaSalva> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String filtro = "%" + query.trim().toLowerCase() + "%";
+            cursor = db.query(
+                    ReceitaEntry.TABLE_NAME, null,
+                    ReceitaEntry.COLUMN_USER_ID + " = ? AND ("
+                            + "LOWER(" + ReceitaEntry.COLUMN_TITULO + ") LIKE ? OR "
+                            + "LOWER(" + ReceitaEntry.COLUMN_INGREDIENTES + ") LIKE ?)",
+                    new String[]{ userId, filtro, filtro },
+                    null, null,
+                    ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
+            );
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+            Log.d(TAG, "buscarPorTituloOuIngrediente: '" + query + "' → " + lista.size() + " resultado(s).");
+        } catch (Exception e) {
+            Log.e(TAG, "buscarPorTituloOuIngrediente: erro", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return lista;
+    }
+
+    // =========================================================================
     // BUSCAR POR ID
     // =========================================================================
 
@@ -128,8 +144,7 @@ public class ReceitaRepository {
         Cursor cursor = null;
         try {
             cursor = db.query(
-                    ReceitaEntry.TABLE_NAME,
-                    null,
+                    ReceitaEntry.TABLE_NAME, null,
                     ReceitaEntry._ID + " = ?",
                     new String[]{ String.valueOf(id) },
                     null, null, null, "1"
@@ -141,6 +156,29 @@ public class ReceitaRepository {
             if (cursor != null) cursor.close();
         }
         return null;
+    }
+
+    // =========================================================================
+    // ATUALIZAR STATUS — Sprint 14
+    // =========================================================================
+
+    public boolean atualizarStatusReceita(long receitaId, String novoStatus) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(ReceitaEntry.COLUMN_STATUS, novoStatus);
+            int linhas = db.update(
+                    ReceitaEntry.TABLE_NAME, cv,
+                    ReceitaEntry._ID + " = ?",
+                    new String[]{ String.valueOf(receitaId) }
+            );
+            Log.d(TAG, "atualizarStatusReceita: id=" + receitaId
+                    + " → '" + novoStatus + "' (" + linhas + " linha(s))");
+            return linhas > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "atualizarStatusReceita: erro id=" + receitaId, e);
+            return false;
+        }
     }
 
     // =========================================================================
@@ -174,14 +212,13 @@ public class ReceitaRepository {
         cv.put(ReceitaEntry.COLUMN_TEMPO_PREPARO, r.getTempoPreparo());
         cv.put(ReceitaEntry.COLUMN_PORCOES,       r.getPorcoes());
         cv.put(ReceitaEntry.COLUMN_DIFICULDADE,   r.getDificuldade());
-        // Serializa listas para JSON
         cv.put(ReceitaEntry.COLUMN_INGREDIENTES,  gson.toJson(r.getIngredientes()));
         cv.put(ReceitaEntry.COLUMN_PASSOS,        gson.toJson(r.getPassos()));
         cv.put(ReceitaEntry.COLUMN_IMAGEM_URL,    r.getImagemUrl());
-        // Se dataSalvo não foi preenchida, usa o dia de hoje
         String data = r.getDataSalvo() != null ? r.getDataSalvo() : DateUtils.hoje();
         cv.put(ReceitaEntry.COLUMN_DATA_SALVO, data);
         cv.put(ReceitaEntry.COLUMN_USER_ID,    r.getUserId());
+        cv.put(ReceitaEntry.COLUMN_STATUS,     r.getStatus() != null ? r.getStatus() : "SALVA");
         return cv;
     }
 
@@ -196,6 +233,14 @@ public class ReceitaRepository {
         r.setImagemUrl(   c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_IMAGEM_URL)));
         r.setDataSalvo(   c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_DATA_SALVO)));
         r.setUserId(      c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_USER_ID)));
+
+        // Sprint 14: lê status (coluna pode não existir em registros antigos via migração)
+        int statusCol = c.getColumnIndex(ReceitaEntry.COLUMN_STATUS);
+        if (statusCol >= 0 && !c.isNull(statusCol)) {
+            r.setStatus(c.getString(statusCol));
+        } else {
+            r.setStatus("SALVA");
+        }
 
         // Desserializa JSON → List<String>
         String jsonIngredientes = c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_INGREDIENTES));

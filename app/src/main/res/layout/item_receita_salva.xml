@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <!-- Miniatura -->
         <ImageView
             android:id="@+id/ivReceitaThumb"
             android:layout_width="88dp"
@@ -28,6 +29,7 @@
             android:src="@drawable/ic_empty_recipe"
             android:contentDescription="Imagem da receita" />
 
+        <!-- Conteúdo -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -35,17 +37,45 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <TextView
-                android:id="@+id/tvReceitaTitulo"
+            <!-- Título + badge "Em andamento" na mesma linha -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_semibold"
-                android:maxLines="2"
-                android:ellipsize="end"
-                android:textColor="@color/colorOnSurface"
-                android:textSize="15sp"
-                tools:text="Risoto de Cogumelos com Ervas" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
+                <TextView
+                    android:id="@+id/tvReceitaTitulo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/inter_semibold"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:textColor="@color/colorOnSurface"
+                    android:textSize="15sp"
+                    tools:text="Risoto de Cogumelos" />
+
+                <!-- Sprint 14: badge "Em andamento" — visível só quando status = EM_ANDAMENTO -->
+                <TextView
+                    android:id="@+id/tvBadgeAndamento"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_pill_primary"
+                    android:fontFamily="@font/inter_bold"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="Em andamento"
+                    android:textAllCaps="false"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="10sp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+            <!-- Tempo · Dificuldade -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -105,6 +135,7 @@
 
         </LinearLayout>
 
+        <!-- Botão deletar -->
         <ImageButton
             android:id="@+id/btnDeletarReceita"
             android:layout_width="40dp"

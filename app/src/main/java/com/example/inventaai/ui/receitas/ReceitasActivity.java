@@ -2,6 +2,8 @@ package com.example.inventaai.ui.receitas;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -19,7 +21,6 @@ import com.example.inventaai.data.model.ReceitaSalva;
 import com.example.inventaai.data.repository.ReceitaRepository;
 import com.example.inventaai.ui.cadastro.CadastroActivity;
 import com.example.inventaai.ui.chefIA.ChefIAActivity;
-import com.example.inventaai.ui.receitas.ReceitaDetalheActivity;
 import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.util.AppExecutors;
@@ -27,6 +28,7 @@ import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ public class ReceitasActivity extends AppCompatActivity {
     private LinearLayout              layoutEmptyReceitas;
     private LinearProgressIndicator   progressBar;
     private BottomNavigationView      bottomNavigation;
+    private TextInputEditText         etBusca;          // Sprint 14
 
     // ── Dependências ───────────────────────────────────────────────────────────
     private ReceitaRepository receitaRepository;
@@ -63,12 +66,12 @@ public class ReceitasActivity extends AppCompatActivity {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
-
             return insets;
         });
 
         vincularViews();
         configurarRecyclerView();
+        configurarBusca();          // Sprint 14
         configurarBotoes();
         configurarBottomNavigation();
     }
@@ -79,7 +82,15 @@ public class ReceitasActivity extends AppCompatActivity {
         if (bottomNavigation != null) {
             bottomNavigation.getMenu().findItem(R.id.nav_chef_ia).setChecked(true);
         }
-        carregarReceitas();
+        // Reseta busca ao voltar para a tela
+        if (etBusca != null && etBusca.getText() != null
+                && etBusca.getText().toString().isEmpty()) {
+            carregarReceitas("");
+        } else {
+            String query = etBusca != null && etBusca.getText() != null
+                    ? etBusca.getText().toString() : "";
+            carregarReceitas(query);
+        }
     }
 
     // =========================================================================
@@ -91,8 +102,8 @@ public class ReceitasActivity extends AppCompatActivity {
         layoutEmptyReceitas = findViewById(R.id.layoutEmptyReceitas);
         progressBar         = findViewById(R.id.progressBarReceitas);
         bottomNavigation    = findViewById(R.id.bottomNavigation);
+        etBusca             = findViewById(R.id.etBuscaReceitas); // Sprint 14
 
-        // Botão voltar na toolbar
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             finish();
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
@@ -103,18 +114,30 @@ public class ReceitasActivity extends AppCompatActivity {
         rvReceitas.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ReceitasAdapter(
                 new ArrayList<>(),
-                this::abrirDetalheReceita,   // clique no card
-                this::confirmarDelecao        // clique na lixeira
+                this::abrirDetalheReceita,
+                this::confirmarDelecao
         );
         rvReceitas.setAdapter(adapter);
     }
 
+    /** Sprint 14: observa mudanças no campo de busca e recarrega a lista. */
+    private void configurarBusca() {
+        if (etBusca == null) return;
+        etBusca.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+            @Override public void afterTextChanged(Editable s) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                carregarReceitas(s != null ? s.toString() : "");
+            }
+        });
+    }
+
     private void configurarBotoes() {
-        // Botão no empty state para ir ao Chef IA
         View btnIrParaChefIA = findViewById(R.id.btnIrParaChefIA);
         if (btnIrParaChefIA != null) {
             btnIrParaChefIA.setOnClickListener(v -> {
-                finish(); // Apenas fechamos para voltar à tela anterior do ChefIA
+                finish();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             });
         }
@@ -124,13 +147,17 @@ public class ReceitasActivity extends AppCompatActivity {
     // CARREGAR DADOS
     // =========================================================================
 
-    private void carregarReceitas() {
+    private void carregarReceitas(String query) {
         if (currentUserId == null) return;
-
         mostrarCarregando(true);
 
         AppExecutors.diskIO().execute(() -> {
-            final List<ReceitaSalva> lista = receitaRepository.listarTodas(currentUserId);
+            final List<ReceitaSalva> lista;
+            if (query == null || query.trim().isEmpty()) {
+                lista = receitaRepository.listarTodas(currentUserId);
+            } else {
+                lista = receitaRepository.buscarPorTituloOuIngrediente(query, currentUserId);
+            }
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 mostrarCarregando(false);
@@ -201,10 +228,7 @@ public class ReceitasActivity extends AppCompatActivity {
     private void configurarBottomNavigation() {
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
             if (id == R.id.nav_chef_ia) {
-                // CORREÇÃO: Já estamos na extensão do Chef IA, se clicar de novo aqui,
-                // fechamos as receitas para mostrar a ecrã inicial do ChefIA.
                 finish();
                 overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 return true;
@@ -228,10 +252,6 @@ public class ReceitasActivity extends AppCompatActivity {
             return false;
         });
     }
-
-    // =========================================================================
-    // NAVEGAÇÃO
-    // =========================================================================
 
     @Override
     public void onBackPressed() {

@@ -9,6 +9,7 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.receitas.ReceitaDetalheActivity">
 
+    <!-- ===== AppBar com botão de compartilhar — Sprint 14 ===== -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -26,7 +27,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/back"
+                android:contentDescription="Voltar"
                 android:src="@drawable/ic_back_arrow"
                 android:tint="?attr/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -38,12 +39,25 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:fontFamily="@font/inter_bold"
-                android:text="Receitas Salvas"
+                android:text="Detalhe da Receita"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="22sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btnShare"
                 app:layout_constraintStart_toEndOf="@id/btnBack"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Botão compartilhar — Sprint 14 -->
+            <ImageButton
+                android:id="@+id/btnShare"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Compartilhar receita"
+                android:src="@drawable/ic_share"
+                android:tint="?attr/colorPrimary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -53,7 +67,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="32dp"
+        android:paddingBottom="120dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -73,7 +87,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/bg_card_neu"
-                    android:contentDescription="@string/recipe_title_placeholder"
+                    android:contentDescription="Imagem da receita"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_nav_chef" />
 
@@ -169,6 +183,16 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <!-- ===== STATUS DOS INGREDIENTES (cross-check) — Sprint 14 ===== -->
+                <LinearLayout
+                    android:id="@+id/llCrossCheck"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_card_neu"
+                    android:padding="16dp"
+                    android:layout_marginBottom="24dp" />
+
                 <!-- Ingredientes -->
                 <TextView
                     android:layout_width="wrap_content"
@@ -202,6 +226,45 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_marginBottom="32dp" />
+
+                <!-- ===== BOTÕES DE EXECUÇÃO — Sprint 14 ===== -->
+
+                <!-- Botão Iniciar (visível quando status = SALVA ou FINALIZADA) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnIniciarPreparo"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="12dp"
+                    android:text="▶  Iniciar Preparo"
+                    android:fontFamily="@font/inter_semibold"
+                    android:textSize="16sp"
+                    android:visibility="visible" />
+
+                <!-- Botão Cancelar (visível apenas quando EM_ANDAMENTO) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancelarPreparo"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="12dp"
+                    android:text="✕  Cancelar"
+                    android:fontFamily="@font/inter_semibold"
+                    android:textSize="16sp"
+                    android:visibility="gone" />
+
+                <!-- Botão Finalizar (visível apenas quando EM_ANDAMENTO) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFinalizarReceita"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="32dp"
+                    android:text="✓  Finalizar Receita"
+                    android:fontFamily="@font/inter_semibold"
+                    android:textSize="16sp"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:visibility="gone" />
 
             </LinearLayout>
         </LinearLayout>

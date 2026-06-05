@@ -22,8 +22,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "InventaAi.DB";
 
     public static final String DATABASE_NAME    = "inventaai.db";
-    // v6: adiciona tabela "receitas_salvas"
-    public static final int    DATABASE_VERSION = 6;
+    // v7: Sprint 14 — adiciona coluna status_execucao em receitas_salvas
+    public static final int    DATABASE_VERSION = 7;
 
     // =========================================================================
     // Singleton
@@ -78,7 +78,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + HistoricoEntry.COLUMN_USER_ID     + " TEXT"
                     + ");";
 
-    // Tabela de receitas salvas
+    // Tabela de receitas salvas — inclui coluna de status da Sprint 14
     private static final String SQL_CREATE_RECEITAS =
             "CREATE TABLE " + ReceitaEntry.TABLE_NAME + " ("
                     + ReceitaEntry._ID                  + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -91,7 +91,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + ReceitaEntry.COLUMN_PASSOS        + " TEXT, "    // JSON
                     + ReceitaEntry.COLUMN_IMAGEM_URL    + " TEXT, "
                     + ReceitaEntry.COLUMN_DATA_SALVO    + " TEXT NOT NULL, "
-                    + ReceitaEntry.COLUMN_USER_ID       + " TEXT"
+                    + ReceitaEntry.COLUMN_USER_ID       + " TEXT, "
+                    + ReceitaEntry.COLUMN_STATUS        + " TEXT NOT NULL DEFAULT 'SALVA'"
                     + ");";
 
     // =========================================================================
@@ -111,7 +112,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_USERS);
         db.execSQL(SQL_CREATE_DESPENSA);
         db.execSQL(SQL_CREATE_HISTORICO);
-        db.execSQL(SQL_CREATE_RECEITAS);  // Sprint 11
+        db.execSQL(SQL_CREATE_RECEITAS);
         Log.d(TAG, "onCreate: tabelas criadas (v" + DATABASE_VERSION + ").");
     }
 
@@ -120,7 +121,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d(TAG, "onUpgrade: " + oldVersion + " → " + newVersion);
         if (oldVersion < 4) migrarParaV4(db);
         if (oldVersion < 5) migrarParaV5(db);
-        if (oldVersion < 6) migrarParaV6(db);  // Sprint 11
+        if (oldVersion < 6) migrarParaV6(db);
+        if (oldVersion < 7) migrarParaV7(db); // Sprint 14
     }
 
     // =========================================================================
@@ -139,7 +141,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + " ADD COLUMN " + HistoricoEntry.COLUMN_USER_ID + " TEXT"); }
         catch (Exception e) { Log.w(TAG, "v4: user_id já existe em historico"); }
 
-        // Vincula registros órfãos a um usuário-padrão
         Cursor c = db.rawQuery(
                 "SELECT COUNT(*) FROM " + DespensaEntry.TABLE_NAME
                         + " WHERE " + DespensaEntry.COLUMN_USER_ID + " IS NULL", null);
@@ -185,6 +186,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d(TAG, "migrarParaV6: tabela 'receitas_salvas' criada.");
         } catch (Exception e) {
             Log.w(TAG, "migrarParaV6: tabela já existe — " + e.getMessage());
+        }
+    }
+
+    /** Sprint 14: adiciona coluna status_execucao na tabela receitas_salvas. */
+    private void migrarParaV7(SQLiteDatabase db) {
+        try {
+            db.execSQL("ALTER TABLE " + ReceitaEntry.TABLE_NAME
+                    + " ADD COLUMN " + ReceitaEntry.COLUMN_STATUS
+                    + " TEXT NOT NULL DEFAULT 'SALVA'");
+            Log.d(TAG, "migrarParaV7: coluna 'status_execucao' adicionada em receitas_salvas.");
+        } catch (Exception e) {
+            Log.w(TAG, "migrarParaV7: coluna já existe — " + e.getMessage());
         }
     }
 }
