@@ -46,10 +46,9 @@ public class DetalhesActivity extends AppCompatActivity {
     private ImageView     ivItemImage;
     private ImageButton   btnVoltarDetalhes;
 
-    // Sprint 13: campo e botão para editar data de validade
+    // Sprint 13: campo para editar data de validade mapeado do TextInputLayout/TextInputEditText
     private TextInputLayout    tilDataValidade;
     private TextInputEditText  etDataValidade;
-    private ImageButton        btnPickDate;
 
     // Estado
     private DespensaItem item;
@@ -98,10 +97,9 @@ public class DetalhesActivity extends AppCompatActivity {
         ivItemImage   = findViewById(R.id.ivItemImage);
         btnVoltarDetalhes = findViewById(R.id.btnVoltarDetalhes);
 
-        // Sprint 13: campo de data de validade editável
+        // Sprint 13: campo de data de validade editável do novo layout xml
         tilDataValidade = findViewById(R.id.tilDataValidadeDetalhes);
         etDataValidade  = findViewById(R.id.etDataValidadeDetalhes);
-        btnPickDate     = findViewById(R.id.btnPickDateDetalhes);
 
         if (btnVoltarDetalhes != null) {
             btnVoltarDetalhes.setOnClickListener(v -> {
@@ -213,12 +211,7 @@ public class DetalhesActivity extends AppCompatActivity {
         // Clique no próprio campo de texto
         etDataValidade.setOnClickListener(v -> abrirDatePicker());
 
-        // Clique no ícone de calendário (opcional, mas melhor UX)
-        if (btnPickDate != null) {
-            btnPickDate.setOnClickListener(v -> abrirDatePicker());
-        }
-
-        // O end icon do TextInputLayout também pode abrir o picker
+        // O end icon (ícone de calendário à direita no TextInputLayout) também abre o picker
         if (tilDataValidade != null) {
             tilDataValidade.setEndIconOnClickListener(v -> abrirDatePicker());
         }
