@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Internet: integração Gemini IA -->
+    <!-- Permissões -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Galeria de imagens: seleção de avatar -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -29,58 +29,68 @@
             </intent-filter>
         </activity>
 
-        <!-- Login — agora é uma Activity interna (não mais launcher) -->
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="false"
             android:label="Login"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Cadastro de novo perfil -->
         <activity
             android:name=".ui.login.CadastroPerfilActivity"
             android:exported="false"
             android:label="Criar Perfil"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Tela de perfil -->
         <activity
             android:name=".ui.perfil.PerfilActivity"
             android:exported="false"
             android:label="Meu Perfil"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Dashboard (aberto após login; não é mais o launcher) -->
         <activity
             android:name=".ui.dashboard.DashboardActivity"
             android:exported="false" />
 
-        <!-- Cadastro de novo item -->
         <activity
             android:name=".ui.cadastro.CadastroActivity"
             android:exported="false"
             android:label="Adicionar Alimento"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Detalhes e edição de item -->
         <activity
             android:name=".ui.detalhes.DetalhesActivity"
             android:exported="false"
             android:label="Detalhes do Item"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Histórico de consumo e descarte -->
         <activity
             android:name=".ui.historico.HistoricoActivity"
             android:exported="false"
             android:label="Histórico" />
 
-        <!-- Chef IA — geração de receitas -->
         <activity
             android:name=".ui.chefIA.ChefIAActivity"
             android:exported="false"
             android:label="Chef IA"
             android:launchMode="singleTop" />
+
+        <activity
+            android:name=".ui.receitas.ReceitasActivity"
+            android:exported="false"
+            android:label="Receitas Salvas" />
+
+        <activity
+            android:name=".ui.receitas.ReceitaDetalheActivity"
+            android:exported="false"
+            android:label="Detalhes da Receita"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Tela de Configurações -->
+        <activity
+            android:name=".ui.configuracoes.ConfiguracoesActivity"
+            android:exported="false"
+            android:label="Configurações"
+            android:windowSoftInputMode="adjustResize" />
 
     </application>
 

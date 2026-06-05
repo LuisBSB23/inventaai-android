@@ -1,13 +1,19 @@
 package com.example.inventaai.ui.detalhes;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.InputType;
+import android.view.MotionEvent;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
@@ -17,12 +23,14 @@ import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.DateUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+
+import java.util.Calendar;
 
 public class DetalhesActivity extends AppCompatActivity {
 
-    /** Chave para passar o DespensaItem serializado via Intent */
     public static final String EXTRA_ITEM = "extra_despensa_item";
-
     public static final String TRANSITION_NAME_ICON = "transition_item_icon";
 
     // Views
@@ -37,12 +45,20 @@ public class DetalhesActivity extends AppCompatActivity {
     private MaterialButton btnSalvar;
     private MaterialButton btnRemover;
     private ImageView     ivItemImage;
+    private ImageButton   btnVoltarDetalhes;
+
+    private TextInputLayout    tilDataValidade;
+    private TextInputEditText  etDataValidade;
 
     // Estado
     private DespensaItem item;
     private double       quantidadeAtual;
+    private String       dataValidadeAtual;
     private DespensaRepository repository;
     private com.example.inventaai.util.SessionManager sessionManagerDetalhes;
+
+    // Handler para clique longo contínuo
+    private android.os.Handler autoUpdateHandler = new android.os.Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +68,16 @@ public class DetalhesActivity extends AppCompatActivity {
         repository = new DespensaRepository(this);
         sessionManagerDetalhes = new com.example.inventaai.util.SessionManager(this);
 
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
         vincularViews();
         carregarItem();
         configurarStepper();
+        configurarDatePicker();
         configurarBotoes();
     }
 
@@ -74,10 +97,16 @@ public class DetalhesActivity extends AppCompatActivity {
         btnSalvar     = findViewById(R.id.btnSalvar);
         btnRemover    = findViewById(R.id.btnRemover);
         ivItemImage   = findViewById(R.id.ivItemImage);
+        btnVoltarDetalhes = findViewById(R.id.btnVoltarDetalhes);
 
-        // Define o transitionName no ivItemImage para shared element
-        if (ivItemImage != null) {
-            ViewCompat.setTransitionName(ivItemImage, TRANSITION_NAME_ICON);
+        tilDataValidade = findViewById(R.id.tilDataValidadeDetalhes);
+        etDataValidade  = findViewById(R.id.etDataValidadeDetalhes);
+
+        if (btnVoltarDetalhes != null) {
+            btnVoltarDetalhes.setOnClickListener(v -> {
+                finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            });
         }
     }
 
@@ -89,45 +118,40 @@ public class DetalhesActivity extends AppCompatActivity {
 
         if (item == null) {
             tvItemName.setText("Item não encontrado");
-            quantidadeAtual = 1;
+            quantidadeAtual  = 1;
+            dataValidadeAtual = "";
             atualizarDisplayQuantidade();
             return;
         }
 
+        dataValidadeAtual = item.getDataValidade();
         preencherItem(item);
     }
 
     private void preencherItem(DespensaItem item) {
-        // Nome
         tvItemName.setText(item.getNome());
 
-        // Unidade
         String unidade = item.getUnidadeMedida() != null
                 ? item.getUnidadeMedida().toUpperCase()
                 : "UNIDADES";
         tvUnidade.setText(unidade);
 
-        // Quantidade inicial
         quantidadeAtual = item.getQuantidade();
         atualizarDisplayQuantidade();
 
-        // ── Sprint 2: ícone de categoria ─────────────────────────────────────
-        String cat = item.getCategoria();
-        int iconRes = CategoryIconHelper.getIcon(cat);
+        String cat   = item.getCategoria();
+        int iconRes  = CategoryIconHelper.getIcon(cat);
 
-        // Chip de categoria com ícone
         chipCategoria.setText(cat != null && !cat.isEmpty() ? cat : "Sem categoria");
         chipCategoria.setChipIconResource(iconRes);
         chipCategoria.setChipIconVisible(true);
 
-        // Imagem central em destaque (ivItemImage)
         if (ivItemImage != null) {
             ivItemImage.setImageResource(iconRes);
             ivItemImage.setColorFilter(
                     androidx.core.content.ContextCompat.getColor(this, R.color.colorPrimary));
         }
 
-        // Status de validade
         int dias = DateUtils.calcularDiasRestantes(item.getDataValidade());
 
         if (dias < 0) {
@@ -138,36 +162,167 @@ public class DetalhesActivity extends AppCompatActivity {
             chipStatus.setText("Vence em " + dias + " dia" + (dias == 1 ? "" : "s"));
         }
 
-        // Data de validade exibida na linha secundária
         tvAddedDate.setText("Validade: " + DateUtils.formatarParaExibicao(item.getDataValidade()));
+
+        if (etDataValidade != null) {
+            etDataValidade.setText(DateUtils.formatarParaExibicao(item.getDataValidade()));
+        }
     }
 
     // =========================================================================
-    // STEPPER
+    // STEPPER (Aumentar, Diminuir e Digitar)
     // =========================================================================
 
     private void configurarStepper() {
         atualizarDisplayQuantidade();
 
-        btnDecrease.setOnClickListener(v -> {
-            if (quantidadeAtual > 0) {
-                quantidadeAtual = Math.max(0, quantidadeAtual - 1);
-                atualizarDisplayQuantidade();
+        // Segurar para diminuir
+        btnDecrease.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    v.setPressed(true);
+                    diminuirQuantidade();
+                    autoUpdateHandler.postDelayed(autoDecrementRunnable, 400); // 400ms antes de começar a repetir
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    v.setPressed(false);
+                    autoUpdateHandler.removeCallbacks(autoDecrementRunnable);
+                    return true;
             }
+            return false;
         });
 
-        btnIncrease.setOnClickListener(v -> {
-            quantidadeAtual++;
-            atualizarDisplayQuantidade();
+        // Segurar para aumentar
+        btnIncrease.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    v.setPressed(true);
+                    aumentarQuantidade();
+                    autoUpdateHandler.postDelayed(autoIncrementRunnable, 400);
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    v.setPressed(false);
+                    autoUpdateHandler.removeCallbacks(autoIncrementRunnable);
+                    return true;
+            }
+            return false;
         });
+
+        // Clicar para digitar o valor direto
+        tvQuantidade.setOnClickListener(v -> abrirDialogEdicaoQuantidade());
     }
+
+    private void diminuirQuantidade() {
+        if (quantidadeAtual > 0) {
+            quantidadeAtual = Math.max(0, quantidadeAtual - 1);
+            atualizarDisplayQuantidade();
+        }
+    }
+
+    private void aumentarQuantidade() {
+        quantidadeAtual++;
+        atualizarDisplayQuantidade();
+    }
+
+    private Runnable autoDecrementRunnable = new Runnable() {
+        @Override
+        public void run() {
+            diminuirQuantidade();
+            autoUpdateHandler.postDelayed(this, 100); // Repete a cada 100ms
+        }
+    };
+
+    private Runnable autoIncrementRunnable = new Runnable() {
+        @Override
+        public void run() {
+            aumentarQuantidade();
+            autoUpdateHandler.postDelayed(this, 100);
+        }
+    };
 
     private void atualizarDisplayQuantidade() {
         if (quantidadeAtual == Math.floor(quantidadeAtual)) {
             tvQuantidade.setText(String.valueOf((int) quantidadeAtual));
         } else {
-            tvQuantidade.setText(String.valueOf(quantidadeAtual));
+            tvQuantidade.setText(String.format(java.util.Locale.US, "%.1f", quantidadeAtual));
         }
+    }
+
+    private void abrirDialogEdicaoQuantidade() {
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setPadding(48, 48, 48, 48);
+
+        if (quantidadeAtual == Math.floor(quantidadeAtual)) {
+            input.setText(String.valueOf((int) quantidadeAtual));
+        } else {
+            input.setText(String.valueOf(quantidadeAtual));
+        }
+        input.setSelection(input.getText().length());
+        input.requestFocus();
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Editar Quantidade")
+                .setView(input)
+                .setPositiveButton("Confirmar", (dialog, which) -> {
+                    String val = input.getText().toString().replace(",", ".");
+                    if (!val.isEmpty()) {
+                        try {
+                            quantidadeAtual = Double.parseDouble(val);
+                            if (quantidadeAtual < 0) quantidadeAtual = 0;
+                            atualizarDisplayQuantidade();
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(this, "Valor inválido", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    // =========================================================================
+    // DATE PICKER
+    // =========================================================================
+
+    private void configurarDatePicker() {
+        if (etDataValidade == null) return;
+
+        etDataValidade.setOnClickListener(v -> abrirDatePicker());
+
+        if (tilDataValidade != null) {
+            tilDataValidade.setEndIconOnClickListener(v -> abrirDatePicker());
+        }
+    }
+
+    private void abrirDatePicker() {
+        Calendar cal = Calendar.getInstance();
+        if (dataValidadeAtual != null && dataValidadeAtual.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            try {
+                String[] partes = dataValidadeAtual.split("-");
+                cal.set(Integer.parseInt(partes[0]),
+                        Integer.parseInt(partes[1]) - 1,
+                        Integer.parseInt(partes[2]));
+            } catch (Exception ignored) { }
+        }
+
+        new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    dataValidadeAtual = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                    String exibicao = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                    etDataValidade.setText(exibicao);
+
+                    int dias = DateUtils.calcularDiasRestantes(dataValidadeAtual);
+                    if (dias < 0)       chipStatus.setText("Vencido");
+                    else if (dias == 0) chipStatus.setText("Vence hoje");
+                    else                chipStatus.setText("Vence em " + dias + " dia" + (dias == 1 ? "" : "s"));
+                },
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+        ).show();
     }
 
     // =========================================================================
@@ -186,6 +341,11 @@ public class DetalhesActivity extends AppCompatActivity {
         }
 
         item.setQuantidade(quantidadeAtual);
+
+        if (dataValidadeAtual != null && !dataValidadeAtual.isEmpty()) {
+            item.setDataValidade(dataValidadeAtual);
+        }
+
         int linhas = repository.atualizar(item);
 
         if (linhas > 0) {
@@ -233,14 +393,9 @@ public class DetalhesActivity extends AppCompatActivity {
         finish();
     }
 
-    // =========================================================================
-    // Animação ao voltar
-    // =========================================================================
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        // Slide de volta para a esquerda ao pressionar voltar
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 }

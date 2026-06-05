@@ -10,14 +10,21 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.dashboard.DashboardActivity">
 
-    <!-- ======================= CONTEÚDO PRINCIPAL ======================= -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/colorSurface">
 
-        <!-- TOP APP BAR -->
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progressBarDashboard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            app:indicatorColor="@color/colorPrimary"
+            tools:visibility="visible" />
+
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
@@ -25,12 +32,12 @@
             android:background="?attr/colorSurface"
             app:elevation="2dp">
 
+            <!-- Linha da Toolbar -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:paddingHorizontal="24dp">
 
-                <!-- Ícone Hambúrguer -->
                 <ImageButton
                     android:id="@+id/btnMenu"
                     android:layout_width="40dp"
@@ -43,6 +50,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <!-- Sprint 12: Botão de Lupa para abrir/fechar campo de busca -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -51,11 +59,23 @@
                     android:textColor="?attr/colorPrimary"
                     android:textSize="22sp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/ivAvatar"
+                    app:layout_constraintEnd_toStartOf="@id/btnBuscar"
+                    app:layout_constraintHorizontal_bias="0.638"
                     app:layout_constraintStart_toEndOf="@id/btnMenu"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- Avatar -->
+                <ImageButton
+                    android:id="@+id/btnBuscar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Buscar item"
+                    android:src="@android:drawable/ic_menu_search"
+                    android:tint="?attr/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/ivAvatar"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <FrameLayout
                     android:id="@+id/ivAvatar"
                     android:layout_width="40dp"
@@ -67,11 +87,12 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
-                    <ImageView
+                    <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivAvatarImg"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.InventaAi.Circle"
                         android:contentDescription="@string/cd_profile" />
 
                     <TextView
@@ -85,9 +106,51 @@
                 </FrameLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Sprint 12: Barra de busca (oculta por padrão, animada pelo DashboardActivity) -->
+            <LinearLayout
+                android:id="@+id/layoutSearchBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="12dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    app:boxCornerRadiusBottomEnd="28dp"
+                    app:boxCornerRadiusBottomStart="28dp"
+                    app:boxCornerRadiusTopEnd="28dp"
+                    app:boxCornerRadiusTopStart="28dp"
+                    app:startIconDrawable="@android:drawable/ic_menu_search"
+                    app:startIconTint="?attr/colorOnSurfaceVariant"
+                    app:boxStrokeColor="?attr/colorPrimary"
+                    app:hintTextColor="?attr/colorOnSurfaceVariant">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etBusca"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Buscar por nome ou categoria…"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:fontFamily="@font/inter_regular"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
         </com.google.android.material.appbar.AppBarLayout>
 
-        <!-- CONTEÚDO SCROLLÁVEL -->
         <androidx.core.widget.NestedScrollView
             android:id="@+id/nestedScrollView"
             android:layout_width="match_parent"
@@ -103,7 +166,6 @@
                 android:paddingHorizontal="24dp"
                 android:paddingTop="24dp">
 
-                <!-- SAUDAÇÃO -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -141,7 +203,6 @@
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
 
-                <!-- CARD SAÚDE -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardPantryHealth"
                     android:layout_width="match_parent"
@@ -164,7 +225,7 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@id/ivHealthIcon"
+                            app:layout_constraintEnd_toStartOf="@id/flHealthIconContainer"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
@@ -179,18 +240,29 @@
                                 android:textSize="11sp" />
 
                             <TextView
-                                android:id="@+id/tvHealthValue"
+                                android:id="@+id/tvSaudePercent"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/inter_extrabold"
+                                android:textSize="32sp"
+                                android:textColor="?attr/colorPrimary"
+                                android:layout_marginTop="4dp"
+                                tools:text="87%" />
+
+                            <TextView
+                                android:id="@+id/tvSaudeLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/inter_semibold"
-                                android:text="@string/pantry_health_value"
-                                android:textColor="?attr/colorOnSurface"
-                                android:textSize="20sp"
-                                android:layout_marginTop="4dp" />
+                                android:textSize="16sp"
+                                android:textColor="?attr/colorPrimary"
+                                android:layout_marginTop="2dp"
+                                tools:text="Ideal" />
+
                         </LinearLayout>
 
                         <FrameLayout
-                            android:id="@+id/ivHealthIcon"
+                            android:id="@+id/flHealthIconContainer"
                             android:layout_width="64dp"
                             android:layout_height="64dp"
                             android:background="@drawable/bg_circle_primary_container"
@@ -199,22 +271,26 @@
                             app:layout_constraintTop_toTopOf="parent">
 
                             <ImageView
+                                android:id="@+id/ivSaudeIcon"
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:layout_gravity="center"
                                 android:contentDescription="@null"
-                                android:src="@drawable/ic_nav_chef"
+                                android:src="@drawable/ic_saude_sparkles"
                                 android:tint="?attr/colorPrimary" />
                         </FrameLayout>
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- VENCENDO LOGO -->
                 <LinearLayout
+                    android:id="@+id/layoutSectionVencendo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -254,9 +330,9 @@
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/item_despensa"
                         tools:itemCount="3" />
+
                 </LinearLayout>
 
-                <!-- TODOS OS ITENS -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -272,7 +348,6 @@
                         android:textSize="18sp"
                         android:layout_marginBottom="16dp" />
 
-                    <!-- Sprint 6: GridLayoutManager 2 colunas — 2 itens por linha -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvPantryItems"
                         android:layout_width="match_parent"
@@ -327,21 +402,47 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- Sprint 6: bloco inferior fixo — botão ACIMA do BottomNav, sem sobreposição -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:orientation="vertical"
-            android:background="?attr/colorSurface">
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
-            <!-- Divisor sutil -->
-            <View
+            <LinearLayout
+                android:id="@+id/layoutBarraSelecao"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/colorSurfaceContainerHighest" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:background="@color/colorPrimaryContainer"
+                android:visibility="gone"
+                android:elevation="2dp">
 
-            <!-- Botão Gerar Receita -->
+                <TextView
+                    android:id="@+id/tvContadorSelecao"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/inter_semibold"
+                    android:textColor="@color/colorOnPrimaryContainer"
+                    android:textSize="14sp"
+                    android:text="0 selecionado(s)" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancelarSelecao"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="✕ Cancelar seleção"
+                    android:textColor="@color/colorOnPrimaryContainer"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGenerateRecipe"
                 style="@style/Widget.InventaAi.Button.Pill"
@@ -349,13 +450,18 @@
                 android:layout_height="56dp"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="12dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:text="@string/generate_recipe"
                 android:textSize="18sp"
+                app:elevation="4dp"
                 app:icon="@drawable/ic_nav_chef"
                 app:iconGravity="textStart" />
 
-            <!-- Bottom Navigation -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorSurfaceVariant" />
+
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottomNavigation"
                 android:layout_width="match_parent"
@@ -371,7 +477,6 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- ======================= NAVIGATION DRAWER ======================= -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="300dp"

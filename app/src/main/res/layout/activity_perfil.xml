@@ -3,6 +3,7 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
@@ -34,14 +35,16 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Meu Perfil"
                 android:fontFamily="@font/inter_semibold"
-                android:textSize="20sp"
+                android:text="Meu Perfil"
                 android:textColor="?attr/colorOnSurface"
-                app:layout_constraintStart_toEndOf="@id/btnPerfilVoltar"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.41"
+                app:layout_constraintStart_toEndOf="@id/btnPerfilVoltar"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintVertical_bias="0.529" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Avatar + ID -->

@@ -12,20 +12,31 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
 import com.example.inventaai.data.model.ReceitaResponse;
+import com.example.inventaai.data.model.ReceitaSalva;
 import com.example.inventaai.data.remote.UnsplashService;
 import com.example.inventaai.data.repository.DespensaRepository;
+import com.example.inventaai.data.repository.ReceitaRepository;
 import com.example.inventaai.ui.cadastro.CadastroActivity;
 import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
+import com.example.inventaai.ui.receitas.ReceitasActivity;
+import com.example.inventaai.util.AppExecutors;
+import com.example.inventaai.util.CategoryIconHelper;
 import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.GlideHelper;
+import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +45,13 @@ public class ChefIAActivity extends AppCompatActivity {
 
     private static final String TAG = Constants.LOG_TAG;
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Views
-    // ──────────────────────────────────────────────────────────────────────────
+    public static final String EXTRA_ITENS_SELECIONADOS = "extra_itens_selecionados";
 
+    // ── Extra para sinalizar ao Dashboard que deve exibir mensagem  ──────────
+    public static final String EXTRA_MOSTRAR_MSG_SELECAO = "extra_mostrar_msg_selecao";
+
+    // ── Views ─────────────────────────────────────────────────────────────────
+    private TextView             tvToolbarTitulo;
     private TextView             tvRecipeTitle;
     private TextView             tvRecipeDescription;
     private TextView             tvTime;
@@ -50,27 +64,37 @@ public class ChefIAActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigation;
     private ProgressBar          progressBar;
     private View                 viewConteudo;
+    private ImageView            ivRecipeImage;
+    private LinearLayout         layoutEmptyRecipe;
 
-    // Sprint 3: hero image da receita
-    private ImageView ivRecipeImage;
+    // Sprint 8 — seção de ingredientes selecionados
+    private LinearLayout   layoutIngredientesSelecionados;
+    private ChipGroup      chipGroupIngredientes;
+    private MaterialButton btnAlterar;
 
-    // Sprint 5: empty state ilustrado (despensa vazia)
-    private LinearLayout layoutEmptyRecipe;
+    // Fix 3 — empty state "selecionar ingredientes"
+    private LinearLayout layoutSelecionarIngredientes;
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Dependências
-    // ──────────────────────────────────────────────────────────────────────────
+    // Fix 4 — botão gerar receita visível quando há itens selecionados
+    private MaterialButton btnGerarReceitaComItens;
 
+    // ── Dependências ──────────────────────────────────────────────────────────
     private DespensaRepository despensaRepository;
     private GeminiService      geminiService;
     private UnsplashService    unsplashService;
+    private ReceitaRepository  receitaRepository;
 
     // Receita atual em memória (para o botão Salvar)
     private ReceitaResponse receitaAtual;
+    // URL da imagem carregada via Unsplash (para persistir junto com a receita)
+    private String          imagemUrlAtual;
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Ciclo de vida
-    // ──────────────────────────────────────────────────────────────────────────
+    // lista de itens recebidos da Despensa (pode ser nula)
+    private List<DespensaItem> itensSelecionados;
+
+    // =========================================================================
+    // CICLO DE VIDA
+    // =========================================================================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,87 +104,137 @@ public class ChefIAActivity extends AppCompatActivity {
         despensaRepository = new DespensaRepository(this);
         geminiService      = new GeminiService();
         unsplashService    = new UnsplashService();
+        receitaRepository  = new ReceitaRepository(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
+            return insets;
+        });
 
         vincularViews();
         configurarBotoes();
         configurarBottomNavigation();
 
-        // Gera a receita automaticamente ao abrir a tela
-        gerarReceita();
+        verificarIntentEConfigurarTela();
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Inicialização de views
-    // ──────────────────────────────────────────────────────────────────────────
-
-    private void vincularViews() {
-        tvRecipeTitle       = findViewById(R.id.tvRecipeTitle);
-        tvRecipeDescription = findViewById(R.id.tvRecipeDescription);
-        tvTime              = findViewById(R.id.tvTime);
-        tvServings          = findViewById(R.id.tvServings);
-        tvDifficulty        = findViewById(R.id.tvDifficulty);
-        gridIngredientes    = findViewById(R.id.gridIngredientes);
-        llSteps             = findViewById(R.id.llSteps);
-        btnSalvarReceita    = findViewById(R.id.btnSalvarReceita);
-        btnNovaReceita      = findViewById(R.id.btnNovaReceita);
-        bottomNavigation    = findViewById(R.id.bottomNavigation);
-        progressBar         = findViewById(R.id.progressBarChef);
-        viewConteudo        = findViewById(R.id.scrollViewConteudo);
-
-        // Sprint 3: hero image
-        ivRecipeImage = findViewById(R.id.ivRecipeImage);
-
-        // Sprint 5: empty state
-        layoutEmptyRecipe = findViewById(R.id.layoutEmptyRecipe);
-
-        // Sprint 4: botões da toolbar
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-
-        // btnSavedRecipes — placeholder para tela de receitas salvas (sprint futura)
-        findViewById(R.id.btnSavedRecipes).setOnClickListener(v ->
-                Toast.makeText(this, "Receitas salvas — em breve!", Toast.LENGTH_SHORT).show()
-        );
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // Lógica principal: gerar receita
-    // ──────────────────────────────────────────────────────────────────────────
-
-    private void gerarReceita() {
-        com.example.inventaai.util.SessionManager smChef =
-                new com.example.inventaai.util.SessionManager(this);
-        String chefUserId = smChef.getUserId();
-
-        List<DespensaItem> proximosVencer =
-                despensaRepository.listarProximosVencimento(7, chefUserId);
-        List<DespensaItem> todosAtivos =
-                despensaRepository.listarAtivos(chefUserId);
-
-        // Combina sem duplicatas, priorizando os próximos do vencimento
-        List<DespensaItem> itensParaReceita = new ArrayList<>(proximosVencer);
-        for (DespensaItem item : todosAtivos) {
-            if (!contemId(itensParaReceita, item.getId())) {
-                itensParaReceita.add(item);
-            }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_chef_ia);
         }
+    }
 
-        // Sprint 5: exibe empty state se não há ingredientes
-        if (itensParaReceita.isEmpty()) {
-            mostrarEmptyState(true);
+    // =========================================================================
+    // LÓGICA DE INICIALIZAÇÃO
+    // =========================================================================
+
+    @SuppressWarnings("unchecked")
+    private void verificarIntentEConfigurarTela() {
+        Intent intent = getIntent();
+
+        boolean abrirSalvas = intent.getBooleanExtra("ABRIR_SALVAS", false);
+        if (abrirSalvas) {
+            startActivity(new Intent(this, ReceitasActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            finish();
             return;
         }
 
-        mostrarEmptyState(false);
+        if (intent != null && intent.hasExtra(EXTRA_ITENS_SELECIONADOS)) {
+            itensSelecionados = (ArrayList<DespensaItem>)
+                    intent.getSerializableExtra(EXTRA_ITENS_SELECIONADOS);
+
+            if (itensSelecionados != null && !itensSelecionados.isEmpty()) {
+                exibirIngredientesSelecionados(itensSelecionados);
+
+                if (btnGerarReceitaComItens != null) btnGerarReceitaComItens.setVisibility(View.VISIBLE);
+                if (layoutSelecionarIngredientes != null) layoutSelecionarIngredientes.setVisibility(View.GONE);
+
+                mostrarEmptyState(false);
+                mostrarCarregando(false);
+                viewConteudo.setVisibility(View.GONE);
+                btnNovaReceita.setEnabled(true);
+                btnSalvarReceita.setEnabled(false);
+                return;
+            }
+        }
+
+        // Cenário B: acesso pelo BottomNav ou itens vazios
+        itensSelecionados = null;
+
+        SessionManager session = new SessionManager(this);
+        String userId = session.getUserId();
+        AppExecutors.diskIO().execute(() -> {
+            final int totalItens = userId != null
+                    ? despensaRepository.listarAtivos(userId).size()
+                    : 0;
+            AppExecutors.mainThread().execute(() -> {
+                if (totalItens > 0) {
+                    mostrarEstadoSelecionarIngredientes();
+                } else {
+                    mostrarEmptyStateSemSelecao();
+                }
+            });
+        });
+    }
+
+    private void exibirIngredientesSelecionados(List<DespensaItem> itens) {
+        layoutIngredientesSelecionados.setVisibility(View.VISIBLE);
+        chipGroupIngredientes.removeAllViews();
+
+        for (DespensaItem item : itens) {
+            Chip chip = new Chip(this);
+            chip.setText(item.getNome());
+            chip.setChipIconResource(CategoryIconHelper.getIcon(item.getCategoria()));
+            chip.setChipIconVisible(true);
+            chip.setClickable(false);
+            chip.setFocusable(false);
+            chipGroupIngredientes.addView(chip);
+        }
+
+        int n = itens.size();
+        tvToolbarTitulo.setText("Chef IA · " + (n == 1 ? "1 ingrediente" : n + " ingredientes"));
+    }
+
+    private void mostrarEstadoSelecionarIngredientes() {
+        if (layoutSelecionarIngredientes != null)   layoutSelecionarIngredientes.setVisibility(View.VISIBLE);
+        if (layoutEmptyRecipe != null)              layoutEmptyRecipe.setVisibility(View.GONE);
+        if (progressBar != null)                    progressBar.setVisibility(View.GONE);
+        if (viewConteudo != null)                   viewConteudo.setVisibility(View.GONE);
+        if (layoutIngredientesSelecionados != null) layoutIngredientesSelecionados.setVisibility(View.GONE);
+    }
+
+    private void mostrarEmptyStateSemSelecao() {
+        if (layoutEmptyRecipe != null)              layoutEmptyRecipe.setVisibility(View.VISIBLE);
+        if (layoutSelecionarIngredientes != null)   layoutSelecionarIngredientes.setVisibility(View.GONE);
+        if (progressBar != null)                    progressBar.setVisibility(View.GONE);
+        if (viewConteudo != null)                   viewConteudo.setVisibility(View.GONE);
+        if (layoutIngredientesSelecionados != null) layoutIngredientesSelecionados.setVisibility(View.GONE);
+    }
+
+    // =========================================================================
+    // GERAÇÃO DA RECEITA
+    // =========================================================================
+
+    private void gerarReceitaComItens(List<DespensaItem> itens) {
+        receitaAtual   = null;
+        imagemUrlAtual = null;
+        resetarBotaoSalvar();
+
         mostrarCarregando(true);
 
-        geminiService.gerarReceita(itensParaReceita, new GeminiService.ReceitaCallback() {
+        geminiService.gerarReceita(itens, new GeminiService.ReceitaCallback() {
             @Override
             public void onSucesso(ReceitaResponse receita) {
                 runOnUiThread(() -> {
                     receitaAtual = receita;
-                    preencherReceita(receita, itensParaReceita);
+                    preencherReceita(receita, itens);
                     mostrarCarregando(false);
                     buscarImagemParaReceita(receita.getTitulo());
+                    btnSalvarReceita.setEnabled(true);
                 });
             }
 
@@ -174,20 +248,77 @@ public class ChefIAActivity extends AppCompatActivity {
         });
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Sprint 3: buscar e exibir imagem da receita via Unsplash
-    // ──────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    // SALVAR RECEITA  —  Sprint 11 + Sprint 13 (bloqueio de duplicidade)
+    // =========================================================================
+
+    private void salvarReceitaAtual() {
+        if (receitaAtual == null) {
+            Toast.makeText(this, "Nenhuma receita para salvar. Gere uma primeiro.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        SessionManager session = new SessionManager(this);
+        String userId = session.getUserId();
+
+        // Monta o objeto ReceitaSalva a partir da ReceitaResponse
+        ReceitaSalva receitaSalva = new ReceitaSalva(receitaAtual, userId);
+        receitaSalva.setImagemUrl(imagemUrlAtual);
+
+        // Sprint 13: verifica duplicidade antes de salvar (em background)
+        AppExecutors.diskIO().execute(() -> {
+            boolean jaExiste = receitaRepository.receitaJaExiste(receitaSalva);
+            AppExecutors.mainThread().execute(() -> {
+                if (jaExiste) {
+                    // Bloqueia inserção e avisa o usuário
+                    Toast.makeText(this, "Esta receita já está salva.", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "salvarReceitaAtual: inserção bloqueada — receita duplicada.");
+                    return;
+                }
+                // Receita nova → persiste
+                persistirReceita(receitaSalva);
+            });
+        });
+    }
+
+    /** Persiste a receita no banco após confirmação de que não é duplicata. */
+    private void persistirReceita(ReceitaSalva receitaSalva) {
+        AppExecutors.diskIO().execute(() -> {
+            long id = receitaRepository.salvar(receitaSalva);
+            AppExecutors.mainThread().execute(() -> {
+                if (id != -1) {
+                    Toast.makeText(this,
+                            "\"" + receitaAtual.getTitulo() + "\" salva!",
+                            Toast.LENGTH_SHORT).show();
+                    btnSalvarReceita.setText("Salva! ✓");
+                    btnSalvarReceita.setEnabled(false);
+                } else {
+                    Toast.makeText(this, "Erro ao salvar receita.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    /** Restaura o botão Salvar ao estado inicial (nova receita). */
+    private void resetarBotaoSalvar() {
+        btnSalvarReceita.setText(getString(R.string.btn_save_recipe));
+        btnSalvarReceita.setEnabled(false);
+    }
+
+    // =========================================================================
+    // BUSCAR IMAGEM VIA UNSPLASH
+    // =========================================================================
 
     private void buscarImagemParaReceita(String tituloReceita) {
         if (ivRecipeImage == null) return;
-
         Log.d(TAG, "ChefIA: buscando imagem para \"" + tituloReceita + "\"");
 
         unsplashService.buscarImagemReceita(tituloReceita, new UnsplashService.ImageCallback() {
             @Override
             public void onSucesso(String imageUrl) {
                 runOnUiThread(() -> {
-                    Log.d(TAG, "ChefIA: carregando imagem com Glide → " + imageUrl);
+                    imagemUrlAtual = imageUrl;
+                    Log.d(TAG, "ChefIA: carregando imagem → " + imageUrl);
                     GlideHelper.loadImage(ChefIAActivity.this, imageUrl, ivRecipeImage);
                 });
             }
@@ -199,9 +330,9 @@ public class ChefIAActivity extends AppCompatActivity {
         });
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Preencher UI com a receita recebida
-    // ──────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    // PREENCHER UI COM A RECEITA
+    // =========================================================================
 
     private void preencherReceita(ReceitaResponse receita, List<DespensaItem> itensUsados) {
         tvRecipeTitle.setText(receita.getTitulo());
@@ -223,26 +354,24 @@ public class ChefIAActivity extends AppCompatActivity {
         } else {
             for (String ingrediente : ingredientes) {
                 String[] partes = ingrediente.split(" - ", 2);
-                String nome = partes[0].trim();
-                String qtd  = partes.length > 1 ? partes[1].trim() : "";
-                adicionarCartaoIngrediente(nome, qtd);
+                adicionarCartaoIngrediente(partes[0].trim(), partes.length > 1 ? partes[1].trim() : "");
             }
         }
 
         llSteps.removeAllViews();
         List<String> passos = receita.getPassos();
         if (passos != null && !passos.isEmpty()) {
-            for (int i = 0; i < passos.size(); i++) {
-                adicionarPasso(i + 1, passos.get(i));
-            }
+            for (int i = 0; i < passos.size(); i++) adicionarPasso(i + 1, passos.get(i));
         } else {
             adicionarPasso(1, "Siga as instruções da receita e bom apetite!");
         }
+
+        viewConteudo.setVisibility(View.VISIBLE);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Helpers de UI
-    // ──────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    // HELPERS DE UI (cards de ingrediente e passos)
+    // =========================================================================
 
     private void adicionarCartaoIngrediente(String nome, String quantidade) {
         MaterialCardView card = new MaterialCardView(this);
@@ -296,8 +425,7 @@ public class ChefIAActivity extends AppCompatActivity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         rowParams.setMargins(0, 0, 0, dpToPx(20));
         row.setLayoutParams(rowParams);
 
@@ -328,14 +456,10 @@ public class ChefIAActivity extends AppCompatActivity {
         llSteps.addView(row);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Estado de UI
-    // ──────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    // ESTADO DE UI
+    // =========================================================================
 
-    /**
-     * Sprint 5: controla a visibilidade do empty state ilustrado.
-     * Quando visível, oculta progressBar e conteúdo de receita.
-     */
     private void mostrarEmptyState(boolean vazio) {
         if (layoutEmptyRecipe != null)
             layoutEmptyRecipe.setVisibility(vazio ? View.VISIBLE : View.GONE);
@@ -350,6 +474,8 @@ public class ChefIAActivity extends AppCompatActivity {
             progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE);
         if (viewConteudo != null)
             viewConteudo.setVisibility(carregando ? View.GONE : View.VISIBLE);
+        if (layoutEmptyRecipe != null)
+            layoutEmptyRecipe.setVisibility(View.GONE);
         btnNovaReceita.setEnabled(!carregando);
         btnSalvarReceita.setEnabled(!carregando);
         if (carregando) {
@@ -366,36 +492,117 @@ public class ChefIAActivity extends AppCompatActivity {
         btnSalvarReceita.setEnabled(false);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Eventos de botão
-    // ──────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    // VIEWS E BOTÕES
+    // =========================================================================
+
+    private void vincularViews() {
+        tvToolbarTitulo     = findViewById(R.id.tvToolbarTitulo);
+        tvRecipeTitle       = findViewById(R.id.tvRecipeTitle);
+        tvRecipeDescription = findViewById(R.id.tvRecipeDescription);
+        tvTime              = findViewById(R.id.tvTime);
+        tvServings          = findViewById(R.id.tvServings);
+        tvDifficulty        = findViewById(R.id.tvDifficulty);
+        gridIngredientes    = findViewById(R.id.gridIngredientes);
+        llSteps             = findViewById(R.id.llSteps);
+        btnSalvarReceita    = findViewById(R.id.btnSalvarReceita);
+        btnNovaReceita      = findViewById(R.id.btnNovaReceita);
+        bottomNavigation    = findViewById(R.id.bottomNavigation);
+        progressBar         = findViewById(R.id.progressBarChef);
+        viewConteudo        = findViewById(R.id.scrollViewConteudo);
+        ivRecipeImage       = findViewById(R.id.ivRecipeImage);
+        layoutEmptyRecipe   = findViewById(R.id.layoutEmptyRecipe);
+
+        layoutIngredientesSelecionados = findViewById(R.id.layoutIngredientesSelecionados);
+        chipGroupIngredientes          = findViewById(R.id.chipGroupIngredientes);
+        btnAlterar                     = findViewById(R.id.btnAlterar);
+
+        layoutSelecionarIngredientes = findViewById(R.id.layoutSelecionarIngredientes);
+        btnGerarReceitaComItens      = findViewById(R.id.btnGerarReceitaComItens);
+
+        // Botão Voltar
+        findViewById(R.id.btnBack).setOnClickListener(v -> {
+            finish();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        });
+
+        // Botão "Receitas Salvas" na toolbar → abre ReceitasActivity
+        View btnSavedRecipes = findViewById(R.id.btnSavedRecipes);
+        if (btnSavedRecipes != null) {
+            btnSavedRecipes.setOnClickListener(v -> {
+                startActivity(new Intent(this, ReceitasActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            });
+        }
+    }
 
     private void configurarBotoes() {
         btnNovaReceita   = findViewById(R.id.btnNovaReceita);
         btnSalvarReceita = findViewById(R.id.btnSalvarReceita);
 
-        btnNovaReceita.setOnClickListener(v -> gerarReceita());
+        // Botão principal "Gerar Receita" com itens selecionados
+        if (btnGerarReceitaComItens != null) {
+            btnGerarReceitaComItens.setOnClickListener(v -> {
+                if (itensSelecionados != null && !itensSelecionados.isEmpty()) {
+                    if (layoutIngredientesSelecionados != null)
+                        layoutIngredientesSelecionados.setVisibility(View.GONE);
+                    gerarReceitaComItens(itensSelecionados);
+                }
+            });
+        }
 
-        btnSalvarReceita.setOnClickListener(v -> {
-            if (receitaAtual != null) {
-                Toast.makeText(this,
-                        "\"" + receitaAtual.getTitulo() + "\" salva nos favoritos!",
-                        Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this,
-                        "Nenhuma receita para salvar. Gere uma primeiro.",
-                        Toast.LENGTH_SHORT).show();
-            }
+        // Botão "Ir para Despensa" no estado selecionar
+        View btnIrParaSelecao = findViewById(R.id.btnIrParaSelecao);
+        if (btnIrParaSelecao != null) {
+            btnIrParaSelecao.setOnClickListener(v -> {
+                Intent intent = new Intent(this, DashboardActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            });
+        }
+
+        // ── Sprint 13: "Gerar Nova Receita" redireciona para o Dashboard
+        //    em vez de disparar nova requisição à API.
+        btnNovaReceita.setOnClickListener(v -> {
+            Intent intent = new Intent(this, DashboardActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            // Sinaliza ao Dashboard para exibir a mensagem orientativa
+            intent.putExtra(EXTRA_MOSTRAR_MSG_SELECAO, true);
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            finish();
         });
+
+        // "Salvar Receita" → verifica duplicidade e persiste
+        btnSalvarReceita.setOnClickListener(v -> salvarReceitaAtual());
+
+        // "Alterar" → volta para a Despensa
+        if (btnAlterar != null) {
+            btnAlterar.setOnClickListener(v -> {
+                Intent intent = new Intent(this, DashboardActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            });
+        }
+
+        // Botão no empty state da despensa vazia
+        View btnIrParaDespensa = findViewById(R.id.btnIrParaDespensa);
+        if (btnIrParaDespensa != null) {
+            btnIrParaDespensa.setOnClickListener(v -> {
+                startActivity(new Intent(this, CadastroActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            });
+        }
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Navegação inferior
-    // ──────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    // BOTTOM NAVIGATION
+    // =========================================================================
 
     private void configurarBottomNavigation() {
         bottomNavigation = findViewById(R.id.bottomNavigation);
-        bottomNavigation.setSelectedItemId(R.id.nav_chef_ia);
 
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -403,35 +610,32 @@ public class ChefIAActivity extends AppCompatActivity {
             if (id == R.id.nav_chef_ia) {
                 return true;
             } else if (id == R.id.nav_pantry) {
-                startActivity(new Intent(this, DashboardActivity.class));
-                finish();
+                Intent intent = new Intent(this, DashboardActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 return true;
             } else if (id == R.id.nav_add) {
                 startActivity(new Intent(this, CadastroActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             } else if (id == R.id.nav_history) {
-                startActivity(new Intent(this, HistoricoActivity.class));
+                Intent intent = new Intent(this, HistoricoActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }
-
             return false;
         });
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Utilitários
-    // ──────────────────────────────────────────────────────────────────────────
-
-    private boolean contemId(List<DespensaItem> lista, long id) {
-        for (DespensaItem i : lista) {
-            if (i.getId() == id) return true;
-        }
-        return false;
-    }
+    // =========================================================================
+    // UTILITÁRIOS
+    // =========================================================================
 
     private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
+        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 
     private String formatarQtd(double qtd) {

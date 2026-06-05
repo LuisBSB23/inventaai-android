@@ -21,23 +21,18 @@ import java.util.UUID;
 public class UserRepository {
 
     private static final String TAG = "InventaAi.UserRepo";
+
+    // SPRINT 7 — TAREFA 1: usa Singleton em vez de new DatabaseHelper(context)
     private final DatabaseHelper dbHelper;
 
     public UserRepository(Context context) {
-        this.dbHelper = new DatabaseHelper(context);
+        this.dbHelper = DatabaseHelper.getInstance(context);
     }
 
     // =========================================================================
     // CRIAR USUÁRIO
     // =========================================================================
 
-    /**
-     * Cria um novo usuário com UUID gerado automaticamente.
-     *
-     * @param nome  Nome de exibição do usuário.
-     * @param senha Senha em texto puro — será convertida em hash SHA-256.
-     * @return User criado (com id e createdAt preenchidos), ou null em caso de erro.
-     */
     public User createUser(String nome, String senha) {
         if (nomeJaExiste(nome)) {
             Log.w(TAG, "createUser: nome '" + nome + "' já em uso.");
@@ -63,22 +58,14 @@ public class UserRepository {
         } catch (Exception e) {
             Log.e(TAG, "createUser: erro", e);
             return null;
-        } finally {
-            db.close();
         }
+        // SPRINT 7: não fechamos db — Singleton gerencia a conexão.
     }
 
     // =========================================================================
     // LOGIN
     // =========================================================================
 
-    /**
-     * Valida credenciais comparando o hash da senha informada com o armazenado.
-     *
-     * @param nome  Nome do usuário.
-     * @param senha Senha em texto puro.
-     * @return User autenticado, ou null se as credenciais forem inválidas.
-     */
     public User login(String nome, String senha) {
         String senhaHash = hashSHA256(senha);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -104,7 +91,6 @@ public class UserRepository {
             return null;
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
     }
 
@@ -112,12 +98,6 @@ public class UserRepository {
     // BUSCAR POR ID
     // =========================================================================
 
-    /**
-     * Recupera um usuário pelo seu UUID.
-     *
-     * @param id UUID do usuário.
-     * @return User encontrado, ou null.
-     */
     public User getUserById(String id) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
@@ -136,7 +116,6 @@ public class UserRepository {
             Log.e(TAG, "getUserById: erro para id=" + id, e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return null;
     }
@@ -145,13 +124,7 @@ public class UserRepository {
     // ATUALIZAR NOME
     // =========================================================================
 
-    /**
-     * Atualiza o nome de exibição do usuário.
-     *
-     * @return true se a atualização foi bem-sucedida.
-     */
     public boolean updateNome(String userId, String novoNome) {
-        // Verifica se o novo nome já está em uso por outro usuário
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         Cursor cursor = null;
         try {
@@ -178,8 +151,6 @@ public class UserRepository {
         } catch (Exception e) {
             Log.e(TAG, "updateNome: erro", e);
             return false;
-        } finally {
-            db.close();
         }
     }
 
@@ -187,19 +158,10 @@ public class UserRepository {
     // ATUALIZAR SENHA
     // =========================================================================
 
-    /**
-     * Troca a senha do usuário após validar a senha atual.
-     *
-     * @param userId      UUID do usuário.
-     * @param senhaAtual  Senha atual em texto puro.
-     * @param novaSenha   Nova senha em texto puro.
-     * @return true se a senha foi trocada com sucesso.
-     */
     public boolean updateSenha(String userId, String senhaAtual, String novaSenha) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         Cursor cursor = null;
         try {
-            // Valida senha atual
             String hashAtual = hashSHA256(senhaAtual);
             cursor = db.query(UserEntry.TABLE_NAME,
                     new String[]{ UserEntry._ID },
@@ -224,8 +186,6 @@ public class UserRepository {
         } catch (Exception e) {
             Log.e(TAG, "updateSenha: erro", e);
             return false;
-        } finally {
-            db.close();
         }
     }
 
@@ -233,13 +193,6 @@ public class UserRepository {
     // ATUALIZAR AVATAR
     // =========================================================================
 
-    /**
-     * Atualiza o caminho da foto de perfil no armazenamento interno.
-     *
-     * @param userId UUID do usuário.
-     * @param path   Caminho absoluto do arquivo de imagem.
-     * @return true se atualizado com sucesso.
-     */
     public boolean updateAvatar(String userId, String path) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         try {
@@ -252,8 +205,6 @@ public class UserRepository {
         } catch (Exception e) {
             Log.e(TAG, "updateAvatar: erro", e);
             return false;
-        } finally {
-            db.close();
         }
     }
 
@@ -274,7 +225,6 @@ public class UserRepository {
             return cursor.moveToFirst();
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
     }
 
@@ -298,10 +248,6 @@ public class UserRepository {
         );
     }
 
-    /**
-     * Gera o hash SHA-256 da string informada.
-     * Retorna uma string hexadecimal de 64 caracteres.
-     */
     public static String hashSHA256(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -312,7 +258,6 @@ public class UserRepository {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            // SHA-256 está disponível em todas as versões do Android — não ocorrerá na prática
             throw new RuntimeException("SHA-256 não disponível", e);
         }
     }

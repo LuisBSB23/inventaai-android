@@ -21,10 +21,8 @@ public final class Constants {
     // Limiares de alerta de vencimento
     // -------------------------------------------------------------------------
 
-    /** Itens com até N dias para vencer recebem alerta AMARELO. */
-    public static final int DIAS_ALERTA_AMARELO = 3;
+    public static final int DIAS_ALERTA_AMARELO = 7;
 
-    /** Itens com 0 ou menos dias (vencidos) recebem alerta VERMELHO. */
     public static final int DIAS_ALERTA_VERMELHO = 0;
 
     // -------------------------------------------------------------------------

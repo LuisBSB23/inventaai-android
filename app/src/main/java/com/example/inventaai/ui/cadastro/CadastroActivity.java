@@ -8,6 +8,9 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
@@ -39,8 +42,15 @@ public class CadastroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro);
 
-        repository = new DespensaRepository(this);
+        repository     = new DespensaRepository(this);
         sessionManager = new com.example.inventaai.util.SessionManager(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+
+            return insets;
+        });
 
         vincularViews();
         configurarCategoria();
@@ -107,7 +117,6 @@ public class CadastroActivity extends AppCompatActivity {
     private boolean validarFormulario() {
         boolean valido = true;
 
-        // Nome obrigatório
         String nome = etNome.getText() != null ? etNome.getText().toString().trim() : "";
         if (TextUtils.isEmpty(nome)) {
             tilNome.setError("Informe o nome do alimento");
@@ -116,7 +125,6 @@ public class CadastroActivity extends AppCompatActivity {
             tilNome.setError(null);
         }
 
-        // Quantidade obrigatória e > 0
         String qtdStr = etQuantidade.getText() != null ? etQuantidade.getText().toString().trim() : "";
         if (TextUtils.isEmpty(qtdStr)) {
             tilQuantidade.setError("Informe a quantidade");
@@ -136,7 +144,6 @@ public class CadastroActivity extends AppCompatActivity {
             }
         }
 
-        // Data obrigatória
         if (TextUtils.isEmpty(dataSelecionada)) {
             tilDataValidade.setError("Selecione a data de validade");
             valido = false;
@@ -160,8 +167,11 @@ public class CadastroActivity extends AppCompatActivity {
 
         if (novoId != -1) {
             Toast.makeText(this, nome + " adicionado à despensa!", Toast.LENGTH_SHORT).show();
-            // finish() → volta ao Dashboard, que recarrega em onResume()
+            // Tarefa 3: animação correta de "voltar" após salvar.
+            // slide_in_left: tela anterior (Dashboard) entra pela esquerda.
+            // slide_out_right: tela atual (Cadastro) sai pela direita.
             finish();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         } else {
             Toast.makeText(this, "Erro ao salvar. Tente novamente.", Toast.LENGTH_SHORT).show();
         }
@@ -179,6 +189,20 @@ public class CadastroActivity extends AppCompatActivity {
     // =========================================================================
 
     private void configurarBotaoVoltar() {
-        findViewById(R.id.btnBack).setOnClickListener(v -> onBackPressed());
+        // Tarefa 3: o botão "Voltar" da toolbar usa a mesma
+        // animação de retorno que o botão Salvar: tela anterior entra pela
+        // esquerda e a tela atual sai pela direita.
+        findViewById(R.id.btnBack).setOnClickListener(v -> {
+            finish();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Tarefa 3: garante que o botão físico/gesto de Voltar
+        // use a mesma animação de retorno definida no guia.
+        super.onBackPressed();
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 }

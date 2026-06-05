@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     tools:context=".ui.chefIA.ChefIAActivity">
 
-    <!-- ======================== TOP APP BAR ======================== -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorSurface"
@@ -31,18 +31,6 @@
                 android:tint="?attr/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/app_name"
-                android:textColor="?attr/colorPrimary"
-                android:textSize="22sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/btnSavedRecipes"
-                app:layout_constraintStart_toEndOf="@id/btnBack"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageButton
@@ -82,6 +70,8 @@
         android:gravity="center"
         android:visibility="gone"
         android:paddingHorizontal="32dp"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <ImageView
@@ -124,13 +114,116 @@
 
     </LinearLayout>
 
-    <!-- ======================== CONTEÚDO DA RECEITA ======================== -->
+    <LinearLayout
+        android:id="@+id/layoutSelecionarIngredientes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:paddingHorizontal="32dp"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_nav_pantry"
+            android:contentDescription="@null"
+            android:alpha="0.75"
+            android:tint="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_semibold"
+            android:text="Escolha os Ingredientes"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="17sp"
+            android:layout_marginTop="16dp"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_regular"
+            android:text="Vá até à sua despensa e selecione os itens que deseja usar para gerar uma receita mágica."
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnIrParaSelecao"
+            style="@style/Widget.InventaAi.Button.Pill"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:text="Ir para Despensa"
+            android:layout_marginTop="24dp"
+            app:icon="@drawable/ic_nav_pantry"
+            app:iconGravity="textStart" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutIngredientesSelecionados"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_semibold"
+            android:text="Ingredientes Escolhidos"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupIngredientes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp" />
+        </ScrollView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGerarReceitaComItens"
+            style="@style/Widget.InventaAi.Button.Pill"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Gerar Receita Mágica"
+            android:layout_marginBottom="12dp"
+            app:icon="@drawable/ic_nav_chef"
+            app:iconGravity="textStart" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAlterar"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Alterar Ingredientes"
+            android:layout_marginBottom="16dp"/>
+    </LinearLayout>
+
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollViewConteudo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingBottom="100dp"
+        android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -138,7 +231,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ===== IMAGEM DE DESTAQUE + BADGE IA ===== -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
@@ -154,7 +246,6 @@
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_nav_chef" />
 
-                <!-- Badge "CRIAÇÃO IA" sobreposto -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -186,7 +277,6 @@
                 </LinearLayout>
             </FrameLayout>
 
-            <!-- ===== CORPO DO CONTEÚDO ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -201,8 +291,7 @@
                     android:fontFamily="@font/inter_extrabold"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="32sp"
-                    android:layout_marginBottom="8dp"
-                    tools:text="Frango em Crosta de Ervas" />
+                    android:layout_marginBottom="8dp" />
 
                 <TextView
                     android:id="@+id/tvRecipeDescription"
@@ -212,10 +301,8 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="15sp"
                     android:lineSpacingExtra="4dp"
-                    android:layout_marginBottom="16dp"
-                    tools:text="Uma transformação mágica dos itens básicos da sua despensa." />
+                    android:layout_marginBottom="16dp" />
 
-                <!-- Metadados: tempo, porções, dificuldade -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -230,8 +317,7 @@
                             android:contentDescription="@null" android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvTime" android:layout_width="wrap_content"
                             android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
-                            android:textColor="?attr/colorOutline" android:textSize="14sp"
-                            tools:text="25 min" />
+                            android:textColor="?attr/colorOutline" android:textSize="14sp" />
                     </LinearLayout>
 
                     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -242,8 +328,7 @@
                             android:contentDescription="@null" android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvServings" android:layout_width="wrap_content"
                             android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
-                            android:textColor="?attr/colorOutline" android:textSize="14sp"
-                            tools:text="2 porções" />
+                            android:textColor="?attr/colorOutline" android:textSize="14sp" />
                     </LinearLayout>
 
                     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -253,8 +338,7 @@
                             android:contentDescription="@null" android:layout_marginEnd="4dp" />
                         <TextView android:id="@+id/tvDifficulty" android:layout_width="wrap_content"
                             android:layout_height="wrap_content" android:fontFamily="@font/inter_regular"
-                            android:textColor="?attr/colorOutline" android:textSize="14sp"
-                            tools:text="Fácil" />
+                            android:textColor="?attr/colorOutline" android:textSize="14sp" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -314,7 +398,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- ======================== BOTTOM NAVIGATION ======================== -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -325,5 +408,16 @@
         app:itemTextColor="@color/selector_nav_item"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
+
+    <TextView
+        android:id="@+id/tvToolbarTitulo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_bold"
+        android:text="@string/app_name"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="22sp"
+        app:layout_anchor="@+id/appBarLayout3"
+        app:layout_anchorGravity="center" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

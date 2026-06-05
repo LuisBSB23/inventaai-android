@@ -19,10 +19,12 @@ import java.util.List;
 public class DespensaRepository {
 
     private static final String TAG = "DespensaRepository";
+
+    // TAREFA 1: usa Singleton em vez de new DatabaseHelper(context)
     private final DatabaseHelper dbHelper;
 
     public DespensaRepository(Context context) {
-        this.dbHelper = new DatabaseHelper(context);
+        this.dbHelper = DatabaseHelper.getInstance(context);
     }
 
     // ── INSERIR ──────────────────────────────────────────────────────────────
@@ -34,9 +36,8 @@ public class DespensaRepository {
         } catch (Exception e) {
             Log.e(TAG, "inserir: erro", e);
             return -1;
-        } finally {
-            db.close();
         }
+        // Não chamamos db.close() — o Singleton gerencia a conexão.
     }
 
     // ── BUSCAR POR ID (público) ───────────────────────────────────────────────
@@ -48,12 +49,9 @@ public class DespensaRepository {
         } catch (Exception e) {
             Log.e(TAG, "buscarPorId: erro id=" + id, e);
             return null;
-        } finally {
-            db.close();
         }
     }
 
-    /** Versão interna: usa db já aberto, NÃO fecha — evita SQLiteClosable error. */
     private DespensaItem buscarPorIdInterno(SQLiteDatabase db, long id) {
         Cursor cursor = null;
         try {
@@ -83,7 +81,40 @@ public class DespensaRepository {
             Log.e(TAG, "listarAtivos: erro", e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
+        }
+        return lista;
+    }
+
+    // ── LISTAR ATIVOS FILTRADO
+
+    public List<DespensaItem> listarAtivosFiltrado(String query, String userId) {
+        // Query vazia ou nula → retorna lista completa
+        if (query == null || query.trim().isEmpty()) {
+            return listarAtivos(userId);
+        }
+
+        List<DespensaItem> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String filtro = "%" + query.trim() + "%";
+            cursor = db.query(
+                    DespensaEntry.TABLE_NAME,
+                    null,
+                    DespensaEntry.COLUMN_STATUS   + " = ? AND "
+                            + DespensaEntry.COLUMN_USER_ID + " = ? AND ("
+                            + DespensaEntry.COLUMN_NOME    + " LIKE ? OR "
+                            + DespensaEntry.COLUMN_CATEGORIA + " LIKE ?)",
+                    new String[]{ Constants.STATUS_ATIVO, userId, filtro, filtro },
+                    null, null,
+                    DespensaEntry.COLUMN_DATA_VALIDADE + " ASC"
+            );
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+            Log.d(TAG, "listarAtivosFiltrado: query=\"" + query + "\" → " + lista.size() + " resultado(s).");
+        } catch (Exception e) {
+            Log.e(TAG, "listarAtivosFiltrado: erro", e);
+        } finally {
+            if (cursor != null) cursor.close();
         }
         return lista;
     }
@@ -103,7 +134,6 @@ public class DespensaRepository {
             Log.e(TAG, "listarTodos: erro", e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return lista;
     }
@@ -128,7 +158,6 @@ public class DespensaRepository {
             Log.e(TAG, "listarProximosVencimento: erro", e);
         } finally {
             if (cursor != null) cursor.close();
-            db.close();
         }
         return lista;
     }
@@ -139,7 +168,6 @@ public class DespensaRepository {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int linhas = 0;
         try {
-            // buscarPorIdInterno não fecha o db — evita o bug de "closed object"
             DespensaItem existente = buscarPorIdInterno(db, item.getId());
             String userId = existente != null ? existente.getUserId() : null;
 
@@ -148,8 +176,6 @@ public class DespensaRepository {
             Log.d(TAG, "atualizar: id=" + item.getId() + " → " + linhas + " linha(s)");
         } catch (Exception e) {
             Log.e(TAG, "atualizar: erro id=" + item.getId(), e);
-        } finally {
-            db.close();
         }
         return linhas;
     }
@@ -181,7 +207,6 @@ public class DespensaRepository {
             return false;
         } finally {
             db.endTransaction();
-            db.close();
         }
     }
 
@@ -195,8 +220,6 @@ public class DespensaRepository {
         } catch (Exception e) {
             Log.e(TAG, "deletar: erro id=" + id, e);
             return false;
-        } finally {
-            db.close();
         }
     }
 
@@ -224,7 +247,7 @@ public class DespensaRepository {
         v.put(DespensaEntry.COLUMN_UNIDADE,       item.getUnidadeMedida());
         v.put(DespensaEntry.COLUMN_DATA_VALIDADE, item.getDataValidade());
         v.put(DespensaEntry.COLUMN_STATUS,        item.getStatus() != null ? item.getStatus() : Constants.STATUS_ATIVO);
-        v.put(DespensaEntry.COLUMN_CATEGORIA,     item.getCategoria());   // Sprint 6
+        v.put(DespensaEntry.COLUMN_CATEGORIA,     item.getCategoria()); // Sprint 6
         if (userId != null) v.put(DespensaEntry.COLUMN_USER_ID, userId);
         return v;
     }

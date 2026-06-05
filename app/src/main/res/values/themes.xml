@@ -133,4 +133,10 @@
         <item name="android:windowFullscreen">false</item>
     </style>
 
+    <style name="TextAppearance.InventaAi.Toolbar" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/inter_bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
 </resources>
