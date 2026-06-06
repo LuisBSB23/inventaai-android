@@ -26,6 +26,7 @@ import com.google.android.material.card.MaterialCardView;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.DespensaViewHolder> {
@@ -53,7 +54,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     private final List<DespensaItem>    items;
     private final OnItemClickListener   clickListener;
     private OnItemLongClickListener     longClickListener;
-    private OnSelecaoChangedListener    selecaoChangedListener;   // Fix 2
+    private OnSelecaoChangedListener    selecaoChangedListener;
 
     private final Set<Long> itensSelecionados = new HashSet<>();
     private boolean modoSelecao = false;
@@ -72,8 +73,8 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     // API pública
     // =========================================================================
 
-    public void setOnItemLongClickListener(OnItemLongClickListener l)  { longClickListener    = l; }
-    public void setOnSelecaoChangedListener(OnSelecaoChangedListener l) { selecaoChangedListener = l; } // Fix 2
+    public void setOnItemLongClickListener(OnItemLongClickListener l)   { longClickListener     = l; }
+    public void setOnSelecaoChangedListener(OnSelecaoChangedListener l) { selecaoChangedListener = l; }
 
     public void setModoSelecao(boolean ativo) {
         modoSelecao = ativo;
@@ -92,7 +93,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         return lista;
     }
 
-    /** Seleciona (ou deseleciona) um item pelo id sem precisar de clique na View. */
     public void selecionarItem(long id) {
         if (itensSelecionados.contains(id)) {
             itensSelecionados.remove(id);
@@ -193,18 +193,8 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             // ── Nome ───────────────────────────────────────────────────────
             tvItemName.setText(item.getNome());
 
-            // ── Quantidade ─────────────────────────────────────────────────
-            String unidade = item.getUnidadeMedida() != null ? item.getUnidadeMedida() : "unid";
-            double q = item.getQuantidade();
-            String qtdStr;
-            if (q == Math.floor(q)) {
-                qtdStr = String.valueOf((int) q);
-            } else if (q < 1.0) {
-                qtdStr = String.format("%.0f g", q * 1000);
-            } else {
-                qtdStr = String.format("%.2f", q).replaceAll("0+$", "").replaceAll("\\.$", "");
-            }
-            tvItemQuantity.setText(qtdStr + " " + unidade);
+            // ── Quantidade com formatação correta (Sprint 16) ───────────────
+            tvItemQuantity.setText(formatarQuantidade(item.getQuantidade(), item.getUnidadeMedida()));
 
             // ── Badge validade ─────────────────────────────────────────────
             int dias = DateUtils.calcularDiasRestantes(item.getDataValidade());
@@ -234,8 +224,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             progressFreshness.setProgressTintList(ColorStateList.valueOf(corBarra));
             progressFreshness.setProgress(progressValor);
 
-            // ── Fix 1b: seleção via APIs do MaterialCardView ───────────────
-            // Isso garante que a borda NÃO suma ao rolar (não usa setBackground).
+            // ── Seleção ────────────────────────────────────────────────────
             if (modoSelecao) {
                 checkboxItem.setVisibility(View.VISIBLE);
                 checkboxItem.setChecked(selecionado);
@@ -268,7 +257,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             // ── Clique ─────────────────────────────────────────────────────
             itemView.setOnClickListener(v -> {
                 if (modoSelecao) {
-                    // Fix 2: toggle + notifica listener para atualizar contador
                     long id = item.getId();
                     if (adapter.itensSelecionados.contains(id)) {
                         adapter.itensSelecionados.remove(id);
@@ -278,7 +266,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
                     int pos = getAdapterPosition();
                     if (pos != RecyclerView.NO_ID) adapter.notifyItemChanged(pos);
 
-                    // Fix 2 — dispara callback com total atualizado
                     if (adapter.selecaoChangedListener != null) {
                         adapter.selecaoChangedListener.onSelecaoChanged(
                                 adapter.itensSelecionados.size());
@@ -296,6 +283,44 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
                 }
                 return false;
             });
+        }
+
+        private static String formatarQuantidade(double quantidade, String unidade) {
+            if (unidade == null || unidade.isEmpty()) {
+                return formatarNumero(quantidade) + " unid";
+            }
+
+            String unidLower = unidade.trim().toLowerCase(Locale.getDefault());
+
+            // ── Conversão Kg → g quando quantidade < 1 kg ─────────────────
+            if (unidLower.equals("kg") && quantidade < 1.0) {
+                int gramas = (int) Math.round(quantidade * 1000);
+                return gramas + " g";
+            }
+
+            // ── Conversão L → ml quando quantidade < 1 L ──────────────────
+            if ((unidLower.equals("l") || unidLower.equals("litro") || unidLower.equals("litros"))
+                    && quantidade < 1.0) {
+                int ml = (int) Math.round(quantidade * 1000);
+                return ml + " ml";
+            }
+
+            // ── Caso padrão: número + unidade original ─────────────────────
+            return formatarNumero(quantidade) + " " + unidade;
+        }
+
+        private static String formatarNumero(double valor) {
+            if (valor == Math.floor(valor) && !Double.isInfinite(valor)) {
+                return String.valueOf((int) valor);
+            }
+            // Remove zeros à direita mas mantém até 3 casas decimais
+            String formatado = String.format(Locale.getDefault(), "%.3f", valor);
+            formatado = formatado.replaceAll("[,.]?0+$", "");
+            // Garante que não termine com separador
+            if (formatado.endsWith(",") || formatado.endsWith(".")) {
+                formatado = formatado.substring(0, formatado.length() - 1);
+            }
+            return formatado;
         }
 
         private static int dpToPx(Context ctx, int dp) {

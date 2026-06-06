@@ -52,25 +52,18 @@ public class GeminiService {
     }
 
     // =========================================================================
-    // GERAR RECEITA COM ITENS (existente)
+    // GERAR RECEITA COM ITENS (sem categoria específica)
     // =========================================================================
 
     public void gerarReceita(List<DespensaItem> itens, ReceitaCallback callback) {
+        // Sprint 16: usa o prompt refinado sem restrição de categoria
         enviarRequisicao(construirPrompt(itens, null), callback);
     }
 
     // =========================================================================
-    // SPRINT 15: GERAR RECEITA COM CATEGORIA
+    // SPRINT 15/16: GERAR RECEITA COM CATEGORIA
     // =========================================================================
 
-    /**
-     * Sprint 15: gera uma receita aleatória com todos os itens da despensa,
-     * instruindo a IA a seguir a categoria desejada pelo usuário.
-     *
-     * @param itens     Lista completa de itens ativos da despensa.
-     * @param categoria Categoria escolhida (ex: "Doce", "Salgada", "Lanche").
-     * @param callback  Resultado da geração.
-     */
     public void gerarReceitaComCategoria(List<DespensaItem> itens,
                                          String categoria,
                                          ReceitaCallback callback) {
@@ -132,15 +125,8 @@ public class GeminiService {
         });
     }
 
-    /**
-     * Constrói o prompt para a IA.
-     * Sprint 15: aceita categoria opcional; quando fornecida, instrui a IA
-     * a criar uma receita do tipo informado.
-     *
-     * @param itens     Ingredientes disponíveis.
-     * @param categoria Categoria desejada ou null para gerar livremente.
-     */
     private String construirPrompt(List<DespensaItem> itens, String categoria) {
+        // Monta a lista de ingredientes disponíveis
         StringBuilder lista = new StringBuilder();
         for (DespensaItem item : itens) {
             lista.append("- ")
@@ -152,24 +138,30 @@ public class GeminiService {
                     .append(")\n");
         }
 
+        // Sprint 16: instrução de categoria (omitida quando "Surpresa" ou null)
         String instrucaoCategoria = "";
         if (categoria != null && !categoria.isEmpty() && !"Surpresa".equals(categoria)) {
-            instrucaoCategoria = "A receita deve ser do tipo: " + categoria + ". ";
+            instrucaoCategoria = " do tipo " + categoria;
         }
 
-        return "Atue como um Chef de cozinha profissional. "
-                + "Tenho os seguintes ingredientes na minha despensa:\n"
+        // Sprint 16: prompt estruturado com restrição de veracidade explícita
+        return "Você é um chef profissional especialista em culinária brasileira. "
+                + "Crie uma receita real" + instrucaoCategoria
+                + ", priorizando os seguintes ingredientes disponíveis na despensa do usuário:\n"
                 + lista
-                + "\nCrie uma receita deliciosa priorizando os ingredientes listados. "
-                + instrucaoCategoria
+                + "\nATENÇÃO: Sugira APENAS receitas reais e culturalmente conhecidas. "
+                + "Não invente pratos fictícios ou combinações incomuns. "
+                + "A receita deve ser viável com os ingredientes listados, "
+                + "podendo assumir que o usuário possui itens básicos de cozinha "
+                + "(sal, óleo, água, temperos comuns).\n\n"
                 + "Responda APENAS com um objeto JSON puro, sem markdown, sem blocos de código, "
                 + "sem explicações antes ou depois, contendo exatamente estes campos: "
-                + "\"titulo\" (string), "
+                + "\"titulo\" (string — nome real da receita), "
                 + "\"tempo_preparo\" (string, ex: \"30 min\"), "
                 + "\"porcoes\" (string, ex: \"4 porções\"), "
                 + "\"dificuldade\" (string: Fácil, Médio ou Difícil), "
                 + "\"ingredientes\" (array de strings, cada item com nome e quantidade), "
-                + "\"passos\" (array de strings com as instruções numeradas). "
+                + "\"passos\" (array de strings com as instruções). "
                 + "Idioma: Português do Brasil.";
     }
 
@@ -244,6 +236,7 @@ public class GeminiService {
             String textoGerado = partsArr.get(0).getAsJsonObject().get("text").getAsString();
             Log.d(TAG, "GeminiService: texto gerado = " + textoGerado);
 
+            // Remove possíveis blocos markdown mesmo com o prompt pedindo JSON puro
             String jsonLimpo = textoGerado
                     .replaceAll("(?s)```json\\s*", "")
                     .replaceAll("(?s)```\\s*", "")

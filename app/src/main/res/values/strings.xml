@@ -27,9 +27,12 @@
     <string name="hint_category">Categoria</string>
     <string name="hint_quantity">Quantidade</string>
     <string name="hint_expiry_date">Data de Validade</string>
+
+    <!-- Sprint 16: "lb" substituído por "L" (Litros) -->
     <string name="unit_unit">unid</string>
     <string name="unit_kg">kg</string>
-    <string name="unit_lb">lb</string>
+    <string name="unit_l">L</string>
+
     <string name="btn_save">Salvar na Despensa</string>
     <string name="back">Voltar</string>
     <string name="select_date">Selecionar data</string>
@@ -44,6 +47,13 @@
         <item>Congelados</item>
         <item>Temperos</item>
         <item>Outros</item>
+    </string-array>
+
+    <!-- Sprint 16: array de unidades sem "lb", com "L" no lugar -->
+    <string-array name="units">
+        <item>unid</item>
+        <item>kg</item>
+        <item>L</item>
     </string-array>
 
     <!-- Detalhes -->

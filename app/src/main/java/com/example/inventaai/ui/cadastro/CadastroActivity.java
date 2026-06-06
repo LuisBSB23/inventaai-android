@@ -22,7 +22,10 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class CadastroActivity extends AppCompatActivity {
 
@@ -105,20 +108,13 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // SALVAR — Sprint 15: não fecha a tela após salvar
+    // VALIDAÇÃO
     // =========================================================================
-
-    private void configurarBotaoSalvar() {
-        btnSalvar.setOnClickListener(v -> {
-            if (validarFormulario()) {
-                salvarItem();
-            }
-        });
-    }
 
     private boolean validarFormulario() {
         boolean valido = true;
 
+        // Validação do nome
         String nome = etNome.getText() != null ? etNome.getText().toString().trim() : "";
         if (TextUtils.isEmpty(nome)) {
             tilNome.setError("Informe o nome do alimento");
@@ -127,12 +123,15 @@ public class CadastroActivity extends AppCompatActivity {
             tilNome.setError(null);
         }
 
-        String qtdStr = etQuantidade.getText() != null ? etQuantidade.getText().toString().trim() : "";
+        // Validação da quantidade (Sprint 16: aceita vírgula e ponto)
+        String qtdStr = etQuantidade.getText() != null
+                ? etQuantidade.getText().toString().trim() : "";
         if (TextUtils.isEmpty(qtdStr)) {
             tilQuantidade.setError("Informe a quantidade");
             valido = false;
         } else {
             try {
+                // Sprint 16: substitui vírgula por ponto antes de parsear
                 double qtd = Double.parseDouble(qtdStr.replace(",", "."));
                 if (qtd <= 0) {
                     tilQuantidade.setError("Quantidade deve ser maior que zero");
@@ -146,6 +145,7 @@ public class CadastroActivity extends AppCompatActivity {
             }
         }
 
+        // Validação da data
         if (TextUtils.isEmpty(dataSelecionada)) {
             tilDataValidade.setError("Selecione a data de validade");
             valido = false;
@@ -156,12 +156,27 @@ public class CadastroActivity extends AppCompatActivity {
         return valido;
     }
 
+    // =========================================================================
+    // SALVAR — Sprint 15: não fecha a tela após salvar
+    // =========================================================================
+
+    private void configurarBotaoSalvar() {
+        btnSalvar.setOnClickListener(v -> {
+            if (validarFormulario()) {
+                salvarItem();
+            }
+        });
+    }
+
     private void salvarItem() {
-        String nome       = etNome.getText().toString().trim();
-        double quantidade = Double.parseDouble(
-                etQuantidade.getText().toString().trim().replace(",", "."));
-        String unidade    = getUnidadeSelecionada();
-        String categoria  = actvCategoria.getText().toString().trim();
+        String nome = etNome.getText().toString().trim();
+
+        // Sprint 16: normaliza separador decimal (vírgula → ponto) antes de parsear
+        String qtdStr  = etQuantidade.getText().toString().trim().replace(",", ".");
+        double quantidade = Double.parseDouble(qtdStr);
+
+        String unidade   = getUnidadeSelecionada();
+        String categoria = actvCategoria.getText().toString().trim();
 
         DespensaItem item = new DespensaItem(nome, quantidade, unidade, dataSelecionada, Constants.STATUS_ATIVO);
         item.setCategoria(categoria);
@@ -169,7 +184,7 @@ public class CadastroActivity extends AppCompatActivity {
         long novoId = repository.inserir(item, sessionManager.getUserId());
 
         if (novoId != -1) {
-            // Sprint 15: não fecha a tela — limpa os campos e exibe Snackbar verde
+            // Sprint 15: não fecha a tela — limpa os campos e exibe Snackbar
             limparCampos();
             Snackbar.make(rootView, nome + " adicionado à despensa!", Snackbar.LENGTH_LONG)
                     .setBackgroundTint(getColor(R.color.colorPrimary))
@@ -186,23 +201,17 @@ public class CadastroActivity extends AppCompatActivity {
         etDataValidade.setText("");
         actvCategoria.setText("", false);
         dataSelecionada = "";
-
-        // Reset do toggle de unidade para o padrão (unid)
         toggleUnit.clearChecked();
-
-        // Remove erros residuais
         tilNome.setError(null);
         tilQuantidade.setError(null);
         tilDataValidade.setError(null);
-
-        // Foca no campo nome para facilitar o próximo cadastro
         etNome.requestFocus();
     }
 
     private String getUnidadeSelecionada() {
         int checkedId = toggleUnit.getCheckedButtonId();
-        if (checkedId == R.id.btnUnidKg) return "kg";
-        if (checkedId == R.id.btnUnidLb) return "lb";
+        if (checkedId == R.id.btnUnidKg)  return "kg";
+        if (checkedId == R.id.btnUnidL)   return "L";   // Sprint 16: era "lb", agora "L"
         return "unid";
     }
 

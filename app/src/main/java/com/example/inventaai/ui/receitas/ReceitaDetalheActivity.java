@@ -24,10 +24,12 @@ import com.example.inventaai.data.repository.ReceitaRepository;
 import com.example.inventaai.util.AppExecutors;
 import com.example.inventaai.util.GlideHelper;
 import com.example.inventaai.util.SessionManager;
+import com.example.inventaai.util.UnitConverterUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
+import java.util.Locale;
 
 public class ReceitaDetalheActivity extends AppCompatActivity {
 
@@ -41,20 +43,23 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
     private TextView     tvDifficulty;
     private GridLayout   gridIngredientes;
     private LinearLayout llSteps;
-    private LinearLayout llCrossCheck;         // Sprint 14
-    private ImageButton  btnShare;             // Sprint 14
+    private LinearLayout llCrossCheck;
+    private ImageButton  btnShare;
 
-    // Botões de execução — Sprint 14
+    // Botões de execução
     private MaterialButton btnIniciarPreparo;
     private MaterialButton btnCancelarPreparo;
     private MaterialButton btnFinalizarReceita;
 
+    // Sprint 16: botão para marcar como CONCLUIDA
+    private MaterialButton btnConcluirReceita;
+
     // ── Dados ──────────────────────────────────────────────────────────────────
-    private ReceitaSalva      receita;
-    private ReceitaRepository receitaRepo;
+    private ReceitaSalva       receita;
+    private ReceitaRepository  receitaRepo;
     private DespensaRepository despensaRepo;
-    private SessionManager    sessionManager;
-    private String            currentUserId;
+    private SessionManager     sessionManager;
+    private String             currentUserId;
 
     /** Resultado do cross-check — reutilizado no fluxo de finalização. */
     private List<IngredienteMatch> matches;
@@ -84,9 +89,10 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
 
         vincularViews();
         preencherReceita();
-        configurarBotoesExecucao();  // Sprint 14
-        configurarBotaoCompartilhar(); // Sprint 14
-        executarCrossCheck();          // Sprint 14
+        configurarBotoesExecucao();
+        configurarBotaoConcluir();      // Sprint 16
+        configurarBotaoCompartilhar();
+        executarCrossCheck();
     }
 
     // =========================================================================
@@ -94,18 +100,21 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
-        ivRecipeImage      = findViewById(R.id.ivRecipeImage);
-        tvRecipeTitle      = findViewById(R.id.tvRecipeTitle);
-        tvTime             = findViewById(R.id.tvTime);
-        tvServings         = findViewById(R.id.tvServings);
-        tvDifficulty       = findViewById(R.id.tvDifficulty);
-        gridIngredientes   = findViewById(R.id.gridIngredientes);
-        llSteps            = findViewById(R.id.llSteps);
-        llCrossCheck       = findViewById(R.id.llCrossCheck);       // Sprint 14
-        btnShare           = findViewById(R.id.btnShare);           // Sprint 14
-        btnIniciarPreparo  = findViewById(R.id.btnIniciarPreparo);  // Sprint 14
-        btnCancelarPreparo = findViewById(R.id.btnCancelarPreparo); // Sprint 14
-        btnFinalizarReceita= findViewById(R.id.btnFinalizarReceita);// Sprint 14
+        ivRecipeImage       = findViewById(R.id.ivRecipeImage);
+        tvRecipeTitle       = findViewById(R.id.tvRecipeTitle);
+        tvTime              = findViewById(R.id.tvTime);
+        tvServings          = findViewById(R.id.tvServings);
+        tvDifficulty        = findViewById(R.id.tvDifficulty);
+        gridIngredientes    = findViewById(R.id.gridIngredientes);
+        llSteps             = findViewById(R.id.llSteps);
+        llCrossCheck        = findViewById(R.id.llCrossCheck);
+        btnShare            = findViewById(R.id.btnShare);
+        btnIniciarPreparo   = findViewById(R.id.btnIniciarPreparo);
+        btnCancelarPreparo  = findViewById(R.id.btnCancelarPreparo);
+        btnFinalizarReceita = findViewById(R.id.btnFinalizarReceita);
+
+        // Sprint 16: botão CONCLUÍDA (pode ser null se o layout ainda não tiver a view)
+        btnConcluirReceita  = findViewById(R.id.btnConcluirReceita);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             finish();
@@ -126,7 +135,6 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
         tvServings.setText(receita.getPorcoes() != null ? receita.getPorcoes() : "—");
         tvDifficulty.setText(receita.getDificuldade() != null ? receita.getDificuldade() : "—");
 
-        // Ingredientes (grid simples — substituído pelo cross-check ao carregar)
         gridIngredientes.removeAllViews();
         List<String> ingredientes = receita.getIngredientes();
         if (ingredientes != null) {
@@ -138,7 +146,6 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
             }
         }
 
-        // Passos
         llSteps.removeAllViews();
         List<String> passos = receita.getPassos();
         if (passos != null) {
@@ -147,7 +154,7 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // CROSS-CHECK — Sprint 14
+    // CROSS-CHECK com normalização matemática — Sprint 16
     // =========================================================================
 
     private void executarCrossCheck() {
@@ -156,8 +163,10 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
 
         AppExecutors.diskIO().execute(() -> {
             List<DespensaItem> itensAtivos = despensaRepo.listarAtivos(currentUserId);
+
+            // Sprint 16: usa helper que aplica normalização de unidades antes da comparação
             final List<IngredienteMatch> resultado =
-                    IngredienteMatchHelper.cruzar(receita.getIngredientes(), itensAtivos);
+                    IngredienteMatchHelper.cruzarComNormalizacao(receita.getIngredientes(), itensAtivos);
 
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed()) return;
@@ -171,7 +180,6 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
         if (llCrossCheck == null) return;
         llCrossCheck.removeAllViews();
 
-        // Título da seção
         TextView tvSec = new TextView(this);
         tvSec.setText("Status dos Ingredientes");
         tvSec.setTextSize(16f);
@@ -189,7 +197,6 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
             rowParams.setMargins(0, 0, 0, dpToPx(8));
             row.setLayoutParams(rowParams);
 
-            // Ícone de status
             TextView tvIcone = new TextView(this);
             tvIcone.setTextSize(18f);
             tvIcone.setPadding(0, 0, dpToPx(10), 0);
@@ -199,7 +206,6 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
                 default:           tvIcone.setText("🔴"); break;
             }
 
-            // Texto descritivo
             TextView tvDesc = new TextView(this);
             tvDesc.setTextSize(13f);
             tvDesc.setTextColor(getColor(R.color.colorOnSurface));
@@ -232,11 +238,11 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
 
     private String formatarQtd(double qtd) {
         if (qtd == Math.floor(qtd)) return String.valueOf((int) qtd);
-        return String.format("%.1f", qtd);
+        return String.format(Locale.getDefault(), "%.1f", qtd);
     }
 
     // =========================================================================
-    // CONTROLE DE EXECUÇÃO — Sprint 14
+    // CONTROLE DE EXECUÇÃO
     // =========================================================================
 
     private void configurarBotoesExecucao() {
@@ -248,6 +254,34 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
         btnFinalizarReceita.setOnClickListener(v -> abrirDialogFinalizar());
     }
 
+    private void configurarBotaoConcluir() {
+        if (btnConcluirReceita == null) return;
+
+        // Exibe o botão somente quando a receita está FINALIZADA (preparo concluído)
+        boolean mostrar = "FINALIZADA".equals(receita.getStatus())
+                || "EM_ANDAMENTO".equals(receita.getStatus());
+        btnConcluirReceita.setVisibility(mostrar ? View.VISIBLE : View.GONE);
+
+        btnConcluirReceita.setOnClickListener(v -> concluirReceita());
+    }
+
+    private void concluirReceita() {
+        AppExecutors.diskIO().execute(() -> {
+            receitaRepo.atualizarStatusReceita(receita.getId(), "CONCLUIDA");
+            receita.setStatus("CONCLUIDA");
+            AppExecutors.mainThread().execute(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                Toast.makeText(this,
+                        "\"" + receita.getTitulo() + "\" marcada como concluída!",
+                        Toast.LENGTH_SHORT).show();
+                if (btnConcluirReceita != null) btnConcluirReceita.setVisibility(View.GONE);
+                if (btnIniciarPreparo  != null) btnIniciarPreparo.setVisibility(View.GONE);
+                if (btnCancelarPreparo != null) btnCancelarPreparo.setVisibility(View.GONE);
+                if (btnFinalizarReceita!= null) btnFinalizarReceita.setVisibility(View.GONE);
+            });
+        });
+    }
+
     private void alterarStatus(String novoStatus) {
         AppExecutors.diskIO().execute(() -> {
             receitaRepo.atualizarStatusReceita(receita.getId(), novoStatus);
@@ -255,6 +289,12 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 atualizarEstadoBotoes(novoStatus);
+                // Atualiza visibilidade do botão CONCLUIR
+                if (btnConcluirReceita != null) {
+                    boolean mostrar = "FINALIZADA".equals(novoStatus)
+                            || "EM_ANDAMENTO".equals(novoStatus);
+                    btnConcluirReceita.setVisibility(mostrar ? View.VISIBLE : View.GONE);
+                }
                 String msg = "EM_ANDAMENTO".equals(novoStatus)
                         ? "Preparo iniciado!" : "Preparo cancelado.";
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -264,14 +304,13 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
 
     private void atualizarEstadoBotoes(String status) {
         boolean emAndamento = "EM_ANDAMENTO".equals(status);
-        btnIniciarPreparo.setVisibility(emAndamento ? View.GONE  : View.VISIBLE);
+        btnIniciarPreparo.setVisibility(emAndamento ? View.GONE    : View.VISIBLE);
         btnCancelarPreparo.setVisibility(emAndamento ? View.VISIBLE : View.GONE);
         btnFinalizarReceita.setVisibility(emAndamento ? View.VISIBLE : View.GONE);
     }
 
     private void abrirDialogFinalizar() {
         if (matches == null || matches.isEmpty()) {
-            // Se o cross-check ainda não terminou, finaliza sem baixa
             alterarStatus("FINALIZADA");
             Toast.makeText(this, "Receita finalizada!", Toast.LENGTH_SHORT).show();
             return;
@@ -282,16 +321,16 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
                 currentUserId,
                 matches,
                 () -> {
-                    // Após confirmar a baixa, marca receita como finalizada
                     alterarStatus("FINALIZADA");
-                    Toast.makeText(this, "Receita finalizada! Despensa atualizada.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,
+                            "Receita finalizada! Despensa atualizada.", Toast.LENGTH_SHORT).show();
                 }
         );
         dialog.show(getSupportFragmentManager(), "confirmar_ingredientes");
     }
 
     // =========================================================================
-    // COMPARTILHAMENTO — Sprint 14
+    // COMPARTILHAMENTO
     // =========================================================================
 
     private void configurarBotaoCompartilhar() {
@@ -302,20 +341,17 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
     private void compartilharReceita() {
         StringBuilder sb = new StringBuilder();
         sb.append("🍽️ ").append(receita.getTitulo()).append("\n\n");
-
         if (receita.getTempoPreparo() != null)
             sb.append("⏱️ Tempo de preparo: ").append(receita.getTempoPreparo()).append("\n");
         if (receita.getPorcoes() != null)
             sb.append("🍴 Porções: ").append(receita.getPorcoes()).append("\n");
         if (receita.getDificuldade() != null)
             sb.append("⭐ Dificuldade: ").append(receita.getDificuldade()).append("\n");
-
         sb.append("\n📋 INGREDIENTES\n");
         List<String> ingredientes = receita.getIngredientes();
         if (ingredientes != null) {
             for (String ing : ingredientes) sb.append("• ").append(ing).append("\n");
         }
-
         sb.append("\n👨‍🍳 MODO DE PREPARO\n");
         List<String> passos = receita.getPassos();
         if (passos != null) {
@@ -323,14 +359,11 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
                 sb.append(i + 1).append(". ").append(passos.get(i)).append("\n\n");
             }
         }
-
         sb.append("\n🤖 Receita gerada pelo Chef IA do InventaAí");
-
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, receita.getTitulo());
         shareIntent.putExtra(Intent.EXTRA_TEXT, sb.toString());
-
         startActivity(Intent.createChooser(shareIntent, "Compartilhar receita via"));
     }
 
