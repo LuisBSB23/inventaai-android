@@ -50,17 +50,15 @@ public final class IngredienteMatchHelper {
             // Busca o item correspondente na despensa (por similaridade de nome)
             DespensaItem itemEncontrado = buscarItemPorNome(nomeIngrediente, itensDespensa);
 
-            IngredienteMatch match = new IngredienteMatch();
-            match.setNomeIngrediente(nomeIngrediente);
-            match.setQuantidadePedida(qtdPedida);
+            // Variáveis para armazenar o estado final antes de instanciar o objeto
+            IngredienteMatch.Status statusFinal;
+            double qtdFaltanteFinal;
 
             if (itemEncontrado == null) {
                 // Ingrediente não encontrado na despensa
-                match.setStatus(IngredienteMatch.Status.FALTA);
-                match.setQuantidadeFaltante(qtdPedida);
+                statusFinal = IngredienteMatch.Status.FALTA;
+                qtdFaltanteFinal = qtdPedida;
             } else {
-                match.setItemDespensa(itemEncontrado);
-
                 double qtdDespensa = itemEncontrado.getQuantidade();
                 String unidDespensa = itemEncontrado.getUnidadeMedida();
 
@@ -78,17 +76,27 @@ public final class IngredienteMatchHelper {
 
                 if (qtdPedida <= 0) {
                     // Receita não especificou quantidade → apenas verifica presença
-                    match.setStatus(IngredienteMatch.Status.POSSUI);
-                    match.setQuantidadeFaltante(0);
+                    statusFinal = IngredienteMatch.Status.POSSUI;
+                    qtdFaltanteFinal = 0;
                 } else if (qtdDespensaComp >= qtdPedidaComp) {
-                    match.setStatus(IngredienteMatch.Status.POSSUI);
-                    match.setQuantidadeFaltante(0);
+                    statusFinal = IngredienteMatch.Status.POSSUI;
+                    qtdFaltanteFinal = 0;
                 } else {
-                    match.setStatus(IngredienteMatch.Status.INSUFICIENTE);
+                    statusFinal = IngredienteMatch.Status.INSUFICIENTE;
                     // Faltante em unidades normalizadas
-                    match.setQuantidadeFaltante(qtdPedidaComp - qtdDespensaComp);
+                    qtdFaltanteFinal = qtdPedidaComp - qtdDespensaComp;
                 }
             }
+
+            // Instanciação correta utilizando o construtor completo
+            IngredienteMatch match = new IngredienteMatch(
+                    ingredienteStr,
+                    nomeIngrediente,
+                    qtdPedida,
+                    itemEncontrado,
+                    statusFinal,
+                    qtdFaltanteFinal
+            );
 
             resultado.add(match);
         }

@@ -266,6 +266,17 @@
                     android:backgroundTint="@color/colorPrimary"
                     android:visibility="gone" />
 
+                <!-- Sprint 16: Marcar como CONCLUÍDA -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnConcluirReceita"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Concluir Receita"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

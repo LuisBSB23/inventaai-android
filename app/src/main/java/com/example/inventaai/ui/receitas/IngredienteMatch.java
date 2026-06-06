@@ -11,15 +11,10 @@ public class IngredienteMatch {
     }
 
     private final String textoReceita;
-
     private final String nomeIngrediente;
-
     private final double quantidadePedida;
-
     private final DespensaItem itemDespensa;
-
     private final Status status;
-
     private final double quantidadeFaltante;
 
     public IngredienteMatch(String textoReceita,
