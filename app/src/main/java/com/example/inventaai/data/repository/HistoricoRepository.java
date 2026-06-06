@@ -33,8 +33,8 @@ public class HistoricoRepository {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            // (Tarefa 3): JOIN traz a coluna 'categoria' da despensa
-            // para exibir o ícone correto em cada entrada do histórico.
+            // JOIN traz a coluna 'categoria' da despensa para exibir o ícone correto.
+            // Sprint 15: seleciona também a coluna 'origem'.
             String sql =
                     "SELECT h.*, d." + DespensaEntry.COLUMN_CATEGORIA + " AS item_categoria "
                             + "FROM " + HistoricoEntry.TABLE_NAME + " h "
@@ -56,7 +56,6 @@ public class HistoricoRepository {
         return lista;
     }
 
-    /** Fallback sem JOIN — usado se a query principal falhar. */
     private List<HistoricoItem> listarTodosSemJoin(String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -118,7 +117,6 @@ public class HistoricoRepository {
         item.setDataAcao(   cursor.getString(cursor.getColumnIndexOrThrow(HistoricoEntry.COLUMN_DATA_ACAO)));
         item.setMotivo(     cursor.getString(cursor.getColumnIndexOrThrow(HistoricoEntry.COLUMN_MOTIVO)));
 
-        // Nome denormalizado
         int nomeCol = cursor.getColumnIndex(HistoricoEntry.COLUMN_NOME_CACHED);
         if (nomeCol >= 0 && !cursor.isNull(nomeCol)) {
             item.setNomeCached(cursor.getString(nomeCol));
@@ -126,10 +124,16 @@ public class HistoricoRepository {
             item.setNomeCached("Item #" + item.getIdItem());
         }
 
-        // (Tarefa 3): lê a categoria do JOIN (alias 'item_categoria')
+        // Categoria do JOIN
         int catCol = cursor.getColumnIndex("item_categoria");
         if (catCol >= 0 && !cursor.isNull(catCol)) {
             item.setCategoria(cursor.getString(catCol));
+        }
+
+        // Sprint 15: lê a origem (pode ser null em registros antigos)
+        int origemCol = cursor.getColumnIndex(HistoricoEntry.COLUMN_ORIGEM);
+        if (origemCol >= 0 && !cursor.isNull(origemCol)) {
+            item.setOrigem(cursor.getString(origemCol));
         }
 
         return item;

@@ -36,6 +36,7 @@ import com.example.inventaai.ui.chefIA.ChefIAActivity;
 import com.example.inventaai.ui.configuracoes.ConfiguracoesActivity;
 import com.example.inventaai.ui.despensa.DespensaAdapter;
 import com.example.inventaai.ui.detalhes.DetalhesActivity;
+import com.example.inventaai.ui.receitas.ReceitasConcluidasActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.ui.login.LoginActivity;
 import com.example.inventaai.ui.perfil.PerfilActivity;
@@ -159,11 +160,6 @@ public class DashboardActivity extends AppCompatActivity {
     // SPRINT 13: mensagem de retorno do ChefIA
     // =========================================================================
 
-    /**
-     * Verifica se o Intent que abriu esta Activity contém a flag enviada pela
-     * ChefIAActivity ao pressionar "Gerar Nova Receita". Se sim, exibe um Toast
-     * orientando o usuário a selecionar ou adicionar itens.
-     */
     private void verificarMensagemDeRetorno() {
         Intent intent = getIntent();
         if (intent != null
@@ -508,6 +504,11 @@ public class DashboardActivity extends AppCompatActivity {
                 intent.putExtra("ABRIR_SALVAS", true);
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
+            } else if (id == R.id.nav_receitas_concluidas) {
+                startActivity(new Intent(this, ReceitasConcluidasActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
 
             } else if (id == R.id.nav_configuracoes) {
                 startActivity(new Intent(this, ConfiguracoesActivity.class));

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <!-- ===== Toolbar ===== -->
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp"
+        android:background="?attr/colorSurface">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_circle_surface"
+            android:contentDescription="Voltar"
+            android:src="@drawable/ic_back_arrow"
+            android:tint="?attr/colorOnSurface" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:fontFamily="@font/inter_bold"
+            android:text="Receitas Concluídas"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+
+    <!-- ===== Conteúdo ===== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="80dp"
+        android:paddingBottom="80dp">
+
+        <!-- Progress bar -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBarReceitas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:indicatorColor="?attr/colorPrimary" />
+
+        <!-- Lista de receitas concluídas -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvReceitas"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:visibility="visible" />
+
+        <!-- Empty state -->
+        <LinearLayout
+            android:id="@+id/layoutEmptyReceitas"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingHorizontal="40dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginBottom="20dp"
+                android:alpha="0.4"
+                android:contentDescription="Sem receitas"
+                android:src="@drawable/ic_empty_recipe" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/inter_bold"
+                android:gravity="center"
+                android:text="Nenhuma receita concluída"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:fontFamily="@font/inter_regular"
+                android:gravity="center"
+                android:text="Quando você finalizar uma receita, ela aparecerá aqui."
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnIrParaChefIA"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:fontFamily="@font/inter_semibold"
+                android:text="Gerar uma receita"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ===== Bottom Navigation ===== -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="?attr/colorSurface"
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="unlabeled" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

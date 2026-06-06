@@ -22,8 +22,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "InventaAi.DB";
 
     public static final String DATABASE_NAME    = "inventaai.db";
-    // v7: Sprint 14 — adiciona coluna status_execucao em receitas_salvas
-    public static final int    DATABASE_VERSION = 7;
+    // v8: Sprint 15 — adiciona coluna origem em historico_consumo
+    public static final int    DATABASE_VERSION = 8;
 
     // =========================================================================
     // Singleton
@@ -56,6 +56,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + UserEntry.COLUMN_CREATED_AT  + " TEXT NOT NULL"
                     + ");";
 
+    // REAL garante suporte a decimais (ex: 0.5, 1.75)
     private static final String SQL_CREATE_DESPENSA =
             "CREATE TABLE " + DespensaEntry.TABLE_NAME + " ("
                     + DespensaEntry._ID                  + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -68,6 +69,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + DespensaEntry.COLUMN_CATEGORIA     + " TEXT"
                     + ");";
 
+    // Sprint 15: inclui coluna origem
     private static final String SQL_CREATE_HISTORICO =
             "CREATE TABLE " + HistoricoEntry.TABLE_NAME + " ("
                     + HistoricoEntry._ID                + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -75,10 +77,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + HistoricoEntry.COLUMN_DATA_ACAO   + " TEXT NOT NULL, "
                     + HistoricoEntry.COLUMN_MOTIVO      + " TEXT, "
                     + HistoricoEntry.COLUMN_NOME_CACHED + " TEXT, "
-                    + HistoricoEntry.COLUMN_USER_ID     + " TEXT"
+                    + HistoricoEntry.COLUMN_USER_ID     + " TEXT, "
+                    + HistoricoEntry.COLUMN_ORIGEM      + " TEXT"
                     + ");";
 
-    // Tabela de receitas salvas — inclui coluna de status da Sprint 14
     private static final String SQL_CREATE_RECEITAS =
             "CREATE TABLE " + ReceitaEntry.TABLE_NAME + " ("
                     + ReceitaEntry._ID                  + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -122,7 +124,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (oldVersion < 4) migrarParaV4(db);
         if (oldVersion < 5) migrarParaV5(db);
         if (oldVersion < 6) migrarParaV6(db);
-        if (oldVersion < 7) migrarParaV7(db); // Sprint 14
+        if (oldVersion < 7) migrarParaV7(db);
+        if (oldVersion < 8) migrarParaV8(db); // Sprint 15
     }
 
     // =========================================================================
@@ -189,7 +192,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** Sprint 14: adiciona coluna status_execucao na tabela receitas_salvas. */
     private void migrarParaV7(SQLiteDatabase db) {
         try {
             db.execSQL("ALTER TABLE " + ReceitaEntry.TABLE_NAME
@@ -198,6 +200,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d(TAG, "migrarParaV7: coluna 'status_execucao' adicionada em receitas_salvas.");
         } catch (Exception e) {
             Log.w(TAG, "migrarParaV7: coluna já existe — " + e.getMessage());
+        }
+    }
+
+    /** Sprint 15: adiciona coluna origem na tabela historico_consumo. */
+    private void migrarParaV8(SQLiteDatabase db) {
+        try {
+            db.execSQL("ALTER TABLE " + HistoricoEntry.TABLE_NAME
+                    + " ADD COLUMN " + HistoricoEntry.COLUMN_ORIGEM + " TEXT");
+            Log.d(TAG, "migrarParaV8: coluna 'origem' adicionada em historico_consumo.");
+        } catch (Exception e) {
+            Log.w(TAG, "migrarParaV8: coluna já existe — " + e.getMessage());
         }
     }
 }

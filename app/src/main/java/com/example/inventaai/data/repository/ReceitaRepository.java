@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.inventaai.data.db.DatabaseContract;
 import com.example.inventaai.data.db.DatabaseContract.ReceitaEntry;
 import com.example.inventaai.data.db.DatabaseHelper;
 import com.example.inventaai.data.model.ReceitaSalva;
@@ -95,7 +96,6 @@ public class ReceitaRepository {
                     ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
             );
             while (cursor.moveToNext()) lista.add(fromCursor(cursor));
-            Log.d(TAG, "ReceitaRepository.listarTodas: " + lista.size() + " receita(s).");
         } catch (Exception e) {
             Log.e(TAG, "ReceitaRepository.listarTodas: erro", e);
         } finally {
@@ -105,7 +105,37 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
-    // BUSCAR POR TÍTULO OU INGREDIENTE — Sprint 14
+    // LISTAR CONCLUÍDAS (Sprint 15)
+    // =========================================================================
+
+    /**
+     * Sprint 15: retorna somente as receitas com status CONCLUIDA para o usuário.
+     */
+    public List<ReceitaSalva> listarConcluidas(String userId) {
+        List<ReceitaSalva> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.query(
+                    ReceitaEntry.TABLE_NAME, null,
+                    ReceitaEntry.COLUMN_USER_ID + " = ? AND "
+                            + ReceitaEntry.COLUMN_STATUS + " = ?",
+                    new String[]{ userId, DatabaseContract.RECEITA_STATUS_CONCLUIDA },
+                    null, null,
+                    ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
+            );
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+            Log.d(TAG, "listarConcluidas: " + lista.size() + " receita(s) concluída(s).");
+        } catch (Exception e) {
+            Log.e(TAG, "listarConcluidas: erro", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return lista;
+    }
+
+    // =========================================================================
+    // BUSCAR POR TÍTULO OU INGREDIENTE
     // =========================================================================
 
     public List<ReceitaSalva> buscarPorTituloOuIngrediente(String query, String userId) {
@@ -126,7 +156,6 @@ public class ReceitaRepository {
                     ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
             );
             while (cursor.moveToNext()) lista.add(fromCursor(cursor));
-            Log.d(TAG, "buscarPorTituloOuIngrediente: '" + query + "' → " + lista.size() + " resultado(s).");
         } catch (Exception e) {
             Log.e(TAG, "buscarPorTituloOuIngrediente: erro", e);
         } finally {
@@ -159,7 +188,7 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
-    // ATUALIZAR STATUS — Sprint 14
+    // ATUALIZAR STATUS
     // =========================================================================
 
     public boolean atualizarStatusReceita(long receitaId, String novoStatus) {
@@ -193,7 +222,6 @@ public class ReceitaRepository {
                     ReceitaEntry._ID + " = ?",
                     new String[]{ String.valueOf(id) }
             );
-            Log.d(TAG, "ReceitaRepository.deletar: id=" + id + " → " + linhas + " linha(s)");
             return linhas > 0;
         } catch (Exception e) {
             Log.e(TAG, "ReceitaRepository.deletar: erro id=" + id, e);
@@ -234,7 +262,6 @@ public class ReceitaRepository {
         r.setDataSalvo(   c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_DATA_SALVO)));
         r.setUserId(      c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_USER_ID)));
 
-        // Sprint 14: lê status (coluna pode não existir em registros antigos via migração)
         int statusCol = c.getColumnIndex(ReceitaEntry.COLUMN_STATUS);
         if (statusCol >= 0 && !c.isNull(statusCol)) {
             r.setStatus(c.getString(statusCol));
@@ -242,7 +269,6 @@ public class ReceitaRepository {
             r.setStatus("SALVA");
         }
 
-        // Desserializa JSON → List<String>
         String jsonIngredientes = c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_INGREDIENTES));
         String jsonPassos       = c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_PASSOS));
 

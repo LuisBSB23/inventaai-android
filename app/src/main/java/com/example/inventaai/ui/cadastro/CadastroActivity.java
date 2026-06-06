@@ -3,9 +3,9 @@ package com.example.inventaai.ui.cadastro;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -18,6 +18,7 @@ import com.example.inventaai.data.repository.DespensaRepository;
 import com.example.inventaai.util.Constants;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -31,9 +32,10 @@ public class CadastroActivity extends AppCompatActivity {
     private AutoCompleteTextView      actvCategoria;
     private MaterialButtonToggleGroup toggleUnit;
     private MaterialButton            btnSalvar;
+    private View                      rootView;
 
     // Estado
-    private String dataSelecionada = ""; // formato YYYY-MM-DD
+    private String dataSelecionada = "";
     private DespensaRepository repository;
     private com.example.inventaai.util.SessionManager sessionManager;
 
@@ -48,7 +50,6 @@ public class CadastroActivity extends AppCompatActivity {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-
             return insets;
         });
 
@@ -64,6 +65,7 @@ public class CadastroActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
+        rootView        = findViewById(R.id.main);
         tilNome         = findViewById(R.id.tilNome);
         tilCategoria    = findViewById(R.id.tilCategoria);
         tilQuantidade   = findViewById(R.id.tilQuantidade);
@@ -103,7 +105,7 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // SALVAR
+    // SALVAR — Sprint 15: não fecha a tela após salvar
     // =========================================================================
 
     private void configurarBotaoSalvar() {
@@ -131,7 +133,7 @@ public class CadastroActivity extends AppCompatActivity {
             valido = false;
         } else {
             try {
-                double qtd = Double.parseDouble(qtdStr);
+                double qtd = Double.parseDouble(qtdStr.replace(",", "."));
                 if (qtd <= 0) {
                     tilQuantidade.setError("Quantidade deve ser maior que zero");
                     valido = false;
@@ -156,7 +158,8 @@ public class CadastroActivity extends AppCompatActivity {
 
     private void salvarItem() {
         String nome       = etNome.getText().toString().trim();
-        double quantidade = Double.parseDouble(etQuantidade.getText().toString().trim());
+        double quantidade = Double.parseDouble(
+                etQuantidade.getText().toString().trim().replace(",", "."));
         String unidade    = getUnidadeSelecionada();
         String categoria  = actvCategoria.getText().toString().trim();
 
@@ -166,15 +169,34 @@ public class CadastroActivity extends AppCompatActivity {
         long novoId = repository.inserir(item, sessionManager.getUserId());
 
         if (novoId != -1) {
-            Toast.makeText(this, nome + " adicionado à despensa!", Toast.LENGTH_SHORT).show();
-            // Tarefa 3: animação correta de "voltar" após salvar.
-            // slide_in_left: tela anterior (Dashboard) entra pela esquerda.
-            // slide_out_right: tela atual (Cadastro) sai pela direita.
-            finish();
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            // Sprint 15: não fecha a tela — limpa os campos e exibe Snackbar verde
+            limparCampos();
+            Snackbar.make(rootView, nome + " adicionado à despensa!", Snackbar.LENGTH_LONG)
+                    .setBackgroundTint(getColor(R.color.colorPrimary))
+                    .setTextColor(getColor(R.color.colorOnPrimary))
+                    .show();
         } else {
-            Toast.makeText(this, "Erro ao salvar. Tente novamente.", Toast.LENGTH_SHORT).show();
+            Snackbar.make(rootView, "Erro ao salvar. Tente novamente.", Snackbar.LENGTH_SHORT).show();
         }
+    }
+
+    private void limparCampos() {
+        etNome.setText("");
+        etQuantidade.setText("");
+        etDataValidade.setText("");
+        actvCategoria.setText("", false);
+        dataSelecionada = "";
+
+        // Reset do toggle de unidade para o padrão (unid)
+        toggleUnit.clearChecked();
+
+        // Remove erros residuais
+        tilNome.setError(null);
+        tilQuantidade.setError(null);
+        tilDataValidade.setError(null);
+
+        // Foca no campo nome para facilitar o próximo cadastro
+        etNome.requestFocus();
     }
 
     private String getUnidadeSelecionada() {
@@ -189,9 +211,6 @@ public class CadastroActivity extends AppCompatActivity {
     // =========================================================================
 
     private void configurarBotaoVoltar() {
-        // Tarefa 3: o botão "Voltar" da toolbar usa a mesma
-        // animação de retorno que o botão Salvar: tela anterior entra pela
-        // esquerda e a tela atual sai pela direita.
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             finish();
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
@@ -200,8 +219,6 @@ public class CadastroActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // Tarefa 3: garante que o botão físico/gesto de Voltar
-        // use a mesma animação de retorno definida no guia.
         super.onBackPressed();
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }

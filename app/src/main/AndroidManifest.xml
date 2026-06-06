@@ -85,12 +85,17 @@
             android:label="Detalhes da Receita"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Tela de Configurações -->
+        <activity
+            android:name=".ui.receitas.ReceitasConcluidasActivity"
+            android:exported="false"
+            android:label="Receitas Concluídas" />
+
         <activity
             android:name=".ui.configuracoes.ConfiguracoesActivity"
             android:exported="false"
             android:label="Configurações"
             android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

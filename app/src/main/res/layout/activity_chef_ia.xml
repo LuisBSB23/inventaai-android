@@ -155,6 +155,16 @@
             android:layout_marginTop="8dp" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGerarAleatoria"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/inter_semibold"
+            android:text="🎲 Receita Aleatória"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnIrParaSelecao"
             style="@style/Widget.InventaAi.Button.Pill"
             android:layout_width="wrap_content"

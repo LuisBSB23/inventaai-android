@@ -196,7 +196,14 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             // ── Quantidade ─────────────────────────────────────────────────
             String unidade = item.getUnidadeMedida() != null ? item.getUnidadeMedida() : "unid";
             double q = item.getQuantidade();
-            String qtdStr = (q == Math.floor(q)) ? String.valueOf((int) q) : String.valueOf(q);
+            String qtdStr;
+            if (q == Math.floor(q)) {
+                qtdStr = String.valueOf((int) q);
+            } else if (q < 1.0) {
+                qtdStr = String.format("%.0f g", q * 1000);
+            } else {
+                qtdStr = String.format("%.2f", q).replaceAll("0+$", "").replaceAll("\\.$", "");
+            }
             tvItemQuantity.setText(qtdStr + " " + unidade);
 
             // ── Badge validade ─────────────────────────────────────────────

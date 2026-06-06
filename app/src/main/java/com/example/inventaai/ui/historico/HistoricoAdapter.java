@@ -76,7 +76,9 @@ public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.Hist
         private final TextView  tvDataAcao;
         private final TextView  tvMotivo;
         private final TextView  tvObservacao;
-        private final ImageView ivCategoryIcon;  // Sprint 2: ícone de categoria
+        private final ImageView ivCategoryIcon;
+        /** Sprint 15: exibe "Consumido na receita: [Nome]" */
+        private final TextView  tvOrigem;
 
         HistoricoViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -87,34 +89,35 @@ public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.Hist
             tvDataAcao       = itemView.findViewById(R.id.tvDataAcao);
             tvMotivo         = itemView.findViewById(R.id.tvMotivo);
             tvObservacao     = itemView.findViewById(R.id.tvObservacao);
-            ivCategoryIcon   = itemView.findViewById(R.id.ivCategoryIcon); // Sprint 2
+            ivCategoryIcon   = itemView.findViewById(R.id.ivCategoryIcon);
+            // Sprint 15: reutiliza tvObservacao para exibir a origem
+            tvOrigem         = itemView.findViewById(R.id.tvObservacao);
         }
 
         void bind(HistoricoItem item, boolean isLast) {
             Context ctx = itemView.getContext();
 
-            // Nome real do item (denormalizado no banco)
+            // Nome real do item
             String nome = item.getNomeCached();
             tvItemName.setText(nome != null && !nome.isEmpty() ? nome : "Item #" + item.getIdItem());
 
-            // Data formatada — exibe "HOJE" se for o dia atual
+            // Data formatada
             String dataFormatada = DateUtils.formatarParaExibicao(item.getDataAcao());
             String hojeFormatado = DateUtils.formatarParaExibicao(DateUtils.hoje());
             tvDataAcao.setText(dataFormatada.equals(hojeFormatado) ? "HOJE" : dataFormatada.toUpperCase());
 
             // Motivo e cor
-            boolean consumido = Constants.STATUS_CONSUMIDO.equals(item.getMotivo());
-
-            tvMotivo.setText(consumido ? "Consumido" : "Descartado");
+            boolean consumido = Constants.STATUS_CONSUMIDO.equals(item.getMotivo())
+                    || (item.getMotivo() != null && item.getMotivo().startsWith("Receita"));
 
             if (consumido) {
-                // Verde → consumido com sucesso
+                tvMotivo.setText("Consumido");
                 tvMotivo.setTextColor(ContextCompat.getColor(ctx, R.color.colorPrimary));
                 frameIcon.setBackgroundResource(R.drawable.bg_circle_primary_container);
                 ivActionIcon.setImageResource(R.drawable.ic_nav_chef);
                 ivActionIcon.setColorFilter(ContextCompat.getColor(ctx, R.color.colorOnPrimaryContainer));
             } else {
-                // Vermelho → descartado / vencido
+                tvMotivo.setText("Descartado");
                 tvMotivo.setTextColor(ContextCompat.getColor(ctx, R.color.colorError));
                 frameIcon.getBackground().setTint(
                         ContextCompat.getColor(ctx, R.color.colorErrorContainer));
@@ -122,24 +125,29 @@ public class HistoricoAdapter extends RecyclerView.Adapter<HistoricoAdapter.Hist
                 ivActionIcon.setColorFilter(ContextCompat.getColor(ctx, R.color.colorOnErrorContainer));
             }
 
-            // ── Sprint 2: ícone de categoria secundário ───────────────────────
+            // Ícone de categoria
             if (ivCategoryIcon != null) {
                 String categoria = item.getCategoria();
                 if (categoria != null && !categoria.trim().isEmpty()) {
                     ivCategoryIcon.setImageResource(CategoryIconHelper.getIcon(categoria));
                     ivCategoryIcon.setVisibility(View.VISIBLE);
                 } else {
-                    // Sem categoria: oculta o ícone para não mostrar "Outros" sem contexto
                     ivCategoryIcon.setVisibility(View.GONE);
                 }
             }
-            // ─────────────────────────────────────────────────────────────────
 
-            // Linha de timeline: esconde no último item
+            // Sprint 15: exibe origem se disponível
+            if (tvOrigem != null) {
+                if (item.temOrigem()) {
+                    tvOrigem.setText("Consumido na receita: " + item.getOrigem());
+                    tvOrigem.setVisibility(View.VISIBLE);
+                } else {
+                    tvOrigem.setVisibility(View.GONE);
+                }
+            }
+
+            // Linha de timeline
             viewTimelineLine.setVisibility(isLast ? View.INVISIBLE : View.VISIBLE);
-
-            // Observação não usada ainda — oculta
-            tvObservacao.setVisibility(View.GONE);
         }
     }
 }
