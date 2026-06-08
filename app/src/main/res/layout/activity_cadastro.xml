@@ -186,9 +186,11 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnUnidL"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/inter_bold"
                         android:text="@string/unit_l"
                         android:textSize="14sp"
                         app:cornerRadius="16dp" />
