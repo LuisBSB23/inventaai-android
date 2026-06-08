@@ -20,9 +20,7 @@ import java.util.UUID;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "InventaAi.DB";
-
     public static final String DATABASE_NAME    = "inventaai.db";
-    // v8: Sprint 15 — adiciona coluna origem em historico_consumo
     public static final int    DATABASE_VERSION = 8;
 
     // =========================================================================
@@ -197,13 +195,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE " + ReceitaEntry.TABLE_NAME
                     + " ADD COLUMN " + ReceitaEntry.COLUMN_STATUS
                     + " TEXT NOT NULL DEFAULT 'SALVA'");
-            Log.d(TAG, "migrarParaV7: coluna 'status_execucao' adicionada em receitas_salvas.");
+            Log.d(TAG, "migrarParaV7: coluna 'status' adicionada em receitas_salvas.");
         } catch (Exception e) {
             Log.w(TAG, "migrarParaV7: coluna já existe — " + e.getMessage());
         }
     }
 
-    /** Sprint 15: adiciona coluna origem na tabela historico_consumo. */
     private void migrarParaV8(SQLiteDatabase db) {
         try {
             db.execSQL("ALTER TABLE " + HistoricoEntry.TABLE_NAME

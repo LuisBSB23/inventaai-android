@@ -80,7 +80,7 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
-    // LISTAR TODAS (por usuário)
+    // LISTAR TODAS (por usuário) — mantido para compatibilidade
     // =========================================================================
 
     public List<ReceitaSalva> listarTodas(String userId) {
@@ -105,29 +105,42 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
-    // LISTAR CONCLUÍDAS (Sprint 15)
+    // SPRINT 17 — LISTAR POR STATUS COM BUSCA OPCIONAL
     // =========================================================================
 
-    /**
-     * Sprint 15: retorna somente as receitas com status CONCLUIDA para o usuário.
-     */
-    public List<ReceitaSalva> listarConcluidas(String userId) {
+    public List<ReceitaSalva> listarPorStatus(String userId, String status, String query) {
         List<ReceitaSalva> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            cursor = db.query(
-                    ReceitaEntry.TABLE_NAME, null,
-                    ReceitaEntry.COLUMN_USER_ID + " = ? AND "
-                            + ReceitaEntry.COLUMN_STATUS + " = ?",
-                    new String[]{ userId, DatabaseContract.RECEITA_STATUS_CONCLUIDA },
-                    null, null,
-                    ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
-            );
+            if (query == null || query.trim().isEmpty()) {
+                // Sem busca: filtra apenas por status
+                cursor = db.query(
+                        ReceitaEntry.TABLE_NAME, null,
+                        ReceitaEntry.COLUMN_USER_ID + " = ? AND "
+                                + ReceitaEntry.COLUMN_STATUS + " = ?",
+                        new String[]{ userId, status },
+                        null, null,
+                        ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
+                );
+            } else {
+                // Com busca: filtra por status + título ou ingredientes
+                String filtro = "%" + query.trim().toLowerCase() + "%";
+                cursor = db.query(
+                        ReceitaEntry.TABLE_NAME, null,
+                        ReceitaEntry.COLUMN_USER_ID + " = ? AND "
+                                + ReceitaEntry.COLUMN_STATUS + " = ? AND ("
+                                + "LOWER(" + ReceitaEntry.COLUMN_TITULO + ") LIKE ? OR "
+                                + "LOWER(" + ReceitaEntry.COLUMN_INGREDIENTES + ") LIKE ?)",
+                        new String[]{ userId, status, filtro, filtro },
+                        null, null,
+                        ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
+                );
+            }
             while (cursor.moveToNext()) lista.add(fromCursor(cursor));
-            Log.d(TAG, "listarConcluidas: " + lista.size() + " receita(s) concluída(s).");
+            Log.d(TAG, "listarPorStatus: status=" + status + " → " + lista.size() + " receita(s).");
         } catch (Exception e) {
-            Log.e(TAG, "listarConcluidas: erro", e);
+            Log.e(TAG, "listarPorStatus: erro", e);
         } finally {
             if (cursor != null) cursor.close();
         }
@@ -135,7 +148,15 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
-    // BUSCAR POR TÍTULO OU INGREDIENTE
+    // LISTAR CONCLUÍDAS — mantido para retrocompatibilidade
+    // =========================================================================
+
+    public List<ReceitaSalva> listarConcluidas(String userId) {
+        return listarPorStatus(userId, DatabaseContract.RECEITA_STATUS_CONCLUIDA, null);
+    }
+
+    // =========================================================================
+    // BUSCAR POR TÍTULO OU INGREDIENTE — mantido para retrocompatibilidade
     // =========================================================================
 
     public List<ReceitaSalva> buscarPorTituloOuIngrediente(String query, String userId) {

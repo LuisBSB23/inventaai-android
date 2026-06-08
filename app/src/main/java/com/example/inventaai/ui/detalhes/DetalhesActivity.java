@@ -27,6 +27,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 public class DetalhesActivity extends AppCompatActivity {
 
@@ -118,7 +119,7 @@ public class DetalhesActivity extends AppCompatActivity {
 
         if (item == null) {
             tvItemName.setText("Item não encontrado");
-            quantidadeAtual  = 1;
+            quantidadeAtual   = 1;
             dataValidadeAtual = "";
             atualizarDisplayQuantidade();
             return;
@@ -182,7 +183,7 @@ public class DetalhesActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN:
                     v.setPressed(true);
                     diminuirQuantidade();
-                    autoUpdateHandler.postDelayed(autoDecrementRunnable, 400); // 400ms antes de começar a repetir
+                    autoUpdateHandler.postDelayed(autoDecrementRunnable, 400);
                     return true;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
@@ -230,7 +231,7 @@ public class DetalhesActivity extends AppCompatActivity {
         @Override
         public void run() {
             diminuirQuantidade();
-            autoUpdateHandler.postDelayed(this, 100); // Repete a cada 100ms
+            autoUpdateHandler.postDelayed(this, 100);
         }
     };
 
@@ -242,23 +243,36 @@ public class DetalhesActivity extends AppCompatActivity {
         }
     };
 
+    // =========================================================================
+    // SPRINT 17 — Fix: exibição decimal sem arredondamento visual
+    // =========================================================================
     private void atualizarDisplayQuantidade() {
-        if (quantidadeAtual == Math.floor(quantidadeAtual)) {
+        if (quantidadeAtual == Math.floor(quantidadeAtual) && !Double.isInfinite(quantidadeAtual)) {
+            // Valor inteiro exato → exibe sem casas decimais
             tvQuantidade.setText(String.valueOf((int) quantidadeAtual));
         } else {
-            tvQuantidade.setText(String.format(java.util.Locale.US, "%.1f", quantidadeAtual));
+            // Valor decimal → exibe com exatamente 2 casas decimais, sem arredondamento
+            // String.format("%.2f") trunca/representa fielmente sem arredondamento visual
+            tvQuantidade.setText(String.format(Locale.US, "%.2f", quantidadeAtual));
         }
     }
 
+    // =========================================================================
+    // SPRINT 17 — Fix: dialog aceita vírgula como separador decimal
+    // =========================================================================
     private void abrirDialogEdicaoQuantidade() {
         EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        // TYPE_NUMBER_FLAG_DECIMAL já permite ponto; vírgula é tratada na confirmação
+        input.setInputType(InputType.TYPE_CLASS_NUMBER
+                | InputType.TYPE_NUMBER_FLAG_DECIMAL
+                | InputType.TYPE_NUMBER_FLAG_SIGNED);
         input.setPadding(48, 48, 48, 48);
 
-        if (quantidadeAtual == Math.floor(quantidadeAtual)) {
+        if (quantidadeAtual == Math.floor(quantidadeAtual) && !Double.isInfinite(quantidadeAtual)) {
             input.setText(String.valueOf((int) quantidadeAtual));
         } else {
-            input.setText(String.valueOf(quantidadeAtual));
+            // Exibe com ponto para compatibilidade com teclado numérico
+            input.setText(String.format(Locale.US, "%.2f", quantidadeAtual));
         }
         input.setSelection(input.getText().length());
         input.requestFocus();
@@ -267,11 +281,15 @@ public class DetalhesActivity extends AppCompatActivity {
                 .setTitle("Editar Quantidade")
                 .setView(input)
                 .setPositiveButton("Confirmar", (dialog, which) -> {
-                    String val = input.getText().toString().replace(",", ".");
+                    // substitui vírgula por ponto antes de parsear
+                    String val = input.getText().toString()
+                            .replace(",", ".")
+                            .trim();
                     if (!val.isEmpty()) {
                         try {
-                            quantidadeAtual = Double.parseDouble(val);
-                            if (quantidadeAtual < 0) quantidadeAtual = 0;
+                            double novo = Double.parseDouble(val);
+                            if (novo < 0) novo = 0;
+                            quantidadeAtual = novo;
                             atualizarDisplayQuantidade();
                         } catch (NumberFormatException e) {
                             Toast.makeText(this, "Valor inválido", Toast.LENGTH_SHORT).show();
@@ -311,7 +329,7 @@ public class DetalhesActivity extends AppCompatActivity {
                 this,
                 (view, year, month, dayOfMonth) -> {
                     dataValidadeAtual = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
-                    String exibicao = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                    String exibicao   = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year);
                     etDataValidade.setText(exibicao);
 
                     int dias = DateUtils.calcularDiasRestantes(dataValidadeAtual);

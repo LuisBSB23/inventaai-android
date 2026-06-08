@@ -2,6 +2,8 @@ package com.example.inventaai.ui.receitas;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -25,6 +27,7 @@ import com.example.inventaai.util.AppExecutors;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +39,7 @@ public class ReceitasConcluidasActivity extends AppCompatActivity {
     private LinearLayout             layoutEmpty;
     private LinearProgressIndicator  progressBar;
     private BottomNavigationView     bottomNavigation;
+    private TextInputEditText        etBusca;  // Sprint 17: campo de busca
 
     // ── Dependências ───────────────────────────────────────────────────────────
     private ReceitaRepository receitaRepository;
@@ -64,6 +68,7 @@ public class ReceitasConcluidasActivity extends AppCompatActivity {
 
         vincularViews();
         configurarRecyclerView();
+        configurarBusca();
         configurarBotoes();
         configurarBottomNavigation();
     }
@@ -74,7 +79,9 @@ public class ReceitasConcluidasActivity extends AppCompatActivity {
         if (bottomNavigation != null) {
             bottomNavigation.getMenu().findItem(R.id.nav_chef_ia).setChecked(true);
         }
-        carregarReceitas();
+        String query = etBusca != null && etBusca.getText() != null
+                ? etBusca.getText().toString() : "";
+        carregarReceitas(query);
     }
 
     // =========================================================================
@@ -86,6 +93,7 @@ public class ReceitasConcluidasActivity extends AppCompatActivity {
         layoutEmpty      = findViewById(R.id.layoutEmptyReceitas);
         progressBar      = findViewById(R.id.progressBarReceitas);
         bottomNavigation = findViewById(R.id.bottomNavigation);
+        etBusca          = findViewById(R.id.etBuscaReceitas); // Sprint 17
 
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             finish();
@@ -103,6 +111,19 @@ public class ReceitasConcluidasActivity extends AppCompatActivity {
         rvReceitas.setAdapter(adapter);
     }
 
+    /** Sprint 17: busca em tempo real, filtrando sempre por status CONCLUIDA. */
+    private void configurarBusca() {
+        if (etBusca == null) return;
+        etBusca.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+            @Override public void afterTextChanged(Editable s) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                carregarReceitas(s != null ? s.toString() : "");
+            }
+        });
+    }
+
     private void configurarBotoes() {
         View btnIrParaChefIA = findViewById(R.id.btnIrParaChefIA);
         if (btnIrParaChefIA != null) {
@@ -114,15 +135,17 @@ public class ReceitasConcluidasActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // CARREGAR DADOS
+    // CARREGAR DADOS — Sprint 17: filtra por status "CONCLUIDA"
     // =========================================================================
 
-    private void carregarReceitas() {
+    private void carregarReceitas(String query) {
         if (currentUserId == null) return;
         mostrarCarregando(true);
 
         AppExecutors.diskIO().execute(() -> {
-            final List<ReceitaSalva> lista = receitaRepository.listarConcluidas(currentUserId);
+            final List<ReceitaSalva> lista =
+                    receitaRepository.listarPorStatus(currentUserId, "CONCLUIDA", query);
+
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 mostrarCarregando(false);

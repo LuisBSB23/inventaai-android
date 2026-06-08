@@ -91,6 +91,11 @@
             android:label="Receitas Concluídas" />
 
         <activity
+            android:name=".ui.receitas.ReceitasEmAndamentoActivity"
+            android:exported="false"
+            android:label="Receitas em Andamento" />
+
+        <activity
             android:name=".ui.configuracoes.ConfiguracoesActivity"
             android:exported="false"
             android:label="Configurações"

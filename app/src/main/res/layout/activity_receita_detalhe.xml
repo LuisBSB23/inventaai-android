@@ -9,7 +9,7 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.receitas.ReceitaDetalheActivity">
 
-    <!-- ===== AppBar com botão de compartilhar — Sprint 14 ===== -->
+    <!-- ===== AppBar ===== -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -47,7 +47,6 @@
                 app:layout_constraintStart_toEndOf="@id/btnBack"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Botão compartilhar — Sprint 14 -->
             <ImageButton
                 android:id="@+id/btnShare"
                 android:layout_width="40dp"
@@ -183,7 +182,7 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- ===== STATUS DOS INGREDIENTES (cross-check) — Sprint 14 ===== -->
+                <!-- ===== STATUS DOS INGREDIENTES (cross-check) ===== -->
                 <LinearLayout
                     android:id="@+id/llCrossCheck"
                     android:layout_width="match_parent"
@@ -227,9 +226,9 @@
                     android:orientation="vertical"
                     android:layout_marginBottom="32dp" />
 
-                <!-- ===== BOTÕES DE EXECUÇÃO — Sprint 14 ===== -->
+                <!-- ===== BOTÕES DE EXECUÇÃO ===== -->
 
-                <!-- Botão Iniciar (visível quando status = SALVA ou FINALIZADA) -->
+                <!-- Botão Iniciar (visível quando status = SALVA) -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnIniciarPreparo"
                     style="@style/Widget.MaterialComponents.Button"
@@ -253,7 +252,7 @@
                     android:textSize="16sp"
                     android:visibility="gone" />
 
-                <!-- Botão Finalizar (visível apenas quando EM_ANDAMENTO) -->
+                <!-- Botão Finalizar (visível apenas quando EM_ANDAMENTO)-->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFinalizarReceita"
                     style="@style/Widget.MaterialComponents.Button"
@@ -265,17 +264,6 @@
                     android:textSize="16sp"
                     android:backgroundTint="@color/colorPrimary"
                     android:visibility="gone" />
-
-                <!-- Sprint 16: Marcar como CONCLUÍDA -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnConcluirReceita"
-                    style="@style/Widget.Material3.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Concluir Receita"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
 
             </LinearLayout>
         </LinearLayout>

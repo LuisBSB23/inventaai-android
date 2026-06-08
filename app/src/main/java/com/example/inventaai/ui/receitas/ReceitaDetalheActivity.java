@@ -11,7 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -24,7 +23,6 @@ import com.example.inventaai.data.repository.ReceitaRepository;
 import com.example.inventaai.util.AppExecutors;
 import com.example.inventaai.util.GlideHelper;
 import com.example.inventaai.util.SessionManager;
-import com.example.inventaai.util.UnitConverterUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
@@ -50,9 +48,7 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
     private MaterialButton btnIniciarPreparo;
     private MaterialButton btnCancelarPreparo;
     private MaterialButton btnFinalizarReceita;
-
-    // Sprint 16: botão para marcar como CONCLUIDA
-    private MaterialButton btnConcluirReceita;
+    // Sprint 17: btnConcluirReceita REMOVIDO
 
     // ── Dados ──────────────────────────────────────────────────────────────────
     private ReceitaSalva       receita;
@@ -90,8 +86,16 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
         vincularViews();
         preencherReceita();
         configurarBotoesExecucao();
-        configurarBotaoConcluir();      // Sprint 16
         configurarBotaoCompartilhar();
+        executarCrossCheck();
+    }
+
+    // =========================================================================
+    // SPRINT 17 — onResume: recalcula cross-check ao retornar à tela
+    // =========================================================================
+    @Override
+    protected void onResume() {
+        super.onResume();
         executarCrossCheck();
     }
 
@@ -112,9 +116,7 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
         btnIniciarPreparo   = findViewById(R.id.btnIniciarPreparo);
         btnCancelarPreparo  = findViewById(R.id.btnCancelarPreparo);
         btnFinalizarReceita = findViewById(R.id.btnFinalizarReceita);
-
-        // Sprint 16: botão CONCLUÍDA (pode ser null se o layout ainda não tiver a view)
-        btnConcluirReceita  = findViewById(R.id.btnConcluirReceita);
+        // Sprint 17: btnConcluirReceita não é mais referenciado
 
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             finish();
@@ -154,17 +156,17 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // CROSS-CHECK com normalização matemática — Sprint 16
+    // CROSS-CHECK com normalização matemática (Sprint 16 + Sprint 17)
     // =========================================================================
 
     private void executarCrossCheck() {
         if (llCrossCheck == null || currentUserId == null) return;
+        if (receita == null) return;
         if (receita.getIngredientes() == null || receita.getIngredientes().isEmpty()) return;
 
         AppExecutors.diskIO().execute(() -> {
             List<DespensaItem> itensAtivos = despensaRepo.listarAtivos(currentUserId);
 
-            // Sprint 16: usa helper que aplica normalização de unidades antes da comparação
             final List<IngredienteMatch> resultado =
                     IngredienteMatchHelper.cruzarComNormalizacao(receita.getIngredientes(), itensAtivos);
 
@@ -251,35 +253,9 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
 
         btnIniciarPreparo.setOnClickListener(v -> alterarStatus("EM_ANDAMENTO"));
         btnCancelarPreparo.setOnClickListener(v -> alterarStatus("SALVA"));
+
+        // Sprint 17: Finalizar → confirma ingredientes → CONCLUIDA → fecha tela
         btnFinalizarReceita.setOnClickListener(v -> abrirDialogFinalizar());
-    }
-
-    private void configurarBotaoConcluir() {
-        if (btnConcluirReceita == null) return;
-
-        // Exibe o botão somente quando a receita está FINALIZADA (preparo concluído)
-        boolean mostrar = "FINALIZADA".equals(receita.getStatus())
-                || "EM_ANDAMENTO".equals(receita.getStatus());
-        btnConcluirReceita.setVisibility(mostrar ? View.VISIBLE : View.GONE);
-
-        btnConcluirReceita.setOnClickListener(v -> concluirReceita());
-    }
-
-    private void concluirReceita() {
-        AppExecutors.diskIO().execute(() -> {
-            receitaRepo.atualizarStatusReceita(receita.getId(), "CONCLUIDA");
-            receita.setStatus("CONCLUIDA");
-            AppExecutors.mainThread().execute(() -> {
-                if (isFinishing() || isDestroyed()) return;
-                Toast.makeText(this,
-                        "\"" + receita.getTitulo() + "\" marcada como concluída!",
-                        Toast.LENGTH_SHORT).show();
-                if (btnConcluirReceita != null) btnConcluirReceita.setVisibility(View.GONE);
-                if (btnIniciarPreparo  != null) btnIniciarPreparo.setVisibility(View.GONE);
-                if (btnCancelarPreparo != null) btnCancelarPreparo.setVisibility(View.GONE);
-                if (btnFinalizarReceita!= null) btnFinalizarReceita.setVisibility(View.GONE);
-            });
-        });
     }
 
     private void alterarStatus(String novoStatus) {
@@ -289,12 +265,6 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 atualizarEstadoBotoes(novoStatus);
-                // Atualiza visibilidade do botão CONCLUIR
-                if (btnConcluirReceita != null) {
-                    boolean mostrar = "FINALIZADA".equals(novoStatus)
-                            || "EM_ANDAMENTO".equals(novoStatus);
-                    btnConcluirReceita.setVisibility(mostrar ? View.VISIBLE : View.GONE);
-                }
                 String msg = "EM_ANDAMENTO".equals(novoStatus)
                         ? "Preparo iniciado!" : "Preparo cancelado.";
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -304,6 +274,16 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
 
     private void atualizarEstadoBotoes(String status) {
         boolean emAndamento = "EM_ANDAMENTO".equals(status);
+        // Se CONCLUIDA, esconde todos os botões de execução
+        boolean concluida = "CONCLUIDA".equals(status);
+
+        if (concluida) {
+            btnIniciarPreparo.setVisibility(View.GONE);
+            btnCancelarPreparo.setVisibility(View.GONE);
+            btnFinalizarReceita.setVisibility(View.GONE);
+            return;
+        }
+
         btnIniciarPreparo.setVisibility(emAndamento ? View.GONE    : View.VISIBLE);
         btnCancelarPreparo.setVisibility(emAndamento ? View.VISIBLE : View.GONE);
         btnFinalizarReceita.setVisibility(emAndamento ? View.VISIBLE : View.GONE);
@@ -311,8 +291,8 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
 
     private void abrirDialogFinalizar() {
         if (matches == null || matches.isEmpty()) {
-            alterarStatus("FINALIZADA");
-            Toast.makeText(this, "Receita finalizada!", Toast.LENGTH_SHORT).show();
+            // Sem ingredientes encontrados na despensa → conclui direto
+            concluirReceita();
             return;
         }
 
@@ -321,12 +301,30 @@ public class ReceitaDetalheActivity extends AppCompatActivity {
                 currentUserId,
                 matches,
                 () -> {
-                    alterarStatus("FINALIZADA");
-                    Toast.makeText(this,
-                            "Receita finalizada! Despensa atualizada.", Toast.LENGTH_SHORT).show();
+                    // Sprint 17: após confirmar ingredientes → CONCLUIDA + fecha tela
+                    concluirReceita();
                 }
         );
         dialog.show(getSupportFragmentManager(), "confirmar_ingredientes");
+    }
+
+    /**
+     * Sprint 17: marca a receita como CONCLUIDA e fecha a tela.
+     * Método centralizado — chamado após confirmar ingredientes OU sem ingredientes.
+     */
+    private void concluirReceita() {
+        AppExecutors.diskIO().execute(() -> {
+            receitaRepo.atualizarStatusReceita(receita.getId(), "CONCLUIDA");
+            receita.setStatus("CONCLUIDA");
+            AppExecutors.mainThread().execute(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                Toast.makeText(this,
+                        "\"" + receita.getTitulo() + "\" concluída! Despensa atualizada.",
+                        Toast.LENGTH_SHORT).show();
+                finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            });
+        });
     }
 
     // =========================================================================

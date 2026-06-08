@@ -37,6 +37,7 @@ import com.example.inventaai.ui.configuracoes.ConfiguracoesActivity;
 import com.example.inventaai.ui.despensa.DespensaAdapter;
 import com.example.inventaai.ui.detalhes.DetalhesActivity;
 import com.example.inventaai.ui.receitas.ReceitasConcluidasActivity;
+import com.example.inventaai.ui.receitas.ReceitasEmAndamentoActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.ui.login.LoginActivity;
 import com.example.inventaai.ui.perfil.PerfilActivity;
@@ -132,7 +133,6 @@ public class DashboardActivity extends AppCompatActivity {
         configurarBusca();
         animarCardSaude();
 
-        // Sprint 13: exibe mensagem caso venha do ChefIA com flag de redirecionamento
         verificarMensagemDeRetorno();
     }
 
@@ -189,25 +189,20 @@ public class DashboardActivity extends AppCompatActivity {
         cardSaudeDespensa = findViewById(R.id.cardPantryHealth);
         progressBar       = findViewById(R.id.progressBarDashboard);
 
-        // Barra de seleção (Sprint 8)
         layoutBarraSelecao = findViewById(R.id.layoutBarraSelecao);
         tvContadorSelecao  = findViewById(R.id.tvContadorSelecao);
         btnCancelarSelecao = findViewById(R.id.btnCancelarSelecao);
 
-        // Card de Saúde dinâmico
         tvSaudePercent = findViewById(R.id.tvSaudePercent);
         tvSaudeLabel   = findViewById(R.id.tvSaudeLabel);
         ivSaudeIcon    = findViewById(R.id.ivSaudeIcon);
 
-        // Container da seção "Vencendo Logo"
         layoutSectionVencendo = findViewById(R.id.layoutSectionVencendo);
 
-        // Sprint 12: Busca
         layoutSearchBar = findViewById(R.id.layoutSearchBar);
         etBusca         = findViewById(R.id.etBusca);
         btnBuscar       = findViewById(R.id.btnBuscar);
 
-        // Sprint 13: avatar na toolbar → navega para PerfilActivity
         ivAvatar.setOnClickListener(v ->
                 startActivity(new Intent(this, PerfilActivity.class))
         );
@@ -223,7 +218,6 @@ public class DashboardActivity extends AppCompatActivity {
         adapterPantry = new DespensaAdapter(new ArrayList<>(), this::abrirDetalhes);
         rvPantryItems.setAdapter(adapterPantry);
 
-        // Registra long click para ativar modo de seleção
         adapterPantry.setOnItemLongClickListener(item -> {
             if (!adapterPantry.isModoSelecao()) {
                 adapterPantry.setModoSelecao(true);
@@ -232,7 +226,6 @@ public class DashboardActivity extends AppCompatActivity {
             atualizarBarraSelecao();
         });
 
-        // Atualiza o contador na barra a cada toggle de item
         adapterPantry.setOnSelecaoChangedListener(total ->
                 tvContadorSelecao.setText(total + " selecionado(s)")
         );
@@ -326,7 +319,6 @@ public class DashboardActivity extends AppCompatActivity {
         if (modoAtivo) {
             layoutBarraSelecao.setVisibility(View.VISIBLE);
             tvContadorSelecao.setText(quantidade + " selecionado(s)");
-            // Sprint 13: texto do botão simplificado para "Gerar Receita"
             btnGenerateRecipe.setText("Gerar Receita");
         } else {
             layoutBarraSelecao.setVisibility(View.GONE);
@@ -463,7 +455,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // ANIMAÇÃO CARD DE SAÚDE (entrada da tela)
+    // ANIMAÇÃO CARD DE SAÚDE
     // =========================================================================
 
     private void animarCardSaude() {
@@ -481,15 +473,12 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // NAVIGATION DRAWER
+    // NAVIGATION DRAWER — inclui nav_receitas_em_andamento
     // =========================================================================
 
     private void configurarDrawer() {
         findViewById(R.id.btnMenu).setOnClickListener(v ->
                 drawerLayout.openDrawer(GravityCompat.START));
-
-        // Sprint 13: o ivAvatar agora navega para PerfilActivity (configurado em vincularViews)
-        // Mantemos a abertura do drawer apenas pelo botão hamburger.
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -505,10 +494,14 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
+                // Nova entrada no drawer
+            } else if (id == R.id.nav_receitas_em_andamento) {
+                startActivity(new Intent(this, ReceitasEmAndamentoActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
             } else if (id == R.id.nav_receitas_concluidas) {
                 startActivity(new Intent(this, ReceitasConcluidasActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-
 
             } else if (id == R.id.nav_configuracoes) {
                 startActivity(new Intent(this, ConfiguracoesActivity.class));
@@ -531,7 +524,6 @@ public class DashboardActivity extends AppCompatActivity {
 
                 tvGreetingUser.setText(user.getNome() + "!");
 
-                // Sprint 13: avatar na toolbar usa circleCrop via GlideHelper
                 if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
                     GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivAvatarImg);
                     ivAvatarImg.setColorFilter(null);
@@ -541,7 +533,6 @@ public class DashboardActivity extends AppCompatActivity {
                     tvAvatarIniciais.setVisibility(View.VISIBLE);
                 }
 
-                // Cabeçalho do drawer
                 View header = navigationView.getHeaderView(0);
                 if (header == null) return;
 
@@ -553,7 +544,6 @@ public class DashboardActivity extends AppCompatActivity {
                 tvDrawerNome.setText(user.getNome());
                 tvDrawerIdAbreviado.setText("ID: " + user.getIdAbreviado());
 
-                // Sprint 13: foto do drawer também usa circleCrop para evitar bordas quadradas
                 if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
                     GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivDrawerAvatar);
                     ivDrawerAvatar.setColorFilter(null);
@@ -594,10 +584,8 @@ public class DashboardActivity extends AppCompatActivity {
     private void configurarBotoes() {
         btnGenerateRecipe.setOnClickListener(v -> {
             if (adapterPantry.isModoSelecao()) {
-                // Modo de seleção ativo → verifica se há itens selecionados
                 List<DespensaItem> selecionados = adapterPantry.getItensSelecionados();
                 if (selecionados.isEmpty()) {
-                    // Sprint 13: nenhum item selecionado → orienta o usuário
                     Toast.makeText(this,
                             "Selecione pelo menos 1 item para gerar a receita",
                             Toast.LENGTH_SHORT).show();
@@ -612,18 +600,15 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             } else {
-                // Modo normal → verifica se a despensa tem itens
                 final String userId = currentUserId;
                 AppExecutors.diskIO().execute(() -> {
                     final List<DespensaItem> ativos = despensaRepository.listarAtivos(userId);
                     AppExecutors.mainThread().execute(() -> {
                         if (isFinishing() || isDestroyed()) return;
                         if (ativos.isEmpty()) {
-                            // Sprint 13: despensa vazia → vai para Cadastro
                             startActivity(new Intent(this, CadastroActivity.class));
                             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                         } else {
-                            // Sprint 13: há itens mas nenhum selecionado → orienta
                             Toast.makeText(this,
                                     "Selecione pelo menos 1 item para gerar a receita",
                                     Toast.LENGTH_SHORT).show();

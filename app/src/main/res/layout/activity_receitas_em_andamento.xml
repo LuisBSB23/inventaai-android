@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:fontFamily="@font/inter_bold"
-                android:text="Receitas Concluídas"
+                android:text="Receitas em Andamento"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="22sp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -47,7 +47,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- ===== Campo de busca — Sprint 17 ===== -->
+        <!-- ===== Campo de busca ===== -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,14 +119,14 @@
             android:src="@drawable/ic_empty_recipe"
             android:alpha="0.6"
             android:tint="?attr/colorOnSurfaceVariant"
-            android:contentDescription="Nenhuma receita concluída" />
+            android:contentDescription="Nenhuma receita em andamento" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:fontFamily="@font/inter_semibold"
-            android:text="Nenhuma receita concluída"
+            android:text="Nenhuma receita em andamento"
             android:textColor="?attr/colorOnSurface"
             android:textSize="17sp"
             android:gravity="center" />
@@ -137,7 +137,7 @@
             android:layout_marginTop="8dp"
             android:fontFamily="@font/inter_regular"
             android:gravity="center"
-            android:text="Quando você finalizar uma receita, ela aparecerá aqui."
+            android:text="Abra uma receita salva e toque em &quot;Iniciar Preparo&quot; para vê-la aqui."
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="14sp" />
 
@@ -153,7 +153,7 @@
 
     </LinearLayout>
 
-    <!-- ===== Bottom Navigation — Sprint 17 ===== -->
+    <!-- ===== Bottom Navigation ===== -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

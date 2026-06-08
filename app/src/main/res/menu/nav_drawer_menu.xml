@@ -15,6 +15,11 @@
             android:title="Receitas Salvas" />
 
         <item
+            android:id="@+id/nav_receitas_em_andamento"
+            android:icon="@drawable/ic_play_circle"
+            android:title="Receitas em Andamento" />
+
+        <item
             android:id="@+id/nav_receitas_concluidas"
             android:icon="@drawable/ic_nav_chef"
             android:title="Receitas Concluídas" />

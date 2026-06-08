@@ -64,7 +64,7 @@ public final class DatabaseContract {
         public static final String COLUMN_IMAGEM_URL    = "imagem_url";
         public static final String COLUMN_DATA_SALVO    = "data_salvo";
         public static final String COLUMN_USER_ID       = "user_id";
-        public static final String COLUMN_STATUS        = "status_execucao";
+        public static final String COLUMN_STATUS = "status";
     }
 
     // =========================================================================
@@ -73,6 +73,5 @@ public final class DatabaseContract {
 
     public static final String RECEITA_STATUS_SALVA        = "SALVA";
     public static final String RECEITA_STATUS_EM_ANDAMENTO = "EM_ANDAMENTO";
-    public static final String RECEITA_STATUS_FINALIZADA   = "FINALIZADA";
     public static final String RECEITA_STATUS_CONCLUIDA    = "CONCLUIDA";
 }

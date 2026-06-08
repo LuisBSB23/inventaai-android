@@ -24,7 +24,6 @@ import com.example.inventaai.ui.chefIA.ChefIAActivity;
 import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.util.AppExecutors;
-import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -33,16 +32,14 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReceitasActivity extends AppCompatActivity {
-
-    private static final String TAG = Constants.LOG_TAG;
+public class ReceitasEmAndamentoActivity extends AppCompatActivity {
 
     // ── Views ──────────────────────────────────────────────────────────────────
-    private RecyclerView              rvReceitas;
-    private LinearLayout              layoutEmptyReceitas;
-    private LinearProgressIndicator   progressBar;
-    private BottomNavigationView      bottomNavigation;
-    private TextInputEditText         etBusca;
+    private RecyclerView             rvReceitas;
+    private LinearLayout             layoutEmpty;
+    private LinearProgressIndicator  progressBar;
+    private BottomNavigationView     bottomNavigation;
+    private TextInputEditText        etBusca;
 
     // ── Dependências ───────────────────────────────────────────────────────────
     private ReceitaRepository receitaRepository;
@@ -57,7 +54,7 @@ public class ReceitasActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_receitas);
+        setContentView(R.layout.activity_receitas_em_andamento);
 
         sessionManager    = new SessionManager(this);
         receitaRepository = new ReceitaRepository(this);
@@ -92,11 +89,11 @@ public class ReceitasActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
-        rvReceitas          = findViewById(R.id.rvReceitas);
-        layoutEmptyReceitas = findViewById(R.id.layoutEmptyReceitas);
-        progressBar         = findViewById(R.id.progressBarReceitas);
-        bottomNavigation    = findViewById(R.id.bottomNavigation);
-        etBusca             = findViewById(R.id.etBuscaReceitas);
+        rvReceitas       = findViewById(R.id.rvReceitas);
+        layoutEmpty      = findViewById(R.id.layoutEmptyReceitas);
+        progressBar      = findViewById(R.id.progressBarReceitas);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
+        etBusca          = findViewById(R.id.etBuscaReceitas);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             finish();
@@ -108,7 +105,7 @@ public class ReceitasActivity extends AppCompatActivity {
         rvReceitas.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ReceitasAdapter(
                 new ArrayList<>(),
-                this::abrirDetalheReceita,
+                this::abrirDetalhe,
                 this::confirmarDelecao
         );
         rvReceitas.setAdapter(adapter);
@@ -137,7 +134,7 @@ public class ReceitasActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // CARREGAR DADOS — Sprint 17: apenas status "SALVA"
+    // CARREGAR DADOS — filtra por status "EM_ANDAMENTO"
     // =========================================================================
 
     private void carregarReceitas(String query) {
@@ -145,9 +142,8 @@ public class ReceitasActivity extends AppCompatActivity {
         mostrarCarregando(true);
 
         AppExecutors.diskIO().execute(() -> {
-            // Sprint 17: filtra exclusivamente receitas com status SALVA
             final List<ReceitaSalva> lista =
-                    receitaRepository.listarPorStatus(currentUserId, "SALVA", query);
+                    receitaRepository.listarPorStatus(currentUserId, "EM_ANDAMENTO", query);
 
             AppExecutors.mainThread().execute(() -> {
                 if (isFinishing() || isDestroyed()) return;
@@ -159,38 +155,39 @@ public class ReceitasActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // DELETAR RECEITA
+    // DELETAR
     // =========================================================================
 
     private void confirmarDelecao(ReceitaSalva receita, int position) {
         new AlertDialog.Builder(this)
                 .setTitle("Remover receita")
-                .setMessage("Deseja remover \"" + receita.getTitulo() + "\" das receitas salvas?")
-                .setPositiveButton("Remover", (dialog, which) -> deletarReceita(receita, position))
+                .setMessage("Deseja remover \"" + receita.getTitulo() + "\" das receitas em andamento?")
+                .setPositiveButton("Remover", (d, w) -> deletarReceita(receita, position))
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
     private void deletarReceita(ReceitaSalva receita, int position) {
         AppExecutors.diskIO().execute(() -> {
-            final boolean sucesso = receitaRepository.deletar(receita.getId());
+            final boolean ok = receitaRepository.deletar(receita.getId());
             AppExecutors.mainThread().execute(() -> {
-                if (sucesso) {
+                if (ok) {
                     adapter.removerItem(position);
                     atualizarEstadoVazio(adapter.getItemCount() == 0);
-                    Toast.makeText(this, "\"" + receita.getTitulo() + "\" removida.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "\"" + receita.getTitulo() + "\" removida.",
+                            Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, "Erro ao remover receita.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Erro ao remover.", Toast.LENGTH_SHORT).show();
                 }
             });
         });
     }
 
     // =========================================================================
-    // ABRIR DETALHES
+    // DETALHE
     // =========================================================================
 
-    private void abrirDetalheReceita(ReceitaSalva receita) {
+    private void abrirDetalhe(ReceitaSalva receita) {
         Intent intent = new Intent(this, ReceitaDetalheActivity.class);
         intent.putExtra(ReceitaDetalheActivity.EXTRA_RECEITA, receita);
         startActivity(intent);
@@ -198,7 +195,7 @@ public class ReceitasActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // ESTADO DE UI
+    // UI STATE
     // =========================================================================
 
     private void mostrarCarregando(boolean carregando) {
@@ -208,7 +205,7 @@ public class ReceitasActivity extends AppCompatActivity {
 
     private void atualizarEstadoVazio(boolean vazio) {
         rvReceitas.setVisibility(vazio ? View.GONE : View.VISIBLE);
-        layoutEmptyReceitas.setVisibility(vazio ? View.VISIBLE : View.GONE);
+        layoutEmpty.setVisibility(vazio ? View.VISIBLE : View.GONE);
     }
 
     // =========================================================================
@@ -223,9 +220,9 @@ public class ReceitasActivity extends AppCompatActivity {
                 overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 return true;
             } else if (id == R.id.nav_pantry) {
-                Intent intent = new Intent(this, DashboardActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                Intent i = new Intent(this, DashboardActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(i);
                 overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 return true;
             } else if (id == R.id.nav_add) {
@@ -233,9 +230,9 @@ public class ReceitasActivity extends AppCompatActivity {
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             } else if (id == R.id.nav_history) {
-                Intent intent = new Intent(this, HistoricoActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
+                Intent i = new Intent(this, HistoricoActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }
