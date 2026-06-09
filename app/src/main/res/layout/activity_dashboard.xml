@@ -432,6 +432,18 @@
                     android:textSize="14sp"
                     android:text="0 selecionado(s)" />
 
+                <!-- Sprint 18: botão lixeira — exclui e envia ao histórico como descartado -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExcluirSelecionados"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="Excluir selecionados"
+                    app:icon="@drawable/ic_delete"
+                    app:iconTint="@color/colorError"
+                    app:iconSize="22dp" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancelarSelecao"
                     style="@style/Widget.Material3.Button.TextButton"
@@ -488,4 +500,4 @@
         app:itemTextColor="?attr/colorOnSurface"
         app:itemIconTint="?attr/colorPrimary" />
 
-</androidx.drawerlayout.widget.DrawerLayout>
+</androidx.drawerlayout.widget.DrawerLayout>a

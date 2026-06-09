@@ -165,7 +165,6 @@ public class ChefIAActivity extends AppCompatActivity {
             AppExecutors.mainThread().execute(() -> {
                 if (total > 0) {
                     mostrarEstadoSelecionarIngredientes();
-                    // Sprint 15: mostra botão de receita aleatória quando nenhum item selecionado
                     if (btnGerarAleatoria != null) btnGerarAleatoria.setVisibility(View.VISIBLE);
                 } else {
                     mostrarEmptyStateSemSelecao();
@@ -178,15 +177,8 @@ public class ChefIAActivity extends AppCompatActivity {
     // SPRINT 15: RECEITA ALEATÓRIA
     // =========================================================================
 
-    /**
-     * Exibe um AlertDialog para o usuário escolher a categoria da receita aleatória.
-     * Após a escolha, busca todos os itens ativos da despensa e gera a receita.
-     */
     private void mostrarModalCategoriaAleatoria() {
         final String[] categorias = { "Doce", "Salgada", "Lanche", "Café da Manhã", "Sobremesa", "Surpresa" };
-        final int[]    iconCat    = { R.drawable.ic_cat_outros, R.drawable.ic_cat_outros,
-                R.drawable.ic_cat_outros, R.drawable.ic_cat_outros,
-                R.drawable.ic_cat_outros, R.drawable.ic_cat_outros };
 
         new AlertDialog.Builder(this)
                 .setTitle("Que tipo de receita?")
@@ -205,21 +197,16 @@ public class ChefIAActivity extends AppCompatActivity {
             return;
         }
 
-        // Esconde o botão aleatório e o layout de seleção durante geração
-        if (btnGerarAleatoria != null)          btnGerarAleatoria.setVisibility(View.GONE);
+        if (btnGerarAleatoria != null)           btnGerarAleatoria.setVisibility(View.GONE);
         if (layoutSelecionarIngredientes != null) layoutSelecionarIngredientes.setVisibility(View.GONE);
 
         AppExecutors.diskIO().execute(() -> {
             final List<DespensaItem> todos = despensaRepository.listarAtivos(userId);
             AppExecutors.mainThread().execute(() -> {
-                if (todos.isEmpty()) {
-                    Toast.makeText(this, "Sua despensa está vazia!", Toast.LENGTH_SHORT).show();
-                    mostrarEmptyStateSemSelecao();
-                    return;
-                }
+                // Sprint 18: permite gerar mesmo com despensa vazia (inspiração culinária)
                 itensSelecionados = todos;
                 Log.d(TAG, "gerarReceitaAleatoria: categoria='" + categoria
-                        + "', itens=" + todos.size());
+                        + "', itens=" + todos.size() + " (pode ser 0)");
                 gerarReceitaComCategoriaEItens(todos, categoria);
             });
         });
@@ -231,12 +218,13 @@ public class ChefIAActivity extends AppCompatActivity {
         resetarBotaoSalvar();
         mostrarCarregando(true);
 
-        // Injeta a instrução de categoria no prompt do GeminiService
         geminiService.gerarReceitaComCategoria(itens, categoria, new GeminiService.ReceitaCallback() {
             @Override
             public void onSucesso(ReceitaResponse receita) {
                 runOnUiThread(() -> {
                     receitaAtual = receita;
+                    // Sprint 18: persiste o título na Toolbar fixa
+                    atualizarTituloToolbar(receita.getTitulo());
                     preencherReceita(receita, itens);
                     mostrarCarregando(false);
                     buscarImagemParaReceita(receita.getTitulo());
@@ -270,6 +258,8 @@ public class ChefIAActivity extends AppCompatActivity {
             public void onSucesso(ReceitaResponse receita) {
                 runOnUiThread(() -> {
                     receitaAtual = receita;
+                    // Sprint 18: persiste o título na Toolbar fixa
+                    atualizarTituloToolbar(receita.getTitulo());
                     preencherReceita(receita, itens);
                     mostrarCarregando(false);
                     buscarImagemParaReceita(receita.getTitulo());
@@ -321,7 +311,10 @@ public class ChefIAActivity extends AppCompatActivity {
                     Toast.makeText(this,
                             "\"" + receitaAtual.getTitulo() + "\" salva!",
                             Toast.LENGTH_SHORT).show();
+                    // Sprint 18: limpa estado visual ANTES de atualizar para evitar ícones cumulativos
+                    resetarBotaoSalvar();
                     btnSalvarReceita.setText("Salva! ✓");
+                    btnSalvarReceita.setIcon(null);           // remove ícone anterior
                     btnSalvarReceita.setEnabled(false);
                 } else {
                     Toast.makeText(this, "Erro ao salvar receita.", Toast.LENGTH_SHORT).show();
@@ -331,8 +324,18 @@ public class ChefIAActivity extends AppCompatActivity {
     }
 
     private void resetarBotaoSalvar() {
+        btnSalvarReceita.setIcon(null);
         btnSalvarReceita.setText(getString(R.string.btn_save_recipe));
         btnSalvarReceita.setEnabled(false);
+    }
+
+    // =========================================================================
+    // SPRINT 18 — Título persistente na Toolbar fixa
+    // =========================================================================
+
+    private void atualizarTituloToolbar(String tituloReceita) {
+        if (tvToolbarTitulo == null || tituloReceita == null || tituloReceita.isEmpty()) return;
+        tvToolbarTitulo.setText(tituloReceita);
     }
 
     // =========================================================================
@@ -448,6 +451,8 @@ public class ChefIAActivity extends AppCompatActivity {
         if (carregando) {
             tvRecipeTitle.setText(R.string.generating_recipe);
             tvRecipeDescription.setText("");
+            // Sprint 18: restaura título padrão na Toolbar durante carregamento
+            if (tvToolbarTitulo != null) tvToolbarTitulo.setText(R.string.nav_chef_ia);
         }
     }
 
@@ -488,6 +493,12 @@ public class ChefIAActivity extends AppCompatActivity {
 
         // Sprint 15: botão de receita aleatória
         btnGerarAleatoria = findViewById(R.id.btnGerarAleatoria);
+
+        // Sprint 18: botão de receita aleatória no estado de despensa vazia
+        MaterialButton btnGerarAleatoriaEmpty = findViewById(R.id.btnGerarAleatoriaEmpty);
+        if (btnGerarAleatoriaEmpty != null) {
+            btnGerarAleatoriaEmpty.setOnClickListener(v -> mostrarModalCategoriaAleatoria());
+        }
 
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             finish();

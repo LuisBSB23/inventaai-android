@@ -1,35 +1,51 @@
 package com.example.inventaai.ui.cadastro;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
 import com.example.inventaai.data.repository.DespensaRepository;
+import com.example.inventaai.ui.dashboard.DashboardActivity;
+import com.example.inventaai.ui.historico.HistoricoActivity;
+import com.example.inventaai.ui.perfil.PerfilActivity;
+import com.example.inventaai.ui.receitas.ReceitasActivity;
+import com.example.inventaai.ui.receitas.ReceitasConcluidasActivity;
+import com.example.inventaai.ui.receitas.ReceitasEmAndamentoActivity;
 import com.example.inventaai.util.Constants;
+import com.example.inventaai.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
-import java.util.Locale;
 
-public class CadastroActivity extends AppCompatActivity {
+public class CadastroActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
-    // Views
+    // ── Views principais ──────────────────────────────────────────────────────
+    private DrawerLayout              drawerLayout;
+    private NavigationView            navigationView;
     private TextInputLayout           tilNome, tilCategoria, tilQuantidade, tilDataValidade;
     private TextInputEditText         etNome, etQuantidade, etDataValidade;
     private AutoCompleteTextView      actvCategoria;
@@ -37,10 +53,10 @@ public class CadastroActivity extends AppCompatActivity {
     private MaterialButton            btnSalvar;
     private View                      rootView;
 
-    // Estado
-    private String dataSelecionada = "";
-    private DespensaRepository repository;
-    private com.example.inventaai.util.SessionManager sessionManager;
+    // ── Estado ────────────────────────────────────────────────────────────────
+    private String              dataSelecionada = "";
+    private DespensaRepository  repository;
+    private SessionManager      sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,15 +64,16 @@ public class CadastroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cadastro);
 
         repository     = new DespensaRepository(this);
-        sessionManager = new com.example.inventaai.util.SessionManager(this);
+        sessionManager = new SessionManager(this);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.cadastroCoordinatorLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
         vincularViews();
+        configurarDrawer();
         configurarCategoria();
         configurarDatePicker();
         configurarBotaoSalvar();
@@ -64,11 +81,107 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     // =========================================================================
+    // NAVIGATION DRAWER (Sprint 18)
+    // =========================================================================
+
+    private void configurarDrawer() {
+        // Abre o drawer pelo botão hamburguer da toolbar
+        View btnMenu = findViewById(R.id.btnMenuCadastro);
+        if (btnMenu != null) {
+            btnMenu.setOnClickListener(v -> {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    drawerLayout.openDrawer(GravityCompat.START);
+                }
+            });
+        }
+
+        navigationView.setNavigationItemSelectedListener(this);
+        preencherCabecalhoDrawer();
+    }
+
+    private void preencherCabecalhoDrawer() {
+        View header = navigationView.getHeaderView(0);
+        if (header == null) return;
+
+        android.widget.TextView tvNome      = header.findViewById(R.id.tvDrawerNome);
+        android.widget.TextView tvId        = header.findViewById(R.id.tvDrawerIdAbreviado);
+        android.widget.TextView tvIniciais  = header.findViewById(R.id.tvDrawerIniciais);
+        ShapeableImageView      ivAvatar    = header.findViewById(R.id.ivDrawerAvatar);
+
+        String nome   = sessionManager.getUserName();
+        String userId = sessionManager.getUserId();
+
+        if (tvNome != null && nome != null)
+            tvNome.setText(nome);
+
+        if (tvId != null && userId != null)
+            tvId.setText("ID: ..." + userId.substring(Math.max(0, userId.length() - 6)));
+
+        // Sem getUserAvatar() no SessionManager — exibe sempre as iniciais
+        if (tvIniciais != null && nome != null && !nome.isEmpty()) {
+            tvIniciais.setVisibility(View.VISIBLE);
+            if (ivAvatar != null) ivAvatar.setVisibility(View.GONE);
+            tvIniciais.setText(obterIniciais(nome));
+        }
+    }
+
+    private String obterIniciais(String nome) {
+        if (nome == null || nome.isEmpty()) return "?";
+        String[] partes = nome.trim().split("\\s+");
+        if (partes.length == 1) return String.valueOf(partes[0].charAt(0)).toUpperCase();
+        return (String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[partes.length - 1].charAt(0)))
+                .toUpperCase();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        drawerLayout.closeDrawer(GravityCompat.START);
+        int id = item.getItemId();
+
+        if (id == R.id.nav_perfil) {
+            startActivity(new Intent(this, PerfilActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_receitas_salvas) {
+            startActivity(new Intent(this, ReceitasActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_receitas_em_andamento) {
+            startActivity(new Intent(this, ReceitasEmAndamentoActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_receitas_concluidas) {
+            startActivity(new Intent(this, ReceitasConcluidasActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_configuracoes) {
+            startActivity(new Intent(this, HistoricoActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_sair) {
+            sessionManager.encerrarSessao();
+            Intent intent = new Intent(this, com.example.inventaai.ui.login.LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        }
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        }
+    }
+
+    // =========================================================================
     // INICIALIZAÇÃO
     // =========================================================================
 
     private void vincularViews() {
-        rootView        = findViewById(R.id.main);
+        drawerLayout    = findViewById(R.id.cadastroDrawerLayout);
+        navigationView  = findViewById(R.id.cadastroNavigationView);
+        rootView        = findViewById(R.id.cadastroCoordinatorLayout);
         tilNome         = findViewById(R.id.tilNome);
         tilCategoria    = findViewById(R.id.tilCategoria);
         tilQuantidade   = findViewById(R.id.tilQuantidade);
@@ -114,7 +227,6 @@ public class CadastroActivity extends AppCompatActivity {
     private boolean validarFormulario() {
         boolean valido = true;
 
-        // Validação do nome
         String nome = etNome.getText() != null ? etNome.getText().toString().trim() : "";
         if (TextUtils.isEmpty(nome)) {
             tilNome.setError("Informe o nome do alimento");
@@ -123,7 +235,6 @@ public class CadastroActivity extends AppCompatActivity {
             tilNome.setError(null);
         }
 
-        // Validação da quantidade (Sprint 16: aceita vírgula e ponto)
         String qtdStr = etQuantidade.getText() != null
                 ? etQuantidade.getText().toString().trim() : "";
         if (TextUtils.isEmpty(qtdStr)) {
@@ -131,7 +242,6 @@ public class CadastroActivity extends AppCompatActivity {
             valido = false;
         } else {
             try {
-                // Sprint 16: substitui vírgula por ponto antes de parsear
                 double qtd = Double.parseDouble(qtdStr.replace(",", "."));
                 if (qtd <= 0) {
                     tilQuantidade.setError("Quantidade deve ser maior que zero");
@@ -145,7 +255,6 @@ public class CadastroActivity extends AppCompatActivity {
             }
         }
 
-        // Validação da data
         if (TextUtils.isEmpty(dataSelecionada)) {
             tilDataValidade.setError("Selecione a data de validade");
             valido = false;
@@ -157,22 +266,19 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     // =========================================================================
-    // SALVAR — Sprint 15: não fecha a tela após salvar
+    // SALVAR
     // =========================================================================
 
     private void configurarBotaoSalvar() {
         btnSalvar.setOnClickListener(v -> {
-            if (validarFormulario()) {
-                salvarItem();
-            }
+            if (validarFormulario()) salvarItem();
         });
     }
 
     private void salvarItem() {
         String nome = etNome.getText().toString().trim();
 
-        // Sprint 16: normaliza separador decimal (vírgula → ponto) antes de parsear
-        String qtdStr  = etQuantidade.getText().toString().trim().replace(",", ".");
+        String qtdStr    = etQuantidade.getText().toString().trim().replace(",", ".");
         double quantidade = Double.parseDouble(qtdStr);
 
         String unidade   = getUnidadeSelecionada();
@@ -184,7 +290,6 @@ public class CadastroActivity extends AppCompatActivity {
         long novoId = repository.inserir(item, sessionManager.getUserId());
 
         if (novoId != -1) {
-            // Sprint 15: não fecha a tela — limpa os campos e exibe Snackbar
             limparCampos();
             Snackbar.make(rootView, nome + " adicionado à despensa!", Snackbar.LENGTH_LONG)
                     .setBackgroundTint(getColor(R.color.colorPrimary))
@@ -210,8 +315,8 @@ public class CadastroActivity extends AppCompatActivity {
 
     private String getUnidadeSelecionada() {
         int checkedId = toggleUnit.getCheckedButtonId();
-        if (checkedId == R.id.btnUnidKg)  return "kg";
-        if (checkedId == R.id.btnUnidL)   return "L";   // Sprint 16: era "lb", agora "L"
+        if (checkedId == R.id.btnUnidKg) return "kg";
+        if (checkedId == R.id.btnUnidL)  return "L";
         return "unid";
     }
 
@@ -220,15 +325,12 @@ public class CadastroActivity extends AppCompatActivity {
     // =========================================================================
 
     private void configurarBotaoVoltar() {
-        findViewById(R.id.btnBack).setOnClickListener(v -> {
-            finish();
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-        });
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        View btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            });
+        }
     }
 }

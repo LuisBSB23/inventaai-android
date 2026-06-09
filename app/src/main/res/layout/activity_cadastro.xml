@@ -1,249 +1,290 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<!--
+    Sprint 18: CadastroActivity agora envolve o CoordinatorLayout com DrawerLayout,
+    adicionando o mesmo NavigationView global do Dashboard/ChefIA.
+-->
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/cadastroDrawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     tools:context=".ui.cadastro.CadastroActivity">
 
-    <!-- ======================== TOP APP BAR ======================== -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
-        app:elevation="2dp">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:paddingHorizontal="24dp">
-
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/back"
-                android:src="@drawable/ic_back_arrow"
-                android:tint="?attr/colorPrimary"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- ======================== CONTEÚDO ======================== -->
-    <androidx.core.widget.NestedScrollView
+    <!-- ======================== CONTEÚDO PRINCIPAL ======================== -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/cadastroCoordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="32dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:background="?attr/colorSurface">
 
-        <LinearLayout
+        <!-- ======================== TOP APP BAR ======================== -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayoutCadastro"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="32dp">
+            android:background="?attr/colorSurface"
+            app:elevation="2dp">
 
-            <!-- Título e subtítulo -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/title_add_item"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="24sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:text="@string/subtitle_add_item"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="14sp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="32dp" />
-
-            <!-- CAMPO: Nome do Alimento -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilNome"
-                style="@style/Widget.InventaAi.TextInputLayout.Pill"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="@string/hint_name">
+                android:layout_height="64dp"
+                android:paddingHorizontal="24dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etNome"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter_regular"
-                    android:inputType="textCapWords"
-                    android:imeOptions="actionNext"
-                    android:maxLines="1"
-                    android:textSize="16sp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                <!-- Botão hamburguer (abre o Drawer) -->
+                <ImageButton
+                    android:id="@+id/btnMenuCadastro"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/cd_menu"
+                    android:src="@drawable/ic_menu_hamburger"
+                    android:tint="?attr/colorPrimary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- CAMPO: Categoria -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilCategoria"
-                style="@style/Widget.InventaAi.TextInputLayout.Pill"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="@string/hint_category"
-                app:endIconMode="dropdown_menu">
+                <!-- Botão voltar (mantido para compatibilidade) -->
+                <ImageButton
+                    android:id="@+id/btnBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/back"
+                    android:src="@drawable/ic_back_arrow"
+                    android:tint="?attr/colorPrimary"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-                <AutoCompleteTextView
-                    android:id="@+id/actvCategoria"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:fontFamily="@font/inter_regular"
-                    android:inputType="none"
-                    android:textSize="16sp"
-                    android:paddingStart="4dp"
-                    android:gravity="center_vertical"
-                    tools:text="Hortifruti" />
-            </com.google.android.material.textfield.TextInputLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.appbar.AppBarLayout>
 
-            <!-- CAMPO: Quantidade -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilQuantidade"
-                style="@style/Widget.InventaAi.TextInputLayout.Pill"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="@string/hint_quantity">
+        <!-- ======================== CONTEÚDO ======================== -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="32dp"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etQuantidade"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_quantity"
-                    android:inputType="numberDecimal"
-                    android:digits="0123456789.,"
-                    android:imeOptions="actionNext"
-                    android:maxLines="1"
-                    android:textSize="16sp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- UNIDADE toggle -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="16dp">
+                android:paddingHorizontal="24dp"
+                android:paddingTop="32dp">
 
+                <!-- Título e subtítulo -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_bold"
-                    android:text="UNIDADE"
-                    android:textAllCaps="true"
-                    android:textColor="?attr/colorPrimary"
-                    android:textSize="11sp"
-                    android:letterSpacing="0.05"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginStart="8dp" />
+                    android:text="@string/title_add_item"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="24sp" />
 
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/toggleUnit"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    app:checkedButton="@id/btnUnidUnit"
-                    app:selectionRequired="true"
-                    app:singleSelection="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_regular"
+                    android:text="@string/subtitle_add_item"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="32dp" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnUnidUnit"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/inter_bold"
-                        android:text="@string/unit_unit"
-                        android:textSize="14sp"
-                        app:cornerRadius="16dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnUnidKg"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/inter_bold"
-                        android:text="@string/unit_kg"
-                        android:textSize="14sp"
-                        app:cornerRadius="16dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnUnidL"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/inter_bold"
-                        android:text="@string/unit_l"
-                        android:textSize="14sp"
-                        app:cornerRadius="16dp" />
-
-                </com.google.android.material.button.MaterialButtonToggleGroup>
-            </LinearLayout>
-
-            <!-- CAMPO: Data de Validade -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilDataValidade"
-                style="@style/Widget.InventaAi.TextInputLayout.Pill"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="40dp"
-                android:hint="@string/hint_expiry_date"
-                app:endIconMode="custom"
-                app:endIconDrawable="@drawable/ic_calendar"
-                app:endIconTint="?attr/colorPrimary">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etDataValidade"
+                <!-- CAMPO: Nome do Alimento -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilNome"
+                    style="@style/Widget.InventaAi.TextInputLayout.Pill"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:focusable="false"
-                    android:fontFamily="@font/inter_regular"
-                    android:inputType="none"
-                    android:maxLines="1"
-                    android:textSize="16sp"
-                    tools:text="22/05/2026" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_marginBottom="16dp"
+                    android:hint="@string/hint_name">
 
-            <!-- BOTÃO SALVAR -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSalvar"
-                style="@style/Widget.InventaAi.Button.Pill"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="@string/btn_save"
-                android:textSize="17sp"
-                app:icon="@drawable/ic_save"
-                app:iconGravity="textStart" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNome"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter_regular"
+                        android:inputType="textCapWords"
+                        android:imeOptions="actionNext"
+                        android:maxLines="1"
+                        android:textSize="16sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+                <!-- CAMPO: Categoria -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCategoria"
+                    style="@style/Widget.InventaAi.TextInputLayout.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="@string/hint_category"
+                    app:endIconMode="dropdown_menu">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_bold"
-        android:text="@string/app_name"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="22sp"
-        app:layout_anchor="@+id/appBarLayout2"
-        app:layout_anchorGravity="center" />
+                    <AutoCompleteTextView
+                        android:id="@+id/actvCategoria"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:fontFamily="@font/inter_regular"
+                        android:inputType="none"
+                        android:textSize="16sp"
+                        android:paddingStart="4dp"
+                        android:gravity="center_vertical"
+                        tools:text="Hortifruti" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+                <!-- CAMPO: Quantidade -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilQuantidade"
+                    style="@style/Widget.InventaAi.TextInputLayout.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="@string/hint_quantity">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etQuantidade"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_quantity"
+                        android:inputType="numberDecimal"
+                        android:digits="0123456789.,"
+                        android:imeOptions="actionNext"
+                        android:maxLines="1"
+                        android:textSize="16sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- UNIDADE toggle -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter_bold"
+                        android:text="UNIDADE"
+                        android:textAllCaps="true"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.05"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginStart="8dp" />
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/toggleUnit"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        app:checkedButton="@id/btnUnidUnit"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnUnidUnit"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/inter_bold"
+                            android:text="@string/unit_unit"
+                            android:textSize="14sp"
+                            app:cornerRadius="16dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnUnidKg"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/inter_bold"
+                            android:text="@string/unit_kg"
+                            android:textSize="14sp"
+                            app:cornerRadius="16dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnUnidL"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/inter_bold"
+                            android:text="@string/unit_l"
+                            android:textSize="14sp"
+                            app:cornerRadius="16dp" />
+
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+                </LinearLayout>
+
+                <!-- CAMPO: Data de Validade -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDataValidade"
+                    style="@style/Widget.InventaAi.TextInputLayout.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="40dp"
+                    android:hint="@string/hint_expiry_date"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_calendar"
+                    app:endIconTint="?attr/colorPrimary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDataValidade"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:fontFamily="@font/inter_regular"
+                        android:inputType="none"
+                        android:maxLines="1"
+                        android:textSize="16sp"
+                        tools:text="22/05/2026" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- BOTÃO SALVAR -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSalvar"
+                    style="@style/Widget.InventaAi.Button.Pill"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_save"
+                    android:textSize="17sp"
+                    app:icon="@drawable/ic_save"
+                    app:iconGravity="textStart" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Título centralizado na AppBar (âncora) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_bold"
+            android:text="@string/app_name"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="22sp"
+            app:layout_anchor="@+id/appBarLayoutCadastro"
+            app:layout_anchorGravity="center" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- ======================== NAVIGATION DRAWER ======================== -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/cadastroNavigationView"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="?attr/colorSurface"
+        app:headerLayout="@layout/nav_drawer_header"
+        app:menu="@menu/nav_drawer_menu"
+        app:itemTextColor="?attr/colorOnSurface"
+        app:itemIconTint="?attr/colorPrimary" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

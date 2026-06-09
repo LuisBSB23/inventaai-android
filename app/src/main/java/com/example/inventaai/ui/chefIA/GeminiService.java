@@ -56,12 +56,11 @@ public class GeminiService {
     // =========================================================================
 
     public void gerarReceita(List<DespensaItem> itens, ReceitaCallback callback) {
-        // Sprint 16: usa o prompt refinado sem restrição de categoria
         enviarRequisicao(construirPrompt(itens, null), callback);
     }
 
     // =========================================================================
-    // SPRINT 15/16: GERAR RECEITA COM CATEGORIA
+    // SPRINT 15/18: GERAR RECEITA COM CATEGORIA
     // =========================================================================
 
     public void gerarReceitaComCategoria(List<DespensaItem> itens,
@@ -126,43 +125,80 @@ public class GeminiService {
     }
 
     private String construirPrompt(List<DespensaItem> itens, String categoria) {
-        // Monta a lista de ingredientes disponíveis
-        StringBuilder lista = new StringBuilder();
-        for (DespensaItem item : itens) {
-            lista.append("- ")
-                    .append(item.getNome())
-                    .append(" (")
-                    .append(formatarQuantidade(item.getQuantidade()))
-                    .append(" ")
-                    .append(item.getUnidadeMedida() != null ? item.getUnidadeMedida() : "unid")
-                    .append(")\n");
-        }
 
-        // Sprint 16: instrução de categoria (omitida quando "Surpresa" ou null)
+        // ── Instrução de categoria ────────────────────────────────────────────
         String instrucaoCategoria = "";
         if (categoria != null && !categoria.isEmpty() && !"Surpresa".equals(categoria)) {
             instrucaoCategoria = " do tipo " + categoria;
         }
 
-        // Sprint 16: prompt estruturado com restrição de veracidade explícita
-        return "Você é um chef profissional especialista em culinária brasileira. "
-                + "Crie uma receita real" + instrucaoCategoria
-                + ", priorizando os seguintes ingredientes disponíveis na despensa do usuário:\n"
-                + lista
-                + "\nATENÇÃO: Sugira APENAS receitas reais e culturalmente conhecidas. "
-                + "Não invente pratos fictícios ou combinações incomuns. "
-                + "A receita deve ser viável com os ingredientes listados, "
-                + "podendo assumir que o usuário possui itens básicos de cozinha "
-                + "(sal, óleo, água, temperos comuns).\n\n"
-                + "Responda APENAS com um objeto JSON puro, sem markdown, sem blocos de código, "
-                + "sem explicações antes ou depois, contendo exatamente estes campos: "
-                + "\"titulo\" (string — nome real da receita), "
-                + "\"tempo_preparo\" (string, ex: \"30 min\"), "
-                + "\"porcoes\" (string, ex: \"4 porções\"), "
-                + "\"dificuldade\" (string: Fácil, Médio ou Difícil), "
-                + "\"ingredientes\" (array de strings, cada item com nome e quantidade), "
-                + "\"passos\" (array de strings com as instruções). "
-                + "Idioma: Português do Brasil.";
+        // ── Lista de ingredientes disponíveis (pode ser vazia) ────────────────
+        StringBuilder lista = new StringBuilder();
+        if (itens != null && !itens.isEmpty()) {
+            for (DespensaItem item : itens) {
+                lista.append("- ")
+                        .append(item.getNome())
+                        .append(" (")
+                        .append(formatarQuantidade(item.getQuantidade()))
+                        .append(" ")
+                        .append(item.getUnidadeMedida() != null ? item.getUnidadeMedida() : "unid")
+                        .append(")\n");
+            }
+        }
+
+        // ── Bloco condicional de ingredientes ─────────────────────────────────
+        String blocoIngredientes;
+        if (lista.length() > 0) {
+            blocoIngredientes =
+                    "Ingredientes disponíveis na despensa do usuário:\n"
+                            + lista
+                            + "\n"
+                            + "Priorize esses ingredientes, mas você NÃO é obrigado a usá-los todos. "
+                            + "Se a combinação resultar em algo inviável ou de sabor ruim, "
+                            + "prefira uma receita autêntica que use apenas parte deles, "
+                            + "assumindo que itens básicos de cozinha estão disponíveis "
+                            + "(sal, óleo, água, alho, cebola, temperos comuns).\n\n";
+        } else {
+            // Sprint 18: despensa vazia — gera inspiração culinária livre
+            blocoIngredientes =
+                    "O usuário não informou ingredientes específicos. "
+                            + "Crie uma receita de inspiração culinária usando ingredientes comuns "
+                            + "que qualquer cozinha brasileira provavelmente possui "
+                            + "(sal, óleo, farinha, ovos, leite, açúcar, temperos básicos, etc.).\n\n";
+        }
+
+        // ── Regra de Ouro (Sprint 18) ─────────────────────────────────────────
+        String regraDeOuro =
+                "⚠️ REGRA DE OURO: Você é um chef profissional. "
+                        + "Nunca invente pratos fictícios, nomes de receitas inexistentes "
+                        + "ou combinações gastronômicas incomuns. "
+                        + "A autenticidade da receita é MAIS IMPORTANTE do que usar todos os ingredientes listados. "
+                        + "Prefira sempre uma receita real, conhecida e culturalmente válida. "
+                        + "Se os ingredientes disponíveis não formarem nenhuma receita viável, "
+                        + "use apenas os que fazem sentido e complete com básicos de cozinha.\n\n";
+
+        // ── Instrução de formato JSON estrito (Sprint 18) ─────────────────────
+        String instrucaoFormato =
+                "⚠️ FORMATO OBRIGATÓRIO: Responda EXCLUSIVAMENTE com um objeto JSON válido. "
+                        + "NÃO inclua markdown, NÃO use blocos ```json``` ou ```, "
+                        + "NÃO adicione texto antes nem depois do JSON, "
+                        + "NÃO use caracteres especiais fora das strings JSON. "
+                        + "O JSON deve ser parseável diretamente pelo método gson.fromJson(). "
+                        + "Qualquer caractere fora do JSON irá causar falha no aplicativo.\n\n"
+                        + "Campos obrigatórios no JSON:\n"
+                        + "- \"titulo\": string — nome real e conhecido da receita\n"
+                        + "- \"tempo_preparo\": string — ex: \"30 min\"\n"
+                        + "- \"porcoes\": string — ex: \"4 porções\"\n"
+                        + "- \"dificuldade\": string — exatamente uma das opções: Fácil, Médio ou Difícil\n"
+                        + "- \"ingredientes\": array de strings — cada item no formato \"Nome - quantidade e unidade\"\n"
+                        + "- \"passos\": array de strings — cada passo completo como uma string\n\n"
+                        + "Idioma: Português do Brasil.";
+
+        return "Você é um chef profissional especialista em culinária brasileira.\n\n"
+                + regraDeOuro
+                + "Crie uma receita real" + instrucaoCategoria + ".\n\n"
+                + blocoIngredientes
+                + instrucaoFormato;
     }
 
     private String construirCorpoRequisicao(String prompt) {
@@ -236,11 +272,20 @@ public class GeminiService {
             String textoGerado = partsArr.get(0).getAsJsonObject().get("text").getAsString();
             Log.d(TAG, "GeminiService: texto gerado = " + textoGerado);
 
-            // Remove possíveis blocos markdown mesmo com o prompt pedindo JSON puro
+            // Sprint 18: limpeza defensiva — remove markdown mesmo com prompt pedindo JSON puro
             String jsonLimpo = textoGerado
                     .replaceAll("(?s)```json\\s*", "")
                     .replaceAll("(?s)```\\s*", "")
                     .trim();
+
+            // Sprint 18: extrai apenas o bloco JSON caso haja texto residual antes/depois
+            int inicioJson = jsonLimpo.indexOf('{');
+            int fimJson    = jsonLimpo.lastIndexOf('}');
+            if (inicioJson != -1 && fimJson != -1 && fimJson > inicioJson) {
+                jsonLimpo = jsonLimpo.substring(inicioJson, fimJson + 1);
+            }
+
+            Log.d(TAG, "GeminiService: JSON limpo = " + jsonLimpo);
 
             ReceitaResponse receita = gson.fromJson(jsonLimpo, ReceitaResponse.class);
             if (receita == null) {

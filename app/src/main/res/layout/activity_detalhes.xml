@@ -182,7 +182,7 @@
                     android:textSize="15sp"
                     android:focusable="false"
                     android:cursorVisible="false"
-                    android:inputType="numberDecimal"
+                    android:inputType="none"
                     tools:text="22/05/2026" />
 
             </com.google.android.material.textfield.TextInputLayout>

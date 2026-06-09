@@ -208,15 +208,6 @@ public class DespensaRepository {
 
     // ── MOVER PARA HISTÓRICO COM ORIGEM (Sprint 15) ───────────────────────────
 
-    /**
-     * Sprint 15: move o item para o histórico registrando a origem do consumo.
-     *
-     * @param idItem    ID do item na despensa.
-     * @param nomeItem  Nome do item (denormalizado).
-     * @param motivo    Status: CONSUMIDO ou DESCARTADO.
-     * @param userId    UUID do usuário.
-     * @param origem    Origem do consumo (ex: "Receita: Frango ao Limão"). Pode ser null.
-     */
     public boolean moverParaHistoricoComOrigem(long idItem, String nomeItem,
                                                String motivo, String userId, String origem) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -249,17 +240,6 @@ public class DespensaRepository {
 
     // ── PROCESSAR BAIXAS EM LOTE (Sprint 15) ──────────────────────────────────
 
-    /**
-     * Sprint 15: processa uma lista de baixas em uma única transação.
-     * Para cada item:
-     * - Se {@code qtdReduzir} >= quantidade disponível → move para histórico (CONSUMIDO).
-     * - Caso contrário → subtrai a quantidade e registra no histórico com a origem.
-     *
-     * @param baixas   Lista de pares (item, qtdAReduzir).
-     * @param userId   UUID do usuário logado.
-     * @param origem   Texto de origem (ex: "Receita: Frango ao Limão").
-     * @return true se a transação foi concluída com sucesso.
-     */
     public boolean processarBaixas(List<BaixaItem> baixas, String userId, String origem) {
         if (baixas == null || baixas.isEmpty()) return true;
 
@@ -273,14 +253,12 @@ public class DespensaRepository {
                 double       novaQtd  = item.getQuantidade() - reduzir;
 
                 if (novaQtd <= 0) {
-                    // Item totalmente consumido → muda status e registra histórico
                     ContentValues statusCV = new ContentValues();
                     statusCV.put(DespensaEntry.COLUMN_STATUS, Constants.STATUS_CONSUMIDO);
                     db.update(DespensaEntry.TABLE_NAME, statusCV,
                             DespensaEntry._ID + " = ?",
                             new String[]{ String.valueOf(item.getId()) });
                 } else {
-                    // Subtrai a quantidade
                     ContentValues qtdCV = new ContentValues();
                     qtdCV.put(DespensaEntry.COLUMN_QUANTIDADE, novaQtd);
                     db.update(DespensaEntry.TABLE_NAME, qtdCV,
@@ -288,7 +266,6 @@ public class DespensaRepository {
                             new String[]{ String.valueOf(item.getId()) });
                 }
 
-                // Insere registro no histórico com origem
                 ContentValues hist = new ContentValues();
                 hist.put(HistoricoEntry.COLUMN_ID_ITEM,     item.getId());
                 hist.put(HistoricoEntry.COLUMN_NOME_CACHED, item.getNome());
@@ -323,6 +300,38 @@ public class DespensaRepository {
         }
     }
 
+    // ── DELETAR VÁRIOS (Sprint 18) ────────────────────────────────────────────
+
+    public int deletarVarios(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return 0;
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int totalDeletados = 0;
+        try {
+            db.beginTransaction();
+
+            for (Long id : ids) {
+                int linhas = db.delete(
+                        DespensaEntry.TABLE_NAME,
+                        DespensaEntry._ID + " = ?",
+                        new String[]{ String.valueOf(id) }
+                );
+                totalDeletados += linhas;
+                Log.d(TAG, "deletarVarios: id=" + id + " deletado=" + (linhas > 0));
+            }
+
+            db.setTransactionSuccessful();
+            Log.d(TAG, "deletarVarios: transação concluída — " + totalDeletados + " item(ns) removido(s).");
+            return totalDeletados;
+
+        } catch (Exception e) {
+            Log.e(TAG, "deletarVarios: erro na transação", e);
+            return -1;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     // ── HELPERS ───────────────────────────────────────────────────────────────
 
     private DespensaItem fromCursor(Cursor cursor) {
@@ -353,9 +362,6 @@ public class DespensaRepository {
 
     // ── Classe auxiliar para processarBaixas ─────────────────────────────────
 
-    /**
-     * Par (item de despensa, quantidade a reduzir) para uso no processarBaixas.
-     */
     public static class BaixaItem {
         public final DespensaItem item;
         public final double       qtdReduzir;

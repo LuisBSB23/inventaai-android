@@ -76,6 +76,7 @@ public class DashboardActivity extends AppCompatActivity {
     private LinearLayout   layoutBarraSelecao;
     private TextView       tvContadorSelecao;
     private MaterialButton btnCancelarSelecao;
+    private MaterialButton btnExcluirSelecionados; // Sprint 18
 
     // ── Card de Saúde dinâmico ──────────────────────────────────
     private TextView  tvSaudePercent;
@@ -189,9 +190,10 @@ public class DashboardActivity extends AppCompatActivity {
         cardSaudeDespensa = findViewById(R.id.cardPantryHealth);
         progressBar       = findViewById(R.id.progressBarDashboard);
 
-        layoutBarraSelecao = findViewById(R.id.layoutBarraSelecao);
-        tvContadorSelecao  = findViewById(R.id.tvContadorSelecao);
-        btnCancelarSelecao = findViewById(R.id.btnCancelarSelecao);
+        layoutBarraSelecao    = findViewById(R.id.layoutBarraSelecao);
+        tvContadorSelecao     = findViewById(R.id.tvContadorSelecao);
+        btnCancelarSelecao    = findViewById(R.id.btnCancelarSelecao);
+        btnExcluirSelecionados = findViewById(R.id.btnExcluirSelecionados); // Sprint 18
 
         tvSaudePercent = findViewById(R.id.tvSaudePercent);
         tvSaudeLabel   = findViewById(R.id.tvSaudeLabel);
@@ -622,6 +624,11 @@ public class DashboardActivity extends AppCompatActivity {
             adapterPantry.limparSelecao();
             atualizarBarraSelecao();
         });
+
+        // Sprint 18: excluir selecionados → move para histórico como DESCARTADO
+        if (btnExcluirSelecionados != null) {
+            btnExcluirSelecionados.setOnClickListener(v -> confirmarExclusaoEmLote());
+        }
     }
 
     private void configurarBottomNavigation() {
@@ -651,6 +658,54 @@ public class DashboardActivity extends AppCompatActivity {
                 return true;
             }
             return false;
+        });
+    }
+
+    // =========================================================================
+    // SPRINT 18: EXCLUSÃO EM LOTE COM HISTÓRICO
+    // =========================================================================
+
+    private void confirmarExclusaoEmLote() {
+        List<DespensaItem> selecionados = adapterPantry.getItensSelecionados();
+        if (selecionados.isEmpty()) return;
+
+        int qtd = selecionados.size();
+        String msg = qtd == 1
+                ? "Descartar \"" + selecionados.get(0).getNome() + "\"?"
+                : "Descartar " + qtd + " itens selecionados?";
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Descartar itens")
+                .setMessage(msg + "\n\nEles serão movidos para o histórico como descartados.")
+                .setPositiveButton("Descartar", (dialog, which) -> executarExclusaoEmLote(selecionados))
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void executarExclusaoEmLote(List<DespensaItem> itens) {
+        final String userId = currentUserId;
+        AppExecutors.diskIO().execute(() -> {
+            int totalDescartados = 0;
+            for (DespensaItem item : itens) {
+                boolean ok = despensaRepository.moverParaHistorico(
+                        item.getId(),
+                        item.getNome(),
+                        Constants.STATUS_DESCARTADO,
+                        userId
+                );
+                if (ok) totalDescartados++;
+            }
+            final int total = totalDescartados;
+            AppExecutors.mainThread().execute(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                adapterPantry.limparSelecao();
+                atualizarBarraSelecao();
+                atualizarListas();
+                String feedback = total == 1
+                        ? "1 item descartado."
+                        : total + " itens descartados.";
+                Toast.makeText(this, feedback, Toast.LENGTH_SHORT).show();
+            });
         });
     }
 

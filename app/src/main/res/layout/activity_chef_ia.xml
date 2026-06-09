@@ -33,6 +33,23 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <!-- Sprint 18: título com largura restrita para não sobrepor os botões -->
+            <TextView
+                android:id="@+id/tvToolbarTitulo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_bold"
+                android:text="@string/app_name"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="18sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btnSavedRecipes"
+                app:layout_constraintStart_toEndOf="@id/btnBack"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <ImageButton
                 android:id="@+id/btnSavedRecipes"
                 android:layout_width="40dp"
@@ -112,6 +129,17 @@
             app:icon="@drawable/ic_nav_add"
             app:iconGravity="textStart" />
 
+        <!-- Sprint 18: botão de inspiração aleatória mesmo com despensa vazia -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGerarAleatoriaEmpty"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/inter_semibold"
+            android:text="🎲 Receita Aleatória"
+            android:visibility="visible" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -162,7 +190,7 @@
             android:layout_marginTop="12dp"
             android:fontFamily="@font/inter_semibold"
             android:text="🎲 Receita Aleatória"
-            android:visibility="gone" />
+            android:visibility="visible" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnIrParaSelecao"
@@ -419,15 +447,5 @@
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
 
-    <TextView
-        android:id="@+id/tvToolbarTitulo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_bold"
-        android:text="@string/app_name"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="22sp"
-        app:layout_anchor="@+id/appBarLayout3"
-        app:layout_anchorGravity="center" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
