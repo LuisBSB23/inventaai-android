@@ -75,11 +75,11 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
                 android:fontFamily="@font/inter_regular"
-                android:text="Importe, exporte e compartilhe sua despensa usando planilhas CSV."
+                android:text="Importe, exporte e compartilhe sua despensa usando planilhas EXCEL."
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="14sp"
-                android:layout_marginBottom="24dp" />
+                android:textSize="14sp" />
 
             <!-- ── SEÇÃO: COMEÇAR DO ZERO ──────────────────────────────── -->
             <TextView
@@ -141,12 +141,13 @@
                             android:text="Baixar Modelo de Planilha"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="3dp"
                             android:fontFamily="@font/inter_regular"
-                            android:text="Gera um CSV com cabeçalhos e exemplos"
+                            android:text="Gera um EXCEL com cabeçalhos e exemplos"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="13sp" />
                     </LinearLayout>
@@ -221,12 +222,13 @@
                             android:text="Importar Planilha"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="3dp"
                             android:fontFamily="@font/inter_regular"
-                            android:text="Seleciona um arquivo .csv e adiciona itens"
+                            android:text="Seleciona um arquivo .xlsx e adiciona itens"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="13sp" />
                     </LinearLayout>
@@ -278,13 +280,14 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:background="@drawable/bg_circle_primary_container">
+
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_share"
-                            android:tint="?attr/colorPrimary"
-                            android:contentDescription="Exportar" />
+                            android:contentDescription="Exportar"
+                            android:src="@drawable/ic_increase"
+                            android:tint="?attr/colorPrimary" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -301,12 +304,13 @@
                             android:text="Exportar Despensa Atual"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="3dp"
                             android:fontFamily="@font/inter_regular"
-                            android:text="Salva todos os itens ativos em arquivo CSV"
+                            android:text="Salva todos os itens ativos em arquivo EXCEL"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="13sp" />
                     </LinearLayout>
@@ -352,9 +356,9 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_nav_chef"
-                            android:tint="?attr/colorPrimary"
-                            android:contentDescription="WhatsApp" />
+                            android:contentDescription="WhatsApp"
+                            android:src="@drawable/ic_share"
+                            android:tint="?attr/colorPrimary" />
                     </FrameLayout>
 
                     <LinearLayout
