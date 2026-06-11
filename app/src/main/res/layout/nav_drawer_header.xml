@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:paddingTop="48dp"
+    android:paddingTop="56dp"
+    android:paddingBottom="20dp"
     android:background="@color/colorSurface">
 
     <FrameLayout
@@ -52,5 +53,12 @@
         android:textSize="12sp"
         android:textColor="@color/colorOnSurfaceVariant"
         android:text="ID: ..." />
+
+    <!-- Sprint 19-B #10: Separador visual -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="20dp"
+        android:background="?attr/colorOutlineVariant" />
 
 </LinearLayout>

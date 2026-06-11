@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.NestedScrollView;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
@@ -38,6 +39,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +77,11 @@ public class ChefIAActivity extends AppCompatActivity {
      * Sprint 15: botão visível quando nenhum ingrediente está selecionado.
      * Dispara o modal de categoria e usa toda a despensa.
      */
-    private MaterialButton btnGerarAleatoria;
+    private MaterialButton       btnGerarAleatoria;
+
+    // Sprint 19-B #7: barra de progresso de leitura
+    private LinearProgressIndicator progressBarLeitura;
+    private NestedScrollView         scrollViewConteudo;
 
     // ── Dependências ──────────────────────────────────────────────────────────
     private DespensaRepository despensaRepository;
@@ -423,6 +429,7 @@ public class ChefIAActivity extends AppCompatActivity {
         if (progressBar                    != null) progressBar.setVisibility(View.GONE);
         if (viewConteudo                   != null) viewConteudo.setVisibility(View.GONE);
         if (layoutIngredientesSelecionados != null) layoutIngredientesSelecionados.setVisibility(View.GONE);
+        if (progressBarLeitura             != null) progressBarLeitura.setVisibility(View.GONE);
     }
 
     private void mostrarEmptyStateSemSelecao() {
@@ -432,6 +439,7 @@ public class ChefIAActivity extends AppCompatActivity {
         if (viewConteudo                   != null) viewConteudo.setVisibility(View.GONE);
         if (layoutIngredientesSelecionados != null) layoutIngredientesSelecionados.setVisibility(View.GONE);
         if (btnGerarAleatoria              != null) btnGerarAleatoria.setVisibility(View.GONE);
+        if (progressBarLeitura             != null) progressBarLeitura.setVisibility(View.GONE);
     }
 
     private void mostrarEmptyState(boolean vazio) {
@@ -440,12 +448,18 @@ public class ChefIAActivity extends AppCompatActivity {
         if (progressBar != null) progressBar.setVisibility(View.GONE);
         if (viewConteudo != null)
             viewConteudo.setVisibility(vazio ? View.GONE : View.VISIBLE);
+        // Sprint 19-B #7: ocultar barra de leitura no empty state
+        if (progressBarLeitura != null)
+            progressBarLeitura.setVisibility(View.GONE);
     }
 
     private void mostrarCarregando(boolean carregando) {
         if (progressBar  != null) progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE);
         if (viewConteudo != null) viewConteudo.setVisibility(carregando ? View.GONE : View.VISIBLE);
         if (layoutEmptyRecipe != null) layoutEmptyRecipe.setVisibility(View.GONE);
+        // Sprint 19-B #7: ocultar barra de leitura durante carregamento
+        if (progressBarLeitura != null)
+            progressBarLeitura.setVisibility(carregando ? View.GONE : View.VISIBLE);
         btnNovaReceita.setEnabled(!carregando);
         btnSalvarReceita.setEnabled(!carregando);
         if (carregando) {
@@ -484,6 +498,11 @@ public class ChefIAActivity extends AppCompatActivity {
         viewConteudo        = findViewById(R.id.scrollViewConteudo);
         ivRecipeImage       = findViewById(R.id.ivRecipeImage);
         layoutEmptyRecipe   = findViewById(R.id.layoutEmptyRecipe);
+
+        // Sprint 19-B #7: barra de leitura
+        progressBarLeitura = findViewById(R.id.progressBarLeitura);
+        scrollViewConteudo  = findViewById(R.id.scrollViewConteudo);
+        configurarProgressoLeitura();
 
         layoutIngredientesSelecionados = findViewById(R.id.layoutIngredientesSelecionados);
         chipGroupIngredientes          = findViewById(R.id.chipGroupIngredientes);
@@ -688,6 +707,22 @@ public class ChefIAActivity extends AppCompatActivity {
         row.addView(tvNum);
         row.addView(tvDesc);
         llSteps.addView(row);
+    }
+
+    // =========================================================================
+    // SPRINT 19-B #7: PROGRESSO DE LEITURA DA RECEITA
+    // =========================================================================
+
+    private void configurarProgressoLeitura() {
+        if (scrollViewConteudo == null || progressBarLeitura == null) return;
+
+        scrollViewConteudo.setOnScrollChangeListener(
+                (NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                    int totalHeight   = v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight();
+                    if (totalHeight <= 0) return;
+                    int percent = (int) ((scrollY / (float) totalHeight) * 100);
+                    progressBarLeitura.setProgressCompat(Math.min(percent, 100), true);
+                });
     }
 
     private int dpToPx(int dp) {

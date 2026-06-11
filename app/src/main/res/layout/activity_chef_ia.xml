@@ -64,6 +64,19 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Sprint 19-B #7: Barra de progresso de leitura da receita -->
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressBarLeitura"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:indicatorColor="?attr/colorPrimary"
+        app:trackColor="?attr/colorSurfaceVariant"
+        app:trackThickness="3dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layout_anchor="@id/appBarLayout3"
+        app:layout_anchorGravity="bottom" />
+
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressBarChef"
         style="@style/Widget.Material3.CircularProgressIndicator"

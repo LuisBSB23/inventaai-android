@@ -395,6 +395,17 @@
                             android:layout_marginTop="8dp"
                             android:paddingHorizontal="32dp" />
 
+                        <!-- Sprint 19-B #8: CTA no empty state -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAdicionarPrimeiroItem"
+                            style="@style/Widget.InventaAi.Button.Pill"
+                            android:layout_width="wrap_content"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="24dp"
+                            android:text="Adicionar primeiro item"
+                            app:icon="@drawable/ic_nav_add"
+                            app:iconGravity="textStart" />
+
                     </LinearLayout>
 
                 </LinearLayout>
@@ -500,4 +511,4 @@
         app:itemTextColor="?attr/colorOnSurface"
         app:itemIconTint="?attr/colorPrimary" />
 
-</androidx.drawerlayout.widget.DrawerLayout>a
+</androidx.drawerlayout.widget.DrawerLayout>

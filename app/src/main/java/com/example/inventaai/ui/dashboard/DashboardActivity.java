@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -77,6 +79,9 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView       tvContadorSelecao;
     private MaterialButton btnCancelarSelecao;
     private MaterialButton btnExcluirSelecionados; // Sprint 18
+
+    // Sprint 19-B #8: CTA empty state
+    private MaterialButton btnAdicionarPrimeiroItem;
 
     // ── Card de Saúde dinâmico ──────────────────────────────────
     private TextView  tvSaudePercent;
@@ -194,6 +199,9 @@ public class DashboardActivity extends AppCompatActivity {
         tvContadorSelecao     = findViewById(R.id.tvContadorSelecao);
         btnCancelarSelecao    = findViewById(R.id.btnCancelarSelecao);
         btnExcluirSelecionados = findViewById(R.id.btnExcluirSelecionados); // Sprint 18
+
+        // Sprint 19-B #8
+        btnAdicionarPrimeiroItem = findViewById(R.id.btnAdicionarPrimeiroItem);
 
         tvSaudePercent = findViewById(R.id.tvSaudePercent);
         tvSaudeLabel   = findViewById(R.id.tvSaudeLabel);
@@ -319,12 +327,28 @@ public class DashboardActivity extends AppCompatActivity {
         int quantidade    = adapterPantry.getQuantidadeSelecionados();
 
         if (modoAtivo) {
-            layoutBarraSelecao.setVisibility(View.VISIBLE);
             tvContadorSelecao.setText(quantidade + " selecionado(s)");
             btnGenerateRecipe.setText("Gerar Receita");
+            // Sprint 19-B #11: animação de entrada
+            if (layoutBarraSelecao.getVisibility() != View.VISIBLE) {
+                layoutBarraSelecao.setVisibility(View.VISIBLE);
+                Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_down_in);
+                layoutBarraSelecao.startAnimation(anim);
+            }
         } else {
-            layoutBarraSelecao.setVisibility(View.GONE);
             btnGenerateRecipe.setText(getString(R.string.generate_recipe));
+            // Sprint 19-B #11: animação de saída
+            if (layoutBarraSelecao.getVisibility() == View.VISIBLE) {
+                Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_up_out);
+                anim.setAnimationListener(new Animation.AnimationListener() {
+                    @Override public void onAnimationStart(Animation a) {}
+                    @Override public void onAnimationRepeat(Animation a) {}
+                    @Override public void onAnimationEnd(Animation a) {
+                        layoutBarraSelecao.setVisibility(View.GONE);
+                    }
+                });
+                layoutBarraSelecao.startAnimation(anim);
+            }
         }
     }
 
@@ -628,6 +652,15 @@ public class DashboardActivity extends AppCompatActivity {
         // Sprint 18: excluir selecionados → move para histórico como DESCARTADO
         if (btnExcluirSelecionados != null) {
             btnExcluirSelecionados.setOnClickListener(v -> confirmarExclusaoEmLote());
+        }
+
+        // Sprint 19-B #8: CTA na despensa vazia
+        if (btnAdicionarPrimeiroItem != null) {
+            btnAdicionarPrimeiroItem.setOnClickListener(v -> {
+                Intent intent = new Intent(this, CadastroActivity.class);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            });
         }
     }
 

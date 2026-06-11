@@ -231,38 +231,40 @@
                 <!-- Botão Iniciar (visível quando status = SALVA) -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnIniciarPreparo"
-                    style="@style/Widget.MaterialComponents.Button"
+                    style="@style/Widget.InventaAi.Button.Pill"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:layout_marginBottom="12dp"
                     android:text="▶  Iniciar Preparo"
                     android:fontFamily="@font/inter_semibold"
                     android:textSize="16sp"
+                    app:icon="@drawable/ic_time"
                     android:visibility="visible" />
 
                 <!-- Botão Cancelar (visível apenas quando EM_ANDAMENTO) -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancelarPreparo"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.InventaAi.Button.Pill.Outlined.Error"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:layout_marginBottom="12dp"
                     android:text="✕  Cancelar"
                     android:fontFamily="@font/inter_semibold"
                     android:textSize="16sp"
+                    app:icon="@drawable/ic_delete"
                     android:visibility="gone" />
 
                 <!-- Botão Finalizar (visível apenas quando EM_ANDAMENTO)-->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFinalizarReceita"
-                    style="@style/Widget.MaterialComponents.Button"
+                    style="@style/Widget.InventaAi.Button.Pill"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:layout_marginBottom="32dp"
                     android:text="✓  Finalizar Receita"
                     android:fontFamily="@font/inter_semibold"
                     android:textSize="16sp"
-                    android:backgroundTint="@color/colorPrimary"
+                    app:icon="@drawable/ic_favorite"
                     android:visibility="gone" />
 
             </LinearLayout>
