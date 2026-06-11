@@ -109,4 +109,68 @@
     <color name="colorOutlineDark">#879487</color>
     <color name="colorOutlineVariantDark">#3D4A3E</color>
 
+    <!-- ===================================================================
+         TAREFA #3 — Cores temáticas por categoria (Sprint 19-A)
+         Cada categoria tem: Container (fundo do ícone) e OnContainer (cor do ícone).
+         Contraste mínimo 4.5:1 (WCAG AA) garantido em cada par.
+         =================================================================== -->
+
+    <!-- Hortifruti — Verde -->
+    <color name="colorCatHortifrutiContainer">#C8F5D0</color>   <!-- fundo claro -->
+    <color name="colorCatHortifrutiOnContainer">#00521E</color>  <!-- ícone escuro, contraste ~7:1 -->
+
+    <!-- Laticínios — Azul -->
+    <color name="colorCatLaticiniosContainer">#C2E4FF</color>
+    <color name="colorCatLaticiniosOnContainer">#003353</color>  <!-- contraste ~8:1 -->
+
+    <!-- Carnes — Laranja -->
+    <color name="colorCatCarnesContainer">#FFD9B0</color>
+    <color name="colorCatCarnesOnContainer">#5C2800</color>      <!-- contraste ~8:1 -->
+
+    <!-- Bebidas — Roxo -->
+    <color name="colorCatBebidasContainer">#EAD5FF</color>
+    <color name="colorCatBebidasOnContainer">#3A0066</color>     <!-- contraste ~9:1 -->
+
+    <!-- Grãos / Cereais — Amarelo âmbar -->
+    <color name="colorCatGraosContainer">#FFF0C2</color>
+    <color name="colorCatGraosOnContainer">#4A3500</color>       <!-- contraste ~9:1 -->
+
+    <!-- Congelados — Azul acinzentado -->
+    <color name="colorCatCongeladosContainer">#D4E4F4</color>
+    <color name="colorCatCongeladosOnContainer">#0D2E47</color>  <!-- contraste ~9:1 -->
+
+    <!-- Outros — Cinza neutro (fallback) -->
+    <color name="colorCatOutrosContainer">#E5E8EA</color>
+    <color name="colorCatOutrosOnContainer">#2A2D2F</color>      <!-- contraste ~10:1 -->
+
+    <!-- ─── Variantes Dark ─────────────────────────────────────────────── -->
+
+    <!-- Hortifruti Dark -->
+    <color name="colorCatHortifrutiContainerDark">#004D1A</color>
+    <color name="colorCatHortifrutiOnContainerDark">#A8EFBA</color>
+
+    <!-- Laticínios Dark -->
+    <color name="colorCatLaticiniosContainerDark">#00304D</color>
+    <color name="colorCatLaticiniosOnContainerDark">#9ECFEE</color>
+
+    <!-- Carnes Dark -->
+    <color name="colorCatCarnesContainerDark">#5A2200</color>
+    <color name="colorCatCarnesOnContainerDark">#FFB87A</color>
+
+    <!-- Bebidas Dark -->
+    <color name="colorCatBebidasContainerDark">#380060</color>
+    <color name="colorCatBebidasOnContainerDark">#D8AEFF</color>
+
+    <!-- Grãos Dark -->
+    <color name="colorCatGraosContainerDark">#453200</color>
+    <color name="colorCatGraosOnContainerDark">#FFDFA0</color>
+
+    <!-- Congelados Dark -->
+    <color name="colorCatCongeladosContainerDark">#0B2B42</color>
+    <color name="colorCatCongeladosOnContainerDark">#A8CCE4</color>
+
+    <!-- Outros Dark -->
+    <color name="colorCatOutrosContainerDark">#2A2D2F</color>
+    <color name="colorCatOutrosOnContainerDark">#C8CBCD</color>
+
 </resources>

@@ -119,4 +119,9 @@
     <string name="dialog_delete_receita_title">Remover receita</string>
     <string name="cd_recipe_thumb">Imagem da receita</string>
 
+    <string name="chip_todos">Todos (%d)</string>
+    <string name="chip_consumido">Consumido (%d)</string>
+    <string name="chip_descartado">Descartado (%d)</string>
+    <string name="chip_usado_receita">Usado em receita (%d)</string>
+
 </resources>

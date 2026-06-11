@@ -19,15 +19,25 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <!-- Miniatura -->
-        <ImageView
+        <!--
+            TAREFA #6 — Miniatura com cantos arredondados seletivos:
+            Substituído ImageView por ShapeableImageView.
+            shapeAppearanceOverlay definido em styles.xml:
+              - canto superior esquerdo: 12dp
+              - canto inferior esquerdo: 12dp
+              - cantos direitos: 0dp
+            android:clipToOutline="true" impede que a imagem vaze.
+        -->
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivReceitaThumb"
             android:layout_width="88dp"
             android:layout_height="88dp"
             android:scaleType="centerCrop"
             android:background="@color/colorSurfaceContainerHigh"
             android:src="@drawable/ic_empty_recipe"
-            android:contentDescription="Imagem da receita" />
+            android:contentDescription="Imagem da receita"
+            android:clipToOutline="true"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.InventaAi.ReceitaThumb" />
 
         <!-- Conteúdo -->
         <LinearLayout
@@ -56,7 +66,7 @@
                     android:textSize="15sp"
                     tools:text="Risoto de Cogumelos" />
 
-                <!-- Sprint 14: badge "Em andamento" — visível só quando status = EM_ANDAMENTO -->
+                <!-- Sprint 14: badge "Em andamento" -->
                 <TextView
                     android:id="@+id/tvBadgeAndamento"
                     android:layout_width="wrap_content"

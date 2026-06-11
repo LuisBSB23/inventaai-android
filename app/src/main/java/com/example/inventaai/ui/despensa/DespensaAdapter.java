@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
+import com.example.inventaai.util.CategoryColorHelper;   // TAREFA #3
 import com.example.inventaai.util.CategoryIconHelper;
 import com.example.inventaai.util.DateUtils;
 import com.google.android.material.card.MaterialCardView;
@@ -160,6 +162,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     static class DespensaViewHolder extends RecyclerView.ViewHolder {
 
         private final MaterialCardView cardItem;
+        private final FrameLayout      flIconContainer;   // TAREFA #3: referência ao FrameLayout
         private final ImageView        ivItemIcon;
         private final TextView         tvItemName;
         private final TextView         tvItemQuantity;
@@ -170,6 +173,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         DespensaViewHolder(@NonNull View v) {
             super(v);
             cardItem          = v.findViewById(R.id.cardItem);
+            flIconContainer   = v.findViewById(R.id.flIconContainer);   // TAREFA #3
             ivItemIcon        = v.findViewById(R.id.ivItemIcon);
             tvItemName        = v.findViewById(R.id.tvItemName);
             tvItemQuantity    = v.findViewById(R.id.tvItemQuantity);
@@ -189,6 +193,14 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
             // ── Ícone ──────────────────────────────────────────────────────
             ivItemIcon.setImageResource(CategoryIconHelper.getIcon(item.getCategoria()));
+
+            // ── TAREFA #3 — Cor dinâmica por categoria ─────────────────────
+            // Obtém o par de cores (container + on-container) para a categoria.
+            // Em modo seleção, a cor do container é sobreposta pelo estado do card,
+            // mas mantemos a cor do ícone para consistência visual.
+            CategoryColorHelper.Colors cores = CategoryColorHelper.getColors(ctx, item.getCategoria());
+            flIconContainer.setBackgroundTintList(ColorStateList.valueOf(cores.containerColor));
+            ivItemIcon.setImageTintList(ColorStateList.valueOf(cores.onContainerColor));
 
             // ── Nome ───────────────────────────────────────────────────────
             tvItemName.setText(item.getNome());
@@ -292,20 +304,17 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
             String unidLower = unidade.trim().toLowerCase(Locale.getDefault());
 
-            // ── Conversão Kg → g quando quantidade < 1 kg ─────────────────
             if (unidLower.equals("kg") && quantidade < 1.0) {
                 int gramas = (int) Math.round(quantidade * 1000);
                 return gramas + " g";
             }
 
-            // ── Conversão L → ml quando quantidade < 1 L ──────────────────
             if ((unidLower.equals("l") || unidLower.equals("litro") || unidLower.equals("litros"))
                     && quantidade < 1.0) {
                 int ml = (int) Math.round(quantidade * 1000);
                 return ml + " ml";
             }
 
-            // ── Caso padrão: número + unidade original ─────────────────────
             return formatarNumero(quantidade) + " " + unidade;
         }
 
@@ -313,10 +322,8 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             if (valor == Math.floor(valor) && !Double.isInfinite(valor)) {
                 return String.valueOf((int) valor);
             }
-            // Remove zeros à direita mas mantém até 3 casas decimais
             String formatado = String.format(Locale.getDefault(), "%.3f", valor);
             formatado = formatado.replaceAll("[,.]?0+$", "");
-            // Garante que não termine com separador
             if (formatado.endsWith(",") || formatado.endsWith(".")) {
                 formatado = formatado.substring(0, formatado.length() - 1);
             }
