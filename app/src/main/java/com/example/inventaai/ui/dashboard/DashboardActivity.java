@@ -43,6 +43,7 @@ import com.example.inventaai.ui.receitas.ReceitasEmAndamentoActivity;
 import com.example.inventaai.ui.historico.HistoricoActivity;
 import com.example.inventaai.ui.login.LoginActivity;
 import com.example.inventaai.ui.perfil.PerfilActivity;
+import com.example.inventaai.ui.sincronizacao.SincronizacaoActivity;
 import com.example.inventaai.util.AppExecutors;
 import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.DateUtils;
@@ -531,6 +532,10 @@ public class DashboardActivity extends AppCompatActivity {
 
             } else if (id == R.id.nav_configuracoes) {
                 startActivity(new Intent(this, ConfiguracoesActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
+            } else if (id == R.id.nav_sincronizar) {
+                startActivity(new Intent(this, SincronizacaoActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
             } else if (id == R.id.nav_sair) {

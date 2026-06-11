@@ -101,6 +101,18 @@
             android:label="Configurações"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".ui.sincronizacao.SincronizacaoActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:label="Sincronizar Despensa" />
+
+        <activity
+            android:name=".ui.sincronizacao.PreviewImportActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:label="Pré-visualizar Importação" />
+
     </application>
 
 </manifest>
