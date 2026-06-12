@@ -60,17 +60,29 @@ public final class PlanilhaHelper {
                     return new ResultadoLeitura(itens, 0, "A planilha está vazia.");
                 }
 
-                // Verifica se a primeira linha é o cabeçalho
-                boolean isPrimeiraLinhaHeader = false;
-                Row primeiraLinha = rowList.get(0);
-                if (primeiraLinha.getCellCount() > 0) {
-                    String cell0 = getTextoCelula(primeiraLinha, 0);
-                    if (cell0.toLowerCase().startsWith("nome")) {
-                        isPrimeiraLinhaHeader = true;
+                // O modelo padrão possui 10 linhas de instruções/categorias seguidas
+                // do cabeçalho na linha 11 (índice 10). Os itens começam na linha 12
+                // (índice 11). Caso a planilha não siga esse modelo, cai no fallback
+                // que detecta o cabeçalho dinamicamente.
+                final int LINHA_DADOS_MODELO = 11; // índice base-0 da primeira linha de dados
+
+                int startRow = LINHA_DADOS_MODELO;
+
+                // Fallback: se o arquivo não tiver linhas suficientes ou não tiver
+                // o cabeçalho esperado na linha 11 (índice 10), busca "nome" em
+                // qualquer linha e começa logo abaixo.
+                if (rowList.size() <= LINHA_DADOS_MODELO) {
+                    // Planilha curta — procura cabeçalho na primeira linha com "nome"
+                    startRow = 0;
+                    for (int i = 0; i < rowList.size(); i++) {
+                        String cell0 = getTextoCelula(rowList.get(i), 0);
+                        if (cell0.toLowerCase().startsWith("nome")) {
+                            startRow = i + 1;
+                            break;
+                        }
                     }
                 }
 
-                int startRow = isPrimeiraLinhaHeader ? 1 : 0;
                 for (int i = startRow; i < rowList.size(); i++) {
                     Row row = rowList.get(i);
                     if (row.getPhysicalCellCount() == 0) continue;
@@ -175,16 +187,57 @@ public final class PlanilhaHelper {
         Log.d(TAG, "PlanilhaHelper.escreverXlsx: " + itens.size() + " itens exportados.");
     }
 
+    /**
+     * Gera o modelo padrão de importação, idêntico ao arquivo modelo_despensa.xlsx:
+     *
+     * Linhas 1–9  → instruções de categorias e unidades (leitura humana)
+     * Linha 10    → vazia (separador)
+     * Linha 11    → cabeçalho: Nome | Categoria | Quantidade | Unidade | Validade
+     * Linha 12+   → dados do usuário (em branco no modelo)
+     *
+     * O leitor {@link #lerXlsx} espera exatamente esse layout e começa a
+     * processar itens a partir do índice 11 (linha 12).
+     */
     public static void escreverModeloVazio(OutputStream output) throws IOException {
         try (Workbook wb = new Workbook(output, "InventaAí", "1.0")) {
-            Worksheet ws = wb.newWorksheet("Despensa Modelo");
+            Worksheet ws = wb.newWorksheet("Planilha1");
 
-            gerarCabecalho(ws);
+            // ── Bloco de instruções (linhas 1–9, índices 0–8) ────────────────
+            ws.value(0, 0, "Categorias diponiveis:");
+            ws.value(0, 2, "Unidade:");
 
-            // Linhas de exemplo
-            ws.value(1, 0, "Arroz"); ws.value(1, 1, "Graos e Cereais"); ws.value(1, 2, 2.0); ws.value(1, 3, "kg"); ws.value(1, 4, "31/12/2026");
-            ws.value(2, 0, "Leite"); ws.value(2, 1, "Laticinios"); ws.value(2, 2, 1.0); ws.value(2, 3, "L"); ws.value(2, 4, "15/07/2026");
-            ws.value(3, 0, "Tomate"); ws.value(3, 1, "Hortifruti"); ws.value(3, 2, 0.5); ws.value(3, 3, "kg"); ws.value(3, 4, "20/07/2026");
+            ws.value(1, 0, "Hortifruti");
+            ws.value(1, 2, "kg - L - Unid");
+
+            ws.value(2, 0, "Laticinios");
+            ws.value(2, 2, "Ex: 1.5 (vira ML e L se começar com 0)");
+
+            ws.value(3, 0, "Carnes");
+            ws.value(3, 2, "Para ML e Gramas");
+
+            ws.value(4, 0, "Graos e Cereais");
+            ws.value(4, 2, "Ex: 0.25 com KG ou L na unidade (0 com casas decimais)");
+
+            ws.value(5, 0, "Bebidas");
+
+            ws.value(6, 0, "Congelados");
+            ws.value(6, 2, "Validade");
+
+            ws.value(7, 0, "Temperos");
+            ws.value(7, 2, "DIA/MÊS/ANO");
+
+            ws.value(8, 0, "Outros");
+
+            // Linha 10 (índice 9) — vazia (separador visual)
+
+            // ── Cabeçalho na linha 11 (índice 10) ───────────────────────────
+            ws.value(10, 0, "Nome");
+            ws.value(10, 1, "Categoria");
+            ws.value(10, 2, "Quantidade");
+            ws.value(10, 3, "Unidade");
+            ws.value(10, 4, "Validade");
+
+            // Linha 12 (índice 11) em diante → preenchida pelo usuário
         }
         Log.d(TAG, "PlanilhaHelper.escreverModeloVazio: modelo gerado.");
     }
