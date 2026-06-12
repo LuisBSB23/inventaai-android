@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="52dp"
+    android:height="52dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Folha (leaf shape) centralizada -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,26
+            C54,26 38,38 38,52
+            C38,61.6 45.2,69 54,70
+            C62.8,69 70,61.6 70,52
+            C70,38 54,26 54,26 Z" />
+
+    <!-- Nervura central da folha -->
+    <path
+        android:fillColor="#006D36"
+        android:strokeColor="#006D36"
+        android:strokeWidth="1.5"
+        android:pathData="M54,68 L54,40" />
+
+    <!-- Check (stroke verde sobre folha branca) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#006D36"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M46.5,54.5 L51.5,60 L62.5,48.5"/>
+
+</vector>
