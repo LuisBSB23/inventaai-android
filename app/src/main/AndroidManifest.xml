@@ -113,6 +113,12 @@
             android:windowSoftInputMode="adjustResize"
             android:label="Pré-visualizar Importação" />
 
+        <!-- SEED DE TESTE — REMOVER ANTES DA BUILD DE PRODUÇÃO -->
+        <activity
+            android:name=".ui.dashboard.SeedTestActivity"
+            android:exported="true"
+            android:label="Seed Teste Sprint 7" />
+
     </application>
 
 </manifest>
