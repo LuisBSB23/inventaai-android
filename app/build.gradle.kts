@@ -78,9 +78,8 @@ dependencies {
     // ── Sprint 12: WorkManager (background tasks / notificações de vencimento)
     implementation("androidx.work:work-runtime:2.9.0")
 
-    // ── SPRINT 20: FastExcel (Manipulação leve de arquivos .xlsx) ────────────
+    // ── SPRINT 20: FastExcel (escrita de .xlsx) ──────────────────────────────
     implementation("org.dhatim:fastexcel:0.18.3")
-    implementation("org.dhatim:fastexcel-reader:0.18.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
