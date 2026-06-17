@@ -1,41 +1,60 @@
 package com.example.inventaai.ui.cadastro;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
 import com.example.inventaai.data.repository.DespensaRepository;
+import com.example.inventaai.ui.dashboard.DashboardActivity;
+import com.example.inventaai.ui.historico.HistoricoActivity;
+import com.example.inventaai.ui.perfil.PerfilActivity;
+import com.example.inventaai.ui.receitas.ReceitasActivity;
+import com.example.inventaai.ui.receitas.ReceitasConcluidasActivity;
+import com.example.inventaai.ui.receitas.ReceitasEmAndamentoActivity;
+import com.example.inventaai.ui.sincronizacao.SincronizacaoActivity;
 import com.example.inventaai.util.Constants;
+import com.example.inventaai.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Calendar;
 
-public class CadastroActivity extends AppCompatActivity {
+public class CadastroActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
-    // Views
+    private DrawerLayout              drawerLayout;
+    private NavigationView            navigationView;
     private TextInputLayout           tilNome, tilCategoria, tilQuantidade, tilDataValidade;
     private TextInputEditText         etNome, etQuantidade, etDataValidade;
     private AutoCompleteTextView      actvCategoria;
     private MaterialButtonToggleGroup toggleUnit;
     private MaterialButton            btnSalvar;
+    private View                      rootView;
 
-    // Estado
-    private String dataSelecionada = ""; // formato YYYY-MM-DD
-    private DespensaRepository repository;
-    private com.example.inventaai.util.SessionManager sessionManager;
+    private String              dataSelecionada = "";
+    private DespensaRepository  repository;
+    private SessionManager      sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,27 +62,120 @@ public class CadastroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cadastro);
 
         repository     = new DespensaRepository(this);
-        sessionManager = new com.example.inventaai.util.SessionManager(this);
+        sessionManager = new SessionManager(this);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.cadastroCoordinatorLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-
             return insets;
         });
 
         vincularViews();
+        configurarDrawer();
         configurarCategoria();
         configurarDatePicker();
         configurarBotaoSalvar();
         configurarBotaoVoltar();
     }
 
-    // =========================================================================
-    // INICIALIZAÇÃO
-    // =========================================================================
+    private void configurarDrawer() {
+        View btnMenu = findViewById(R.id.btnMenuCadastro);
+        if (btnMenu != null) {
+            btnMenu.setOnClickListener(v -> {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    drawerLayout.openDrawer(GravityCompat.START);
+                }
+            });
+        }
+
+        navigationView.setNavigationItemSelectedListener(this);
+        preencherCabecalhoDrawer();
+    }
+
+    private void preencherCabecalhoDrawer() {
+        View header = navigationView.getHeaderView(0);
+        if (header == null) return;
+
+        android.widget.TextView tvNome      = header.findViewById(R.id.tvDrawerNome);
+        android.widget.TextView tvId        = header.findViewById(R.id.tvDrawerIdAbreviado);
+        android.widget.TextView tvIniciais  = header.findViewById(R.id.tvDrawerIniciais);
+        ShapeableImageView      ivAvatar    = header.findViewById(R.id.ivDrawerAvatar);
+
+        String nome   = sessionManager.getUserName();
+        String userId = sessionManager.getUserId();
+
+        if (tvNome != null && nome != null)
+            tvNome.setText(nome);
+
+        // CORREÇÃO 3: ID Ocultado no CadastroActivity também
+        if (tvId != null) {
+            tvId.setVisibility(View.GONE);
+            // if (userId != null) tvId.setText("ID: ..." + userId.substring(Math.max(0, userId.length() - 6)));
+        }
+
+        if (tvIniciais != null && nome != null && !nome.isEmpty()) {
+            tvIniciais.setVisibility(View.VISIBLE);
+            if (ivAvatar != null) ivAvatar.setVisibility(View.GONE);
+            tvIniciais.setText(obterIniciais(nome));
+        }
+    }
+
+    private String obterIniciais(String nome) {
+        if (nome == null || nome.isEmpty()) return "?";
+        String[] partes = nome.trim().split("\\s+");
+        if (partes.length == 1) return String.valueOf(partes[0].charAt(0)).toUpperCase();
+        return (String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[partes.length - 1].charAt(0)))
+                .toUpperCase();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        drawerLayout.closeDrawer(GravityCompat.START);
+        int id = item.getItemId();
+
+        if (id == R.id.nav_perfil) {
+            startActivity(new Intent(this, PerfilActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_receitas_salvas) {
+            startActivity(new Intent(this, ReceitasActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_receitas_em_andamento) {
+            startActivity(new Intent(this, ReceitasEmAndamentoActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_receitas_concluidas) {
+            startActivity(new Intent(this, ReceitasConcluidasActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_configuracoes) {
+            startActivity(new Intent(this, HistoricoActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_sincronizar) { // CORREÇÃO 3: Adicionado fluxo Sincronizar
+            startActivity(new Intent(this, SincronizacaoActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_sair) {
+            sessionManager.encerrarSessao();
+            Intent intent = new Intent(this, com.example.inventaai.ui.login.LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        }
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        }
+    }
 
     private void vincularViews() {
+        drawerLayout    = findViewById(R.id.cadastroDrawerLayout);
+        navigationView  = findViewById(R.id.cadastroNavigationView);
+        rootView        = findViewById(R.id.cadastroCoordinatorLayout);
         tilNome         = findViewById(R.id.tilNome);
         tilCategoria    = findViewById(R.id.tilCategoria);
         tilQuantidade   = findViewById(R.id.tilQuantidade);
@@ -102,18 +214,6 @@ public class CadastroActivity extends AppCompatActivity {
         ).show();
     }
 
-    // =========================================================================
-    // SALVAR
-    // =========================================================================
-
-    private void configurarBotaoSalvar() {
-        btnSalvar.setOnClickListener(v -> {
-            if (validarFormulario()) {
-                salvarItem();
-            }
-        });
-    }
-
     private boolean validarFormulario() {
         boolean valido = true;
 
@@ -125,13 +225,14 @@ public class CadastroActivity extends AppCompatActivity {
             tilNome.setError(null);
         }
 
-        String qtdStr = etQuantidade.getText() != null ? etQuantidade.getText().toString().trim() : "";
+        String qtdStr = etQuantidade.getText() != null
+                ? etQuantidade.getText().toString().trim() : "";
         if (TextUtils.isEmpty(qtdStr)) {
             tilQuantidade.setError("Informe a quantidade");
             valido = false;
         } else {
             try {
-                double qtd = Double.parseDouble(qtdStr);
+                double qtd = Double.parseDouble(qtdStr.replace(",", "."));
                 if (qtd <= 0) {
                     tilQuantidade.setError("Quantidade deve ser maior que zero");
                     valido = false;
@@ -154,11 +255,20 @@ public class CadastroActivity extends AppCompatActivity {
         return valido;
     }
 
+    private void configurarBotaoSalvar() {
+        btnSalvar.setOnClickListener(v -> {
+            if (validarFormulario()) salvarItem();
+        });
+    }
+
     private void salvarItem() {
-        String nome       = etNome.getText().toString().trim();
-        double quantidade = Double.parseDouble(etQuantidade.getText().toString().trim());
-        String unidade    = getUnidadeSelecionada();
-        String categoria  = actvCategoria.getText().toString().trim();
+        String nome = etNome.getText().toString().trim();
+
+        String qtdStr    = etQuantidade.getText().toString().trim().replace(",", ".");
+        double quantidade = Double.parseDouble(qtdStr);
+
+        String unidade   = getUnidadeSelecionada();
+        String categoria = actvCategoria.getText().toString().trim();
 
         DespensaItem item = new DespensaItem(nome, quantidade, unidade, dataSelecionada, Constants.STATUS_ATIVO);
         item.setCategoria(categoria);
@@ -166,43 +276,43 @@ public class CadastroActivity extends AppCompatActivity {
         long novoId = repository.inserir(item, sessionManager.getUserId());
 
         if (novoId != -1) {
-            Toast.makeText(this, nome + " adicionado à despensa!", Toast.LENGTH_SHORT).show();
-            // Tarefa 3: animação correta de "voltar" após salvar.
-            // slide_in_left: tela anterior (Dashboard) entra pela esquerda.
-            // slide_out_right: tela atual (Cadastro) sai pela direita.
-            finish();
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            limparCampos();
+            Snackbar.make(rootView, nome + " adicionado à despensa!", Snackbar.LENGTH_LONG)
+                    .setBackgroundTint(getColor(R.color.colorPrimary))
+                    .setTextColor(getColor(R.color.colorOnPrimary))
+                    .show();
         } else {
-            Toast.makeText(this, "Erro ao salvar. Tente novamente.", Toast.LENGTH_SHORT).show();
+            Snackbar.make(rootView, "Erro ao salvar. Tente novamente.", Snackbar.LENGTH_SHORT).show();
         }
+    }
+
+    private void limparCampos() {
+        etNome.setText("");
+        etQuantidade.setText("");
+        etDataValidade.setText("");
+        actvCategoria.setText("", false);
+        dataSelecionada = "";
+        toggleUnit.clearChecked();
+        tilNome.setError(null);
+        tilQuantidade.setError(null);
+        tilDataValidade.setError(null);
+        etNome.requestFocus();
     }
 
     private String getUnidadeSelecionada() {
         int checkedId = toggleUnit.getCheckedButtonId();
         if (checkedId == R.id.btnUnidKg) return "kg";
-        if (checkedId == R.id.btnUnidLb) return "lb";
+        if (checkedId == R.id.btnUnidL)  return "L";
         return "unid";
     }
 
-    // =========================================================================
-    // NAVEGAÇÃO
-    // =========================================================================
-
     private void configurarBotaoVoltar() {
-        // Tarefa 3: o botão "Voltar" da toolbar usa a mesma
-        // animação de retorno que o botão Salvar: tela anterior entra pela
-        // esquerda e a tela atual sai pela direita.
-        findViewById(R.id.btnBack).setOnClickListener(v -> {
-            finish();
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-        });
-    }
-
-    @Override
-    public void onBackPressed() {
-        // Tarefa 3: garante que o botão físico/gesto de Voltar
-        // use a mesma animação de retorno definida no guia.
-        super.onBackPressed();
-        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        View btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            });
+        }
     }
 }

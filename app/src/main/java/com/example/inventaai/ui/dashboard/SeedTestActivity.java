@@ -62,7 +62,7 @@ public class SeedTestActivity extends AppCompatActivity {
         root.addView(titulo);
 
         btnSeed = new Button(this);
-        btnSeed.setText("POPULAR BANCO DE DADOS (30 itens)");
+        btnSeed.setText("POPULAR BANCO DE DADOS (80 itens)");
         btnSeed.setBackgroundColor(0xFF4CAF50);
         btnSeed.setTextColor(0xFFFFFFFF);
         btnSeed.setPadding(16, 16, 16, 16);
@@ -134,7 +134,7 @@ public class SeedTestActivity extends AppCompatActivity {
         btnSeed.setEnabled(false);
         logBuffer.setLength(0);
         log("════════════════════════════════");
-        log("Iniciando seed de 30 itens...");
+        log("Iniciando seed de 80 itens...");
         log("════════════════════════════════\n");
 
         String userId = garantirUsuarioLogado();
@@ -222,12 +222,84 @@ public class SeedTestActivity extends AppCompatActivity {
             if (id > 0) inseridos++;
         }
 
+        // ── GRUPO 4: 50 itens FRESCOS EXTRAS do cotidiano brasileiro ─────────
+        log("\n── GRUPO 4: Itens FRESCOS EXTRAS (50) ──");
+        Object[][] frescosBR = {
+                // Hortifruti
+                { "Cebola",               1.0,  "kg",   25,  "Hortifruti"  },
+                { "Alho",                 100.0,"g",    60,  "Hortifruti"  },
+                { "Batata inglesa",       1.0,  "kg",   20,  "Hortifruti"  },
+                { "Cenoura",              500.0,"g",    18,  "Hortifruti"  },
+                { "Batata-doce",          800.0,"g",    22,  "Hortifruti"  },
+                { "Abobrinha",            2.0,  "unid", 12,  "Hortifruti"  },
+                { "Chuchu",               3.0,  "unid", 14,  "Hortifruti"  },
+                { "Pimentão vermelho",    2.0,  "unid", 10,  "Hortifruti"  },
+                { "Brócolis",             1.0,  "unid", 9,   "Hortifruti"  },
+                { "Couve-folha",          1.0,  "unid", 8,   "Hortifruti"  },
+                { "Espinafre",            200.0,"g",    8,   "Hortifruti"  },
+                { "Beterraba",            3.0,  "unid", 20,  "Hortifruti"  },
+                { "Mandioca",             1.0,  "kg",   15,  "Hortifruti"  },
+                { "Inhame",               500.0,"g",    18,  "Hortifruti"  },
+                { "Quiabo",               300.0,"g",    10,  "Hortifruti"  },
+                // Frutas
+                { "Maçã fuji",            4.0,  "unid", 20,  "Frutas"      },
+                { "Laranja pera",         6.0,  "unid", 18,  "Frutas"      },
+                { "Mamão papaia",         1.0,  "unid", 12,  "Frutas"      },
+                { "Abacaxi",              1.0,  "unid", 14,  "Frutas"      },
+                { "Uva itália",           500.0,"g",    10,  "Frutas"      },
+                { "Manga palmer",         2.0,  "unid", 11,  "Frutas"      },
+                { "Melancia",             1.0,  "unid", 15,  "Frutas"      },
+                { "Limão tahiti",         6.0,  "unid", 20,  "Frutas"      },
+                // Laticínios / Frios
+                { "Requeijão cremoso",    250.0,"g",    25,  "Laticínios"  },
+                { "Creme de leite",       200.0,"ml",   90,  "Laticínios"  },
+                { "Queijo prato fatiado", 150.0,"g",    14,  "Laticínios"  },
+                { "Margarina",            500.0,"g",    90,  "Laticínios"  },
+                // Carnes / Proteínas
+                { "Frango inteiro",       1.5,  "kg",   10,  "Carnes"      },
+                { "Peito de frango",      500.0,"g",    10,  "Carnes"      },
+                { "Carne moída bovina",   500.0,"g",    9,   "Carnes"      },
+                { "Linguiça calabresa",   300.0,"g",    25,  "Carnes"      },
+                { "Ovo de galinha",       12.0, "unid", 30,  "Ovos"        },
+                // Grãos / Cereais / Massas
+                { "Feijão preto",         1.0,  "kg",   90,  "Grãos"       },
+                { "Lentilha",             500.0,"g",    180, "Grãos"       },
+                { "Grão-de-bico",         500.0,"g",    180, "Grãos"       },
+                { "Fubá de milho",        1.0,  "kg",   90,  "Farinhas"    },
+                { "Aveia em flocos",      500.0,"g",    90,  "Cereais"     },
+                { "Macarrão parafuso",    500.0,"g",    60,  "Massas"      },
+                { "Macarrão cabelo anjo", 500.0,"g",    60,  "Massas"      },
+                // Temperos / Condimentos
+                { "Pimenta do reino",     30.0, "g",    180, "Temperos"    },
+                { "Orégano",              10.0, "g",    180, "Temperos"    },
+                { "Colorau",              50.0, "g",    120, "Temperos"    },
+                { "Caldo de galinha",     10.0, "unid", 180, "Temperos"    },
+                { "Shoyu",                150.0,"ml",   120, "Condimentos" },
+                { "Ketchup",              397.0,"g",    60,  "Condimentos" },
+                { "Mostarda",             250.0,"g",    90,  "Condimentos" },
+                // Bebidas / Padaria / Lanches
+                { "Suco de laranja",      1.0,  "L",    15,  "Bebidas"     },
+                { "Refrigerante cola",    2.0,  "L",    90,  "Bebidas"     },
+                { "Biscoito recheado",    130.0,"g",    60,  "Lanches"     },
+                { "Granola",              400.0,"g",    90,  "Cereais"     },
+        };
+        for (Object[] row : frescosBR) {
+            long id = inserirItem(db,
+                    (String) row[0], (Double) row[1], (String) row[2],
+                    dataRelativa((int) row[3]), "ATIVO", (String) row[4], userId);
+            log(id > 0
+                    ? "  ✅  [EXTRA    ] " + row[0] + "  (+" + row[3] + " dias)"
+                    : "  ❌  Falha ao inserir: " + row[0]);
+            if (id > 0) inseridos++;
+        }
+
         // ── Resumo ────────────────────────────────────────────────────────────
         log("\n════════════════════════════════");
-        log("SEED CONCLUÍDO: " + inseridos + "/30 itens inseridos.");
-        log("  Vencidos       : 4");
-        log("  Próx. vencimento: 6");
-        log("  Frescos        : 20");
+        log("SEED CONCLUÍDO: " + inseridos + "/80 itens inseridos.");
+        log("  Vencidos         : 4");
+        log("  Próx. vencimento : 6");
+        log("  Frescos (base)   : 20");
+        log("  Frescos (extras) : 50");
         log("════════════════════════════════");
         log("\nPressione 'IR PARA O DASHBOARD' para verificar.");
 

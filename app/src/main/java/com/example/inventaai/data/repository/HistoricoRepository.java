@@ -33,8 +33,6 @@ public class HistoricoRepository {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            // (Tarefa 3): JOIN traz a coluna 'categoria' da despensa
-            // para exibir o ícone correto em cada entrada do histórico.
             String sql =
                     "SELECT h.*, d." + DespensaEntry.COLUMN_CATEGORIA + " AS item_categoria "
                             + "FROM " + HistoricoEntry.TABLE_NAME + " h "
@@ -56,7 +54,6 @@ public class HistoricoRepository {
         return lista;
     }
 
-    /** Fallback sem JOIN — usado se a query principal falhar. */
     private List<HistoricoItem> listarTodosSemJoin(String userId) {
         List<HistoricoItem> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -107,6 +104,70 @@ public class HistoricoRepository {
     }
 
     // =========================================================================
+    // LISTAR POR MOTIVO — Sprint 19-A, Tarefa #1
+    // =========================================================================
+
+    /**
+     * Retorna os registros do histórico filtrados por motivo (ex: "CONSUMIDO").
+     * Usado pelos chips de filtro em HistoricoActivity.
+     *
+     * @param motivo  String exata do motivo conforme salvo no banco
+     *                (ex: "CONSUMIDO", "DESCARTADO", "USADO_EM_RECEITA")
+     * @param userId  ID do usuário da sessão atual
+     * @return lista filtrada, ordenada por data decrescente
+     */
+    public List<HistoricoItem> listarPorMotivo(String motivo, String userId) {
+        List<HistoricoItem> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String sql =
+                    "SELECT h.*, d." + DespensaEntry.COLUMN_CATEGORIA + " AS item_categoria "
+                            + "FROM " + HistoricoEntry.TABLE_NAME + " h "
+                            + "LEFT JOIN " + DespensaEntry.TABLE_NAME + " d "
+                            + "  ON h." + HistoricoEntry.COLUMN_ID_ITEM + " = d." + DespensaEntry._ID
+                            + " WHERE h." + HistoricoEntry.COLUMN_MOTIVO   + " = ?"
+                            + "   AND h." + HistoricoEntry.COLUMN_USER_ID  + " = ?"
+                            + " ORDER BY h." + HistoricoEntry.COLUMN_DATA_ACAO + " DESC";
+
+            cursor = db.rawQuery(sql, new String[]{ motivo, userId });
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+            Log.d(TAG, "HistoricoRepository.listarPorMotivo: " + lista.size()
+                    + " registro(s) para motivo=" + motivo + ", userId=" + userId);
+        } catch (Exception e) {
+            Log.e(TAG, "HistoricoRepository.listarPorMotivo: erro", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return lista;
+    }
+
+    /**
+     * Conta quantos registros existem para um determinado motivo e usuário.
+     * Usado para exibir o contador dinâmico nos chips (ex: "Consumido (14)").
+     *
+     * @param motivo  String exata do motivo
+     * @param userId  ID do usuário da sessão atual
+     * @return contagem de registros
+     */
+    public int contarPorMotivo(String motivo, String userId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String sql = "SELECT COUNT(*) FROM " + HistoricoEntry.TABLE_NAME
+                    + " WHERE " + HistoricoEntry.COLUMN_MOTIVO  + " = ?"
+                    + "   AND " + HistoricoEntry.COLUMN_USER_ID + " = ?";
+            cursor = db.rawQuery(sql, new String[]{ motivo, userId });
+            if (cursor.moveToFirst()) return cursor.getInt(0);
+        } catch (Exception e) {
+            Log.e(TAG, "HistoricoRepository.contarPorMotivo: erro", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return 0;
+    }
+
+    // =========================================================================
     // HELPERS PRIVADOS
     // =========================================================================
 
@@ -118,7 +179,6 @@ public class HistoricoRepository {
         item.setDataAcao(   cursor.getString(cursor.getColumnIndexOrThrow(HistoricoEntry.COLUMN_DATA_ACAO)));
         item.setMotivo(     cursor.getString(cursor.getColumnIndexOrThrow(HistoricoEntry.COLUMN_MOTIVO)));
 
-        // Nome denormalizado
         int nomeCol = cursor.getColumnIndex(HistoricoEntry.COLUMN_NOME_CACHED);
         if (nomeCol >= 0 && !cursor.isNull(nomeCol)) {
             item.setNomeCached(cursor.getString(nomeCol));
@@ -126,10 +186,14 @@ public class HistoricoRepository {
             item.setNomeCached("Item #" + item.getIdItem());
         }
 
-        // (Tarefa 3): lê a categoria do JOIN (alias 'item_categoria')
         int catCol = cursor.getColumnIndex("item_categoria");
         if (catCol >= 0 && !cursor.isNull(catCol)) {
             item.setCategoria(cursor.getString(catCol));
+        }
+
+        int origemCol = cursor.getColumnIndex(HistoricoEntry.COLUMN_ORIGEM);
+        if (origemCol >= 0 && !cursor.isNull(origemCol)) {
+            item.setOrigem(cursor.getString(origemCol));
         }
 
         return item;

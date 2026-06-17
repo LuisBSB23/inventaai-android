@@ -15,6 +15,22 @@
             android:title="Receitas Salvas" />
 
         <item
+            android:id="@+id/nav_receitas_em_andamento"
+            android:icon="@drawable/ic_play_circle"
+            android:title="Receitas em Andamento" />
+
+        <item
+            android:id="@+id/nav_receitas_concluidas"
+            android:icon="@drawable/ic_nav_chef"
+            android:title="Receitas Concluídas" />
+
+        <!-- Sprint 20: Gestão via Planilha CSV -->
+        <item
+            android:id="@+id/nav_sincronizar"
+            android:icon="@drawable/ic_file_upload"
+            android:title="Sincronizar Despensa" />
+
+        <item
             android:id="@+id/nav_configuracoes"
             android:icon="@drawable/ic_nav_history"
             android:title="Configurações" />
@@ -29,7 +45,6 @@
                     android:icon="@drawable/ic_logout"
                     android:title="Sair"
                     android:iconTint="@color/colorError" />
-
             </group>
         </menu>
     </item>

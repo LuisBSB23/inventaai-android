@@ -20,10 +20,8 @@ import java.util.UUID;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "InventaAi.DB";
-
     public static final String DATABASE_NAME    = "inventaai.db";
-    // v6: adiciona tabela "receitas_salvas"
-    public static final int    DATABASE_VERSION = 6;
+    public static final int    DATABASE_VERSION = 8;
 
     // =========================================================================
     // Singleton
@@ -56,6 +54,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + UserEntry.COLUMN_CREATED_AT  + " TEXT NOT NULL"
                     + ");";
 
+    // REAL garante suporte a decimais (ex: 0.5, 1.75)
     private static final String SQL_CREATE_DESPENSA =
             "CREATE TABLE " + DespensaEntry.TABLE_NAME + " ("
                     + DespensaEntry._ID                  + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -68,6 +67,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + DespensaEntry.COLUMN_CATEGORIA     + " TEXT"
                     + ");";
 
+    // Sprint 15: inclui coluna origem
     private static final String SQL_CREATE_HISTORICO =
             "CREATE TABLE " + HistoricoEntry.TABLE_NAME + " ("
                     + HistoricoEntry._ID                + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -75,10 +75,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + HistoricoEntry.COLUMN_DATA_ACAO   + " TEXT NOT NULL, "
                     + HistoricoEntry.COLUMN_MOTIVO      + " TEXT, "
                     + HistoricoEntry.COLUMN_NOME_CACHED + " TEXT, "
-                    + HistoricoEntry.COLUMN_USER_ID     + " TEXT"
+                    + HistoricoEntry.COLUMN_USER_ID     + " TEXT, "
+                    + HistoricoEntry.COLUMN_ORIGEM      + " TEXT"
                     + ");";
 
-    // Tabela de receitas salvas
     private static final String SQL_CREATE_RECEITAS =
             "CREATE TABLE " + ReceitaEntry.TABLE_NAME + " ("
                     + ReceitaEntry._ID                  + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -91,7 +91,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + ReceitaEntry.COLUMN_PASSOS        + " TEXT, "    // JSON
                     + ReceitaEntry.COLUMN_IMAGEM_URL    + " TEXT, "
                     + ReceitaEntry.COLUMN_DATA_SALVO    + " TEXT NOT NULL, "
-                    + ReceitaEntry.COLUMN_USER_ID       + " TEXT"
+                    + ReceitaEntry.COLUMN_USER_ID       + " TEXT, "
+                    + ReceitaEntry.COLUMN_STATUS        + " TEXT NOT NULL DEFAULT 'SALVA'"
                     + ");";
 
     // =========================================================================
@@ -111,7 +112,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_USERS);
         db.execSQL(SQL_CREATE_DESPENSA);
         db.execSQL(SQL_CREATE_HISTORICO);
-        db.execSQL(SQL_CREATE_RECEITAS);  // Sprint 11
+        db.execSQL(SQL_CREATE_RECEITAS);
         Log.d(TAG, "onCreate: tabelas criadas (v" + DATABASE_VERSION + ").");
     }
 
@@ -120,7 +121,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d(TAG, "onUpgrade: " + oldVersion + " → " + newVersion);
         if (oldVersion < 4) migrarParaV4(db);
         if (oldVersion < 5) migrarParaV5(db);
-        if (oldVersion < 6) migrarParaV6(db);  // Sprint 11
+        if (oldVersion < 6) migrarParaV6(db);
+        if (oldVersion < 7) migrarParaV7(db);
+        if (oldVersion < 8) migrarParaV8(db); // Sprint 15
     }
 
     // =========================================================================
@@ -139,7 +142,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + " ADD COLUMN " + HistoricoEntry.COLUMN_USER_ID + " TEXT"); }
         catch (Exception e) { Log.w(TAG, "v4: user_id já existe em historico"); }
 
-        // Vincula registros órfãos a um usuário-padrão
         Cursor c = db.rawQuery(
                 "SELECT COUNT(*) FROM " + DespensaEntry.TABLE_NAME
                         + " WHERE " + DespensaEntry.COLUMN_USER_ID + " IS NULL", null);
@@ -185,6 +187,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d(TAG, "migrarParaV6: tabela 'receitas_salvas' criada.");
         } catch (Exception e) {
             Log.w(TAG, "migrarParaV6: tabela já existe — " + e.getMessage());
+        }
+    }
+
+    private void migrarParaV7(SQLiteDatabase db) {
+        try {
+            db.execSQL("ALTER TABLE " + ReceitaEntry.TABLE_NAME
+                    + " ADD COLUMN " + ReceitaEntry.COLUMN_STATUS
+                    + " TEXT NOT NULL DEFAULT 'SALVA'");
+            Log.d(TAG, "migrarParaV7: coluna 'status' adicionada em receitas_salvas.");
+        } catch (Exception e) {
+            Log.w(TAG, "migrarParaV7: coluna já existe — " + e.getMessage());
+        }
+    }
+
+    private void migrarParaV8(SQLiteDatabase db) {
+        try {
+            db.execSQL("ALTER TABLE " + HistoricoEntry.TABLE_NAME
+                    + " ADD COLUMN " + HistoricoEntry.COLUMN_ORIGEM + " TEXT");
+            Log.d(TAG, "migrarParaV8: coluna 'origem' adicionada em historico_consumo.");
+        } catch (Exception e) {
+            Log.w(TAG, "migrarParaV8: coluna já existe — " + e.getMessage());
         }
     }
 }

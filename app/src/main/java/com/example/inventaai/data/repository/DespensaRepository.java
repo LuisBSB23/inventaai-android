@@ -20,7 +20,6 @@ public class DespensaRepository {
 
     private static final String TAG = "DespensaRepository";
 
-    // TAREFA 1: usa Singleton em vez de new DatabaseHelper(context)
     private final DatabaseHelper dbHelper;
 
     public DespensaRepository(Context context) {
@@ -37,10 +36,9 @@ public class DespensaRepository {
             Log.e(TAG, "inserir: erro", e);
             return -1;
         }
-        // Não chamamos db.close() — o Singleton gerencia a conexão.
     }
 
-    // ── BUSCAR POR ID (público) ───────────────────────────────────────────────
+    // ── BUSCAR POR ID ─────────────────────────────────────────────────────────
 
     public DespensaItem buscarPorId(long id) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -85,10 +83,9 @@ public class DespensaRepository {
         return lista;
     }
 
-    // ── LISTAR ATIVOS FILTRADO
+    // ── LISTAR ATIVOS FILTRADO ────────────────────────────────────────────────
 
     public List<DespensaItem> listarAtivosFiltrado(String query, String userId) {
-        // Query vazia ou nula → retorna lista completa
         if (query == null || query.trim().isEmpty()) {
             return listarAtivos(userId);
         }
@@ -110,7 +107,6 @@ public class DespensaRepository {
                     DespensaEntry.COLUMN_DATA_VALIDADE + " ASC"
             );
             while (cursor.moveToNext()) lista.add(fromCursor(cursor));
-            Log.d(TAG, "listarAtivosFiltrado: query=\"" + query + "\" → " + lista.size() + " resultado(s).");
         } catch (Exception e) {
             Log.e(TAG, "listarAtivosFiltrado: erro", e);
         } finally {
@@ -210,6 +206,87 @@ public class DespensaRepository {
         }
     }
 
+    // ── MOVER PARA HISTÓRICO COM ORIGEM (Sprint 15) ───────────────────────────
+
+    public boolean moverParaHistoricoComOrigem(long idItem, String nomeItem,
+                                               String motivo, String userId, String origem) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        try {
+            db.beginTransaction();
+
+            ContentValues statusCV = new ContentValues();
+            statusCV.put(DespensaEntry.COLUMN_STATUS, motivo);
+            db.update(DespensaEntry.TABLE_NAME, statusCV,
+                    DespensaEntry._ID + " = ?", new String[]{ String.valueOf(idItem) });
+
+            ContentValues hist = new ContentValues();
+            hist.put(HistoricoEntry.COLUMN_ID_ITEM,     idItem);
+            hist.put(HistoricoEntry.COLUMN_NOME_CACHED, nomeItem);
+            hist.put(HistoricoEntry.COLUMN_MOTIVO,      motivo);
+            hist.put(HistoricoEntry.COLUMN_USER_ID,     userId);
+            hist.put(HistoricoEntry.COLUMN_DATA_ACAO,   DateUtils.hoje());
+            if (origem != null) hist.put(HistoricoEntry.COLUMN_ORIGEM, origem);
+            db.insertOrThrow(HistoricoEntry.TABLE_NAME, null, hist);
+
+            db.setTransactionSuccessful();
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "moverParaHistoricoComOrigem: erro", e);
+            return false;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    // ── PROCESSAR BAIXAS EM LOTE (Sprint 15) ──────────────────────────────────
+
+    public boolean processarBaixas(List<BaixaItem> baixas, String userId, String origem) {
+        if (baixas == null || baixas.isEmpty()) return true;
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        try {
+            db.beginTransaction();
+
+            for (BaixaItem baixa : baixas) {
+                DespensaItem item     = baixa.item;
+                double       reduzir  = baixa.qtdReduzir;
+                double       novaQtd  = item.getQuantidade() - reduzir;
+
+                if (novaQtd <= 0) {
+                    ContentValues statusCV = new ContentValues();
+                    statusCV.put(DespensaEntry.COLUMN_STATUS, Constants.STATUS_CONSUMIDO);
+                    db.update(DespensaEntry.TABLE_NAME, statusCV,
+                            DespensaEntry._ID + " = ?",
+                            new String[]{ String.valueOf(item.getId()) });
+                } else {
+                    ContentValues qtdCV = new ContentValues();
+                    qtdCV.put(DespensaEntry.COLUMN_QUANTIDADE, novaQtd);
+                    db.update(DespensaEntry.TABLE_NAME, qtdCV,
+                            DespensaEntry._ID + " = ?",
+                            new String[]{ String.valueOf(item.getId()) });
+                }
+
+                ContentValues hist = new ContentValues();
+                hist.put(HistoricoEntry.COLUMN_ID_ITEM,     item.getId());
+                hist.put(HistoricoEntry.COLUMN_NOME_CACHED, item.getNome());
+                hist.put(HistoricoEntry.COLUMN_MOTIVO,      Constants.STATUS_CONSUMIDO);
+                hist.put(HistoricoEntry.COLUMN_USER_ID,     userId);
+                hist.put(HistoricoEntry.COLUMN_DATA_ACAO,   DateUtils.hoje());
+                if (origem != null) hist.put(HistoricoEntry.COLUMN_ORIGEM, origem);
+                db.insertOrThrow(HistoricoEntry.TABLE_NAME, null, hist);
+            }
+
+            db.setTransactionSuccessful();
+            Log.d(TAG, "processarBaixas: " + baixas.size() + " item(ns) processado(s).");
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "processarBaixas: erro na transação", e);
+            return false;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     // ── DELETAR ───────────────────────────────────────────────────────────────
 
     public boolean deletar(long id) {
@@ -220,6 +297,38 @@ public class DespensaRepository {
         } catch (Exception e) {
             Log.e(TAG, "deletar: erro id=" + id, e);
             return false;
+        }
+    }
+
+    // ── DELETAR VÁRIOS (Sprint 18) ────────────────────────────────────────────
+
+    public int deletarVarios(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return 0;
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int totalDeletados = 0;
+        try {
+            db.beginTransaction();
+
+            for (Long id : ids) {
+                int linhas = db.delete(
+                        DespensaEntry.TABLE_NAME,
+                        DespensaEntry._ID + " = ?",
+                        new String[]{ String.valueOf(id) }
+                );
+                totalDeletados += linhas;
+                Log.d(TAG, "deletarVarios: id=" + id + " deletado=" + (linhas > 0));
+            }
+
+            db.setTransactionSuccessful();
+            Log.d(TAG, "deletarVarios: transação concluída — " + totalDeletados + " item(ns) removido(s).");
+            return totalDeletados;
+
+        } catch (Exception e) {
+            Log.e(TAG, "deletarVarios: erro na transação", e);
+            return -1;
+        } finally {
+            db.endTransaction();
         }
     }
 
@@ -234,7 +343,6 @@ public class DespensaRepository {
         item.setDataValidade( cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_DATA_VALIDADE)));
         item.setStatus(       cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_STATUS)));
         item.setUserId(       cursor.getString(cursor.getColumnIndexOrThrow(DespensaEntry.COLUMN_USER_ID)));
-        // Sprint 6: lê categoria do banco
         int colCat = cursor.getColumnIndex(DespensaEntry.COLUMN_CATEGORIA);
         if (colCat >= 0) item.setCategoria(cursor.getString(colCat));
         return item;
@@ -247,8 +355,20 @@ public class DespensaRepository {
         v.put(DespensaEntry.COLUMN_UNIDADE,       item.getUnidadeMedida());
         v.put(DespensaEntry.COLUMN_DATA_VALIDADE, item.getDataValidade());
         v.put(DespensaEntry.COLUMN_STATUS,        item.getStatus() != null ? item.getStatus() : Constants.STATUS_ATIVO);
-        v.put(DespensaEntry.COLUMN_CATEGORIA,     item.getCategoria()); // Sprint 6
+        v.put(DespensaEntry.COLUMN_CATEGORIA,     item.getCategoria());
         if (userId != null) v.put(DespensaEntry.COLUMN_USER_ID, userId);
         return v;
+    }
+
+    // ── Classe auxiliar para processarBaixas ─────────────────────────────────
+
+    public static class BaixaItem {
+        public final DespensaItem item;
+        public final double       qtdReduzir;
+
+        public BaixaItem(DespensaItem item, double qtdReduzir) {
+            this.item       = item;
+            this.qtdReduzir = qtdReduzir;
+        }
     }
 }

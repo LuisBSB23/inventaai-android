@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
@@ -20,14 +21,9 @@ import java.util.List;
 
 public class ReceitasAdapter extends RecyclerView.Adapter<ReceitasAdapter.ReceitaViewHolder> {
 
-    // ── Interface de callbacks ─────────────────────────────────────────────────
-    public interface OnReceitaClickListener {
-        void onClick(ReceitaSalva receita);
-    }
-
-    public interface OnReceitaDeleteListener {
-        void onDelete(ReceitaSalva receita, int position);
-    }
+    // ── Interfaces ────────────────────────────────────────────────────────────
+    public interface OnReceitaClickListener  { void onClick(ReceitaSalva receita); }
+    public interface OnReceitaDeleteListener { void onDelete(ReceitaSalva receita, int position); }
 
     // ── Dados ─────────────────────────────────────────────────────────────────
     private final List<ReceitaSalva>      items;
@@ -42,14 +38,12 @@ public class ReceitasAdapter extends RecyclerView.Adapter<ReceitasAdapter.Receit
         this.deleteListener = deleteListener;
     }
 
-    // ── Atualizar lista ────────────────────────────────────────────────────────
     public void atualizarLista(List<ReceitaSalva> novaLista) {
         items.clear();
         if (novaLista != null) items.addAll(novaLista);
         notifyDataSetChanged();
     }
 
-    /** Remove um item da lista local (chamado após deletar com sucesso). */
     public void removerItem(int position) {
         if (position >= 0 && position < items.size()) {
             items.remove(position);
@@ -57,7 +51,8 @@ public class ReceitasAdapter extends RecyclerView.Adapter<ReceitasAdapter.Receit
         }
     }
 
-    // ── Adapter overrides ──────────────────────────────────────────────────────
+    // ── Adapter ───────────────────────────────────────────────────────────────
+
     @NonNull
     @Override
     public ReceitaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -68,16 +63,14 @@ public class ReceitasAdapter extends RecyclerView.Adapter<ReceitasAdapter.Receit
 
     @Override
     public void onBindViewHolder(@NonNull ReceitaViewHolder holder, int position) {
-        ReceitaSalva receita = items.get(position);
-        holder.bind(receita, clickListener, deleteListener, position);
+        holder.bind(items.get(position), clickListener, deleteListener, position);
     }
 
     @Override
-    public int getItemCount() {
-        return items.size();
-    }
+    public int getItemCount() { return items.size(); }
 
-    // ── ViewHolder ──────────────────────────────────────────────────────────────
+    // ── ViewHolder ─────────────────────────────────────────────────────────────
+
     static class ReceitaViewHolder extends RecyclerView.ViewHolder {
 
         private final ImageView   ivThumb;
@@ -86,15 +79,17 @@ public class ReceitasAdapter extends RecyclerView.Adapter<ReceitasAdapter.Receit
         private final TextView    tvDificuldade;
         private final TextView    tvDataSalvo;
         private final ImageButton btnDeletar;
+        private final TextView    tvBadgeAndamento; // Sprint 14
 
         ReceitaViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivThumb       = itemView.findViewById(R.id.ivReceitaThumb);
-            tvTitulo      = itemView.findViewById(R.id.tvReceitaTitulo);
-            tvTempo       = itemView.findViewById(R.id.tvReceitaTempo);
-            tvDificuldade = itemView.findViewById(R.id.tvReceitaDificuldade);
-            tvDataSalvo   = itemView.findViewById(R.id.tvDataSalvo);
-            btnDeletar    = itemView.findViewById(R.id.btnDeletarReceita);
+            ivThumb           = itemView.findViewById(R.id.ivReceitaThumb);
+            tvTitulo          = itemView.findViewById(R.id.tvReceitaTitulo);
+            tvTempo           = itemView.findViewById(R.id.tvReceitaTempo);
+            tvDificuldade     = itemView.findViewById(R.id.tvReceitaDificuldade);
+            tvDataSalvo       = itemView.findViewById(R.id.tvDataSalvo);
+            btnDeletar        = itemView.findViewById(R.id.btnDeletarReceita);
+            tvBadgeAndamento  = itemView.findViewById(R.id.tvBadgeAndamento); // Sprint 14
         }
 
         void bind(ReceitaSalva receita,
@@ -106,11 +101,10 @@ public class ReceitasAdapter extends RecyclerView.Adapter<ReceitasAdapter.Receit
             tvTempo.setText(receita.getTempoPreparo() != null ? receita.getTempoPreparo() : "—");
             tvDificuldade.setText(receita.getDificuldade() != null ? receita.getDificuldade() : "—");
 
-            // Data formatada para exibição
             String dataFormatada = DateUtils.formatarParaExibicao(receita.getDataSalvo());
             tvDataSalvo.setText("Salva em " + dataFormatada);
 
-            // Carrega miniatura via Glide (fallback para ícone vazio se sem imagem)
+            // Imagem
             if (receita.getImagemUrl() != null && !receita.getImagemUrl().isEmpty()) {
                 GlideHelper.loadImage(itemView.getContext(), receita.getImagemUrl(), ivThumb);
             } else {
@@ -119,15 +113,15 @@ public class ReceitasAdapter extends RecyclerView.Adapter<ReceitasAdapter.Receit
                 ivThumb.setPadding(16, 16, 16, 16);
             }
 
-            // Clique no card → abre detalhes
-            itemView.setOnClickListener(v -> {
-                if (clickListener != null) clickListener.onClick(receita);
-            });
+            // Sprint 14: badge "Em andamento"
+            if (tvBadgeAndamento != null) {
+                boolean emAndamento = receita.isEmAndamento();
+                tvBadgeAndamento.setVisibility(emAndamento ? View.VISIBLE : View.GONE);
+            }
 
-            // Clique no ícone de lixeira → confirma deleção
-            btnDeletar.setOnClickListener(v -> {
-                if (deleteListener != null) deleteListener.onDelete(receita, position);
-            });
+            // Cliques
+            itemView.setOnClickListener(v -> { if (clickListener != null) clickListener.onClick(receita); });
+            btnDeletar.setOnClickListener(v -> { if (deleteListener != null) deleteListener.onDelete(receita, position); });
         }
     }
 }

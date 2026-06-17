@@ -16,7 +16,6 @@
         android:orientation="vertical"
         android:gravity="top|center_horizontal">
 
-        <!-- Ícone da ação (círculo colorido) -->
         <FrameLayout
             android:id="@+id/frameIcon"
             android:layout_width="40dp"
@@ -34,7 +33,6 @@
                 android:tint="@color/colorOnPrimaryContainer" />
         </FrameLayout>
 
-        <!-- Linha vertical da timeline (vai até o fim do item) -->
         <View
             android:id="@+id/viewTimelineLine"
             android:layout_width="2dp"
@@ -97,14 +95,14 @@
                     tools:text="HOJE" />
             </LinearLayout>
 
-            <!-- Linha inferior: chip de motivo + ícone de categoria + observação -->
+            <!-- Linha do meio: chip de motivo + ícone de categoria -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
 
-                <!-- Chip do motivo (CONSUMIDO / DESCARTADO) -->
                 <TextView
                     android:id="@+id/tvMotivo"
                     android:layout_width="wrap_content"
@@ -130,19 +128,25 @@
                     tools:visibility="visible"
                     tools:src="@drawable/ic_cat_hortifruti" />
 
-                <!-- Observação livre -->
-                <TextView
-                    android:id="@+id/tvObservacao"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/inter_regular"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    android:textColor="@color/colorOnSurfaceVariant"
-                    android:textSize="13sp"
-                    tools:text="Usado em Smoothie Verde" />
             </LinearLayout>
+
+            <!--
+                Sprint 15: origem do consumo.
+                Visível somente quando o item foi consumido em uma receita.
+                Gerenciado pelo HistoricoAdapter.
+            -->
+            <TextView
+                android:id="@+id/tvObservacao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_regular"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:textColor="@color/colorOnSurfaceVariant"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="Consumido na receita: Frango ao Limão com Ervas"
+                tools:visibility="visible" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

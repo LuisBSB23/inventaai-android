@@ -33,6 +33,23 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <!-- Sprint 18: título com largura restrita para não sobrepor os botões -->
+            <TextView
+                android:id="@+id/tvToolbarTitulo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_bold"
+                android:text="@string/app_name"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="18sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btnSavedRecipes"
+                app:layout_constraintStart_toEndOf="@id/btnBack"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <ImageButton
                 android:id="@+id/btnSavedRecipes"
                 android:layout_width="40dp"
@@ -46,6 +63,19 @@
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Sprint 19-B #7: Barra de progresso de leitura da receita -->
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressBarLeitura"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:indicatorColor="?attr/colorPrimary"
+        app:trackColor="?attr/colorSurfaceVariant"
+        app:trackThickness="3dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layout_anchor="@id/appBarLayout3"
+        app:layout_anchorGravity="bottom" />
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressBarChef"
@@ -112,6 +142,17 @@
             app:icon="@drawable/ic_nav_add"
             app:iconGravity="textStart" />
 
+        <!-- Sprint 18: botão de inspiração aleatória mesmo com despensa vazia -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGerarAleatoriaEmpty"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/inter_semibold"
+            android:text="🎲 Receita Aleatória"
+            android:visibility="visible" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -153,6 +194,16 @@
             android:textSize="14sp"
             android:gravity="center"
             android:layout_marginTop="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGerarAleatoria"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/inter_semibold"
+            android:text="🎲 Receita Aleatória"
+            android:visibility="visible" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnIrParaSelecao"
@@ -409,15 +460,5 @@
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
 
-    <TextView
-        android:id="@+id/tvToolbarTitulo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_bold"
-        android:text="@string/app_name"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="22sp"
-        app:layout_anchor="@+id/appBarLayout3"
-        app:layout_anchorGravity="center" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

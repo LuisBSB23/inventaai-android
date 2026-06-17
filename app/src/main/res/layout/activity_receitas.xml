@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <!-- ===== AppBar (mesma estrutura do ChefIAActivity) ===== -->
+    <!-- ===== AppBar ===== -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,6 +46,35 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- ===== Campo de busca — Sprint 14 ===== -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="8dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            app:startIconDrawable="@android:drawable/ic_menu_search"
+            app:startIconTint="?attr/colorOnSurfaceVariant"
+            app:boxCornerRadiusTopStart="24dp"
+            app:boxCornerRadiusTopEnd="24dp"
+            app:boxCornerRadiusBottomStart="24dp"
+            app:boxCornerRadiusBottomEnd="24dp"
+            app:boxStrokeColor="?attr/colorOutline"
+            app:hintTextColor="?attr/colorOnSurfaceVariant">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etBuscaReceitas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Buscar receita ou ingrediente…"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:fontFamily="@font/inter_regular"
+                android:textSize="14sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- ===== ProgressBar ===== -->

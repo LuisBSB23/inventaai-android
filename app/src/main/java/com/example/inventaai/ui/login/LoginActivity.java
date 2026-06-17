@@ -3,8 +3,8 @@ package com.example.inventaai.ui.login;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,15 +14,18 @@ import com.example.inventaai.data.repository.UserRepository;
 import com.example.inventaai.ui.dashboard.DashboardActivity;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private TextInputLayout    tilNome, tilSenha;
-    private TextInputEditText  etNome, etSenha;
-    private MaterialButton     btnEntrar;
-    private TextView           tvCriarConta;
+    private TextInputLayout             tilNome, tilSenha;
+    private TextInputEditText           etNome, etSenha;
+    private MaterialButton              btnEntrar;
+    private TextView                    tvCriarConta;
+    private CircularProgressIndicator   progressIndicator;   // TAREFA #5
 
     private UserRepository  userRepository;
     private SessionManager  sessionManager;
@@ -42,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        // Se já há sessão ativa, vai direto ao Dashboard
         if (sessionManager.isLoggedIn()) {
             irParaDashboard();
         }
@@ -53,12 +55,13 @@ public class LoginActivity extends AppCompatActivity {
     // =========================================================================
 
     private void vincularViews() {
-        tilNome    = findViewById(R.id.tilLoginNome);
-        tilSenha   = findViewById(R.id.tilLoginSenha);
-        etNome     = findViewById(R.id.etLoginNome);
-        etSenha    = findViewById(R.id.etLoginSenha);
-        btnEntrar  = findViewById(R.id.btnEntrar);
-        tvCriarConta = findViewById(R.id.tvCriarConta);
+        tilNome           = findViewById(R.id.tilLoginNome);
+        tilSenha          = findViewById(R.id.tilLoginSenha);
+        etNome            = findViewById(R.id.etLoginNome);
+        etSenha           = findViewById(R.id.etLoginSenha);
+        btnEntrar         = findViewById(R.id.btnEntrar);
+        tvCriarConta      = findViewById(R.id.tvCriarConta);
+        progressIndicator = findViewById(R.id.progressIndicatorLogin);   // TAREFA #5
     }
 
     private void configurarListeners() {
@@ -76,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
         String nome  = etNome.getText()  != null ? etNome.getText().toString().trim()  : "";
         String senha = etSenha.getText() != null ? etSenha.getText().toString() : "";
 
-        // Validação local
+        // Validação local — sem feedback de loading durante validação de campos
         boolean valido = true;
         if (TextUtils.isEmpty(nome)) {
             tilNome.setError("Informe seu nome");
@@ -92,14 +95,56 @@ public class LoginActivity extends AppCompatActivity {
         }
         if (!valido) return;
 
-        // Autentica no banco
+        // TAREFA #5 — Inicia estado de loading: desabilita botão + mostra indicador
+        setLoadingState(true);
+
+        // Autentica no banco (operação síncrona local; não bloqueia a UI pois
+        // SQLite local é rápido, mas o estado de loading garante que não haverá
+        // múltiplos cliques simultâneos)
         User user = userRepository.login(nome, senha);
+
         if (user != null) {
+            // Login bem-sucedido — navega para Dashboard (loading fica ativo durante a transição)
             sessionManager.salvarSessao(user.getId(), user.getNome());
             irParaDashboard();
         } else {
-            Toast.makeText(this, "Nome ou senha incorretos.", Toast.LENGTH_SHORT).show();
+            // TAREFA #5 — Restaura estado normal + exibe erro via Snackbar (substituiu Toast)
+            setLoadingState(false);
             tilSenha.setError("Credenciais inválidas");
+            Snackbar.make(
+                    findViewById(android.R.id.content),
+                    "Nome ou senha incorretos.",
+                    Snackbar.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+    // =========================================================================
+    // TAREFA #5 — Estado de carregamento
+    // =========================================================================
+
+    /**
+     * Alterna entre o estado "carregando" e o estado normal do formulário de login.
+     *
+     * Quando {@code isLoading} for {@code true}:
+     *   - Botão Entrar fica desabilitado (impede múltiplos cliques)
+     *   - Texto do botão muda para "Entrando..."
+     *   - CircularProgressIndicator fica visível
+     *
+     * Quando {@code isLoading} for {@code false}:
+     *   - Botão Entrar fica habilitado novamente
+     *   - Texto do botão volta para "Entrar"
+     *   - CircularProgressIndicator some
+     */
+    private void setLoadingState(boolean isLoading) {
+        if (isLoading) {
+            btnEntrar.setEnabled(false);
+            btnEntrar.setText("Entrando...");
+            if (progressIndicator != null) progressIndicator.setVisibility(View.VISIBLE);
+        } else {
+            btnEntrar.setEnabled(true);
+            btnEntrar.setText("Entrar");
+            if (progressIndicator != null) progressIndicator.setVisibility(View.GONE);
         }
     }
 

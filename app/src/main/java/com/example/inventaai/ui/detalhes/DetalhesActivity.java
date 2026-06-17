@@ -27,6 +27,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 public class DetalhesActivity extends AppCompatActivity {
 
@@ -118,7 +119,7 @@ public class DetalhesActivity extends AppCompatActivity {
 
         if (item == null) {
             tvItemName.setText("Item não encontrado");
-            quantidadeAtual  = 1;
+            quantidadeAtual   = 1;
             dataValidadeAtual = "";
             atualizarDisplayQuantidade();
             return;
@@ -182,7 +183,7 @@ public class DetalhesActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN:
                     v.setPressed(true);
                     diminuirQuantidade();
-                    autoUpdateHandler.postDelayed(autoDecrementRunnable, 400); // 400ms antes de começar a repetir
+                    autoUpdateHandler.postDelayed(autoDecrementRunnable, 400);
                     return true;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
@@ -230,7 +231,7 @@ public class DetalhesActivity extends AppCompatActivity {
         @Override
         public void run() {
             diminuirQuantidade();
-            autoUpdateHandler.postDelayed(this, 100); // Repete a cada 100ms
+            autoUpdateHandler.postDelayed(this, 100);
         }
     };
 
@@ -242,23 +243,56 @@ public class DetalhesActivity extends AppCompatActivity {
         }
     };
 
+    // =========================================================================
+    // SPRINT 18 — Exibição decimal sem arredondamento visual
+    // =========================================================================
+
+    private double normalizarEntradaDecimal(String texto) {
+        if (texto == null || texto.trim().isEmpty()) return 0.0;
+        // Normaliza: remove espaços, troca vírgula por ponto
+        String normalizado = texto.trim().replace(",", ".");
+        // Garante que não haja mais de um ponto (ex: "1.2.3" → inválido)
+        int primeiroPonto = normalizado.indexOf('.');
+        if (primeiroPonto != -1) {
+            String antes  = normalizado.substring(0, primeiroPonto + 1);
+            String depois = normalizado.substring(primeiroPonto + 1).replace(".", "");
+            normalizado = antes + depois;
+        }
+        return Double.parseDouble(normalizado);
+    }
+
     private void atualizarDisplayQuantidade() {
-        if (quantidadeAtual == Math.floor(quantidadeAtual)) {
+        if (quantidadeAtual == Math.floor(quantidadeAtual) && !Double.isInfinite(quantidadeAtual)) {
+            // Valor inteiro exato → exibe sem casas decimais
             tvQuantidade.setText(String.valueOf((int) quantidadeAtual));
         } else {
-            tvQuantidade.setText(String.format(java.util.Locale.US, "%.1f", quantidadeAtual));
+            // Valor decimal → exibe com exatamente 2 casas decimais, sem arredondamento visual
+            tvQuantidade.setText(String.format(Locale.US, "%.2f", quantidadeAtual));
         }
     }
 
+    // =========================================================================
+    // SPRINT 18 — Dialog aceita vírgula ou ponto como separador decimal
+    // =========================================================================
+
     private void abrirDialogEdicaoQuantidade() {
         EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        // TYPE_CLASS_TEXT permite qualquer caractere; o InputFilter abaixo
+        // restringe para dígitos, vírgula e ponto — garante que vírgula apareça
+        // no teclado de TODOS os dispositivos, ao contrário de TYPE_CLASS_NUMBER
+        // que em muitos teclados bloqueia a vírgula.
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setFilters(new android.text.InputFilter[]{
+                (source, start, end, dest, dstart, dend) ->
+                        source.toString().replaceAll("[^0-9.,]", "")
+        });
         input.setPadding(48, 48, 48, 48);
 
-        if (quantidadeAtual == Math.floor(quantidadeAtual)) {
+        // Preenche com valor atual formatado
+        if (quantidadeAtual == Math.floor(quantidadeAtual) && !Double.isInfinite(quantidadeAtual)) {
             input.setText(String.valueOf((int) quantidadeAtual));
         } else {
-            input.setText(String.valueOf(quantidadeAtual));
+            input.setText(String.format(Locale.US, "%.2f", quantidadeAtual));
         }
         input.setSelection(input.getText().length());
         input.requestFocus();
@@ -267,14 +301,16 @@ public class DetalhesActivity extends AppCompatActivity {
                 .setTitle("Editar Quantidade")
                 .setView(input)
                 .setPositiveButton("Confirmar", (dialog, which) -> {
-                    String val = input.getText().toString().replace(",", ".");
-                    if (!val.isEmpty()) {
+                    String raw = input.getText().toString().trim();
+                    if (!raw.isEmpty()) {
                         try {
-                            quantidadeAtual = Double.parseDouble(val);
-                            if (quantidadeAtual < 0) quantidadeAtual = 0;
+                            double novo = normalizarEntradaDecimal(raw);
+                            if (novo < 0) novo = 0;
+                            quantidadeAtual = novo;
                             atualizarDisplayQuantidade();
                         } catch (NumberFormatException e) {
-                            Toast.makeText(this, "Valor inválido", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Valor inválido. Use apenas números (ex: 1,5 ou 1.5).",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                 })
@@ -311,7 +347,7 @@ public class DetalhesActivity extends AppCompatActivity {
                 this,
                 (view, year, month, dayOfMonth) -> {
                     dataValidadeAtual = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
-                    String exibicao = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                    String exibicao   = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year);
                     etDataValidade.setText(exibicao);
 
                     int dias = DateUtils.calcularDiasRestantes(dataValidadeAtual);

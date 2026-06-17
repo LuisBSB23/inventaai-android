@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <resources>
 
     <!-- ===== Tema Base — Culinary Vitality (Dark) ===== -->
@@ -52,9 +51,13 @@
         <item name="android:fontFamily">@font/inter_regular</item>
     </style>
 
-    <!-- TextInputLayout adaptado para dark mode -->
-    <style name="Widget.InventaAi.TextInputLayout.Pill.Dark"
-        parent="Widget.InventaAi.TextInputLayout.Pill">
+    <!-- TextInputLayout adaptado para dark mode (Renomeado de Pill.Dark para Pill) -->
+    <style name="Widget.InventaAi.TextInputLayout.Pill"
+        parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">50dp</item>
+        <item name="boxCornerRadiusTopEnd">50dp</item>
+        <item name="boxCornerRadiusBottomStart">50dp</item>
+        <item name="boxCornerRadiusBottomEnd">50dp</item>
         <item name="boxBackgroundColor">@color/colorSurfaceContainerLowestDark</item>
         <item name="boxStrokeColor">@color/colorOutlineVariantDark</item>
         <item name="hintTextColor">@color/colorOnSurfaceVariantDark</item>

@@ -18,13 +18,16 @@
         android:layout_gravity="center"
         android:visibility="gone"
         app:indicatorColor="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
     <!-- ======================== TOP APP BAR ======================== -->
+    <!--
+        TAREFA #4 — Fix tvToolbarTitulo flutuante:
+        O TextView do título agora está DENTRO do ConstraintLayout da AppBar.
+        Removido o app:layout_anchor do final do arquivo.
+        Constraints: lado esquerdo preso ao btnBack, lado direito na margem.
+        maxLines="1" + ellipsize="end" evitam quebra de linha.
+    -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout4"
         android:layout_width="match_parent"
@@ -48,6 +51,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Título fixo — não usa mais app:layout_anchor -->
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -84,7 +89,58 @@
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp"
                 android:layout_marginTop="4dp"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="16dp" />
+
+            <!--
+                TAREFA #1 — ChipGroup de filtros:
+                Horizontal, abaixo do subtítulo, com singleSelection=true.
+                Cada chip terá a contagem atualizada dinamicamente pelo Java.
+                O chip selecionado dispara o reload do RecyclerView.
+            -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupFiltro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:selectionRequired="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTodos"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Todos" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipConsumido"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Consumido" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipDescartado"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Descartado" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipUsadoReceita"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Usado em receita" />
+
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
 
             <!-- RecyclerView da linha do tempo -->
             <androidx.recyclerview.widget.RecyclerView
@@ -151,13 +207,22 @@
         app:menu="@menu/bottom_nav_menu" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/tvToolbarTitulo"
+        android:layout_width="104dp"
+        android:layout_height="36dp"
+        android:ellipsize="end"
         android:fontFamily="@font/inter_bold"
+        android:maxLines="1"
         android:text="@string/app_name"
         android:textColor="?attr/colorPrimary"
         android:textSize="22sp"
         app:layout_anchor="@+id/appBarLayout4"
         app:layout_anchorGravity="center" />
+
+    <!--
+        TAREFA #4 — REMOVIDO: o TextView flutuante com app:layout_anchor
+        que causava sobreposição com o botão Voltar foi eliminado.
+        O título agora está dentro da AppBar (tvToolbarTitulo acima).
+    -->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

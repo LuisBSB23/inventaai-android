@@ -25,7 +25,7 @@ public final class DatabaseContract {
     public static class DespensaEntry implements BaseColumns {
         public static final String TABLE_NAME           = "despensa_itens";
         public static final String COLUMN_NOME          = "nome";
-        public static final String COLUMN_QUANTIDADE    = "quantidade";
+        public static final String COLUMN_QUANTIDADE    = "quantidade";      // REAL — suporta decimais
         public static final String COLUMN_UNIDADE       = "unidade_medida";
         public static final String COLUMN_DATA_VALIDADE = "data_validade";
         public static final String COLUMN_STATUS        = "status";
@@ -44,6 +44,8 @@ public final class DatabaseContract {
         public static final String COLUMN_MOTIVO      = "motivo";
         public static final String COLUMN_NOME_CACHED = "nome_item";
         public static final String COLUMN_USER_ID     = "user_id";
+        /** Sprint 15: origem do consumo (ex: "Receita: Frango ao Limão"). */
+        public static final String COLUMN_ORIGEM      = "origem";
     }
 
     // =========================================================================
@@ -62,5 +64,14 @@ public final class DatabaseContract {
         public static final String COLUMN_IMAGEM_URL    = "imagem_url";
         public static final String COLUMN_DATA_SALVO    = "data_salvo";
         public static final String COLUMN_USER_ID       = "user_id";
+        public static final String COLUMN_STATUS = "status";
     }
+
+    // =========================================================================
+    // Constantes de status de execução de receita
+    // =========================================================================
+
+    public static final String RECEITA_STATUS_SALVA        = "SALVA";
+    public static final String RECEITA_STATUS_EM_ANDAMENTO = "EM_ANDAMENTO";
+    public static final String RECEITA_STATUS_CONCLUIDA    = "CONCLUIDA";
 }

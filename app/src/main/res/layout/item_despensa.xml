@@ -30,10 +30,6 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="12dp">
 
-            <!--
-                Fix 1: CheckBox fica na mesma linha que o ícone, à esquerda.
-                GONE por padrão; o adapter o torna VISIBLE no modo de seleção.
-            -->
             <CheckBox
                 android:id="@+id/checkboxItem"
                 android:layout_width="wrap_content"
@@ -46,11 +42,19 @@
                 tools:visibility="visible"
                 tools:checked="true" />
 
-            <!-- Ícone circular da categoria -->
+            <!--
+                TAREFA #3 — Ícone circular da categoria:
+                O FrameLayout recebe backgroundTintList dinâmico via CategoryColorHelper.
+                O ImageView recebe imageTintList dinâmico (cor "on container").
+                android:backgroundTint aqui é o fallback usado no editor/preview;
+                em runtime o DespensaAdapter sobrescreve via setBackgroundTintList.
+            -->
             <FrameLayout
+                android:id="@+id/flIconContainer"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/bg_circle_primary_container">
+                android:background="@drawable/bg_circle_primary_container"
+                android:backgroundTint="@color/colorPrimaryContainer">
 
                 <ImageView
                     android:id="@+id/ivItemIcon"
@@ -60,7 +64,7 @@
                     android:contentDescription="@string/cd_food_icon"
                     android:src="@drawable/ic_cat_outros"
                     android:transitionName="transition_item_icon"
-                    android:tint="@color/colorPrimary" />
+                    android:tint="@color/colorOnPrimaryContainer" />
             </FrameLayout>
 
             <!-- Espaço flexível -->

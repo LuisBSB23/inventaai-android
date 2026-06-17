@@ -395,6 +395,17 @@
                             android:layout_marginTop="8dp"
                             android:paddingHorizontal="32dp" />
 
+                        <!-- Sprint 19-B #8: CTA no empty state -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAdicionarPrimeiroItem"
+                            style="@style/Widget.InventaAi.Button.Pill"
+                            android:layout_width="wrap_content"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="24dp"
+                            android:text="Adicionar primeiro item"
+                            app:icon="@drawable/ic_nav_add"
+                            app:iconGravity="textStart" />
+
                     </LinearLayout>
 
                 </LinearLayout>
@@ -431,6 +442,18 @@
                     android:textColor="@color/colorOnPrimaryContainer"
                     android:textSize="14sp"
                     android:text="0 selecionado(s)" />
+
+                <!-- Sprint 18: botão lixeira — exclui e envia ao histórico como descartado -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExcluirSelecionados"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="Excluir selecionados"
+                    app:icon="@drawable/ic_delete"
+                    app:iconTint="@color/colorError"
+                    app:iconSize="22dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancelarSelecao"

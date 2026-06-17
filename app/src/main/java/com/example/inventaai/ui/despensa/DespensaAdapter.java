@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,20 +20,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
+import com.example.inventaai.util.CategoryColorHelper;
 import com.example.inventaai.util.CategoryIconHelper;
 import com.example.inventaai.util.DateUtils;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
+import java.util.Map;
 
 public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.DespensaViewHolder> {
-
-    // =========================================================================
-    // Interfaces
-    // =========================================================================
 
     public interface OnItemClickListener {
         void onItemClick(DespensaItem item);
@@ -46,74 +45,56 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         void onSelecaoChanged(int totalSelecionados);
     }
 
-    // =========================================================================
-    // Estado
-    // =========================================================================
-
     private final List<DespensaItem>    items;
     private final OnItemClickListener   clickListener;
     private OnItemLongClickListener     longClickListener;
-    private OnSelecaoChangedListener    selecaoChangedListener;   // Fix 2
+    private OnSelecaoChangedListener    selecaoChangedListener;
 
-    private final Set<Long> itensSelecionados = new HashSet<>();
+    // CORREÇÃO 2: Substituído Set<Long> por Map para reter os objetos selecionados, resolvendo o bug de filtro
+    private final Map<Long, DespensaItem> itensSelecionadosMap = new HashMap<>();
     private boolean modoSelecao = false;
     private int ultimaPosicaoAnimada = -1;
-
-    // =========================================================================
-    // Construtor
-    // =========================================================================
 
     public DespensaAdapter(List<DespensaItem> items, OnItemClickListener clickListener) {
         this.items         = items != null ? new ArrayList<>(items) : new ArrayList<>();
         this.clickListener = clickListener;
     }
 
-    // =========================================================================
-    // API pública
-    // =========================================================================
-
-    public void setOnItemLongClickListener(OnItemLongClickListener l)  { longClickListener    = l; }
-    public void setOnSelecaoChangedListener(OnSelecaoChangedListener l) { selecaoChangedListener = l; } // Fix 2
+    public void setOnItemLongClickListener(OnItemLongClickListener l)   { longClickListener     = l; }
+    public void setOnSelecaoChangedListener(OnSelecaoChangedListener l) { selecaoChangedListener = l; }
 
     public void setModoSelecao(boolean ativo) {
         modoSelecao = ativo;
-        if (!ativo) itensSelecionados.clear();
+        if (!ativo) itensSelecionadosMap.clear();
         notifyDataSetChanged();
     }
 
     public boolean isModoSelecao()            { return modoSelecao; }
-    public int getQuantidadeSelecionados()    { return itensSelecionados.size(); }
+    public int getQuantidadeSelecionados()    { return itensSelecionadosMap.size(); }
 
     public List<DespensaItem> getItensSelecionados() {
-        List<DespensaItem> lista = new ArrayList<>();
-        for (DespensaItem item : items) {
-            if (itensSelecionados.contains(item.getId())) lista.add(item);
-        }
-        return lista;
+        // CORREÇÃO 2: Agora retorna diretamente os objetos armazenados no mapa, sem depender da view filtrada
+        return new ArrayList<>(itensSelecionadosMap.values());
     }
 
-    /** Seleciona (ou deseleciona) um item pelo id sem precisar de clique na View. */
-    public void selecionarItem(long id) {
-        if (itensSelecionados.contains(id)) {
-            itensSelecionados.remove(id);
+    public void selecionarItem(DespensaItem item) {
+        long id = item.getId();
+        if (itensSelecionadosMap.containsKey(id)) {
+            itensSelecionadosMap.remove(id);
         } else {
-            itensSelecionados.add(id);
+            itensSelecionadosMap.put(id, item);
         }
         notifyDataSetChanged();
         if (selecaoChangedListener != null) {
-            selecaoChangedListener.onSelecaoChanged(itensSelecionados.size());
+            selecaoChangedListener.onSelecaoChanged(itensSelecionadosMap.size());
         }
     }
 
     public void limparSelecao() {
-        itensSelecionados.clear();
+        itensSelecionadosMap.clear();
         modoSelecao = false;
         notifyDataSetChanged();
     }
-
-    // =========================================================================
-    // DiffUtil
-    // =========================================================================
 
     public void atualizarLista(List<DespensaItem> novaLista) {
         if (novaLista == null) novaLista = new ArrayList<>();
@@ -126,10 +107,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         diff.dispatchUpdatesTo(this);
     }
 
-    // =========================================================================
-    // Adapter overrides
-    // =========================================================================
-
     @NonNull @Override
     public DespensaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
@@ -140,7 +117,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     @Override
     public void onBindViewHolder(@NonNull DespensaViewHolder holder, int position) {
         DespensaItem item = items.get(position);
-        boolean selecionado = itensSelecionados.contains(item.getId());
+        boolean selecionado = itensSelecionadosMap.containsKey(item.getId());
         holder.bind(item, clickListener, longClickListener, modoSelecao, selecionado, this);
 
         if (position > ultimaPosicaoAnimada) {
@@ -153,13 +130,10 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
     @Override public int getItemCount() { return items.size(); }
 
-    // =========================================================================
-    // ViewHolder
-    // =========================================================================
-
     static class DespensaViewHolder extends RecyclerView.ViewHolder {
 
         private final MaterialCardView cardItem;
+        private final FrameLayout      flIconContainer;
         private final ImageView        ivItemIcon;
         private final TextView         tvItemName;
         private final TextView         tvItemQuantity;
@@ -170,6 +144,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         DespensaViewHolder(@NonNull View v) {
             super(v);
             cardItem          = v.findViewById(R.id.cardItem);
+            flIconContainer   = v.findViewById(R.id.flIconContainer);
             ivItemIcon        = v.findViewById(R.id.ivItemIcon);
             tvItemName        = v.findViewById(R.id.tvItemName);
             tvItemQuantity    = v.findViewById(R.id.tvItemQuantity);
@@ -187,19 +162,15 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
             Context ctx = itemView.getContext();
 
-            // ── Ícone ──────────────────────────────────────────────────────
             ivItemIcon.setImageResource(CategoryIconHelper.getIcon(item.getCategoria()));
 
-            // ── Nome ───────────────────────────────────────────────────────
+            CategoryColorHelper.Colors cores = CategoryColorHelper.getColors(ctx, item.getCategoria());
+            flIconContainer.setBackgroundTintList(ColorStateList.valueOf(cores.containerColor));
+            ivItemIcon.setImageTintList(ColorStateList.valueOf(cores.onContainerColor));
+
             tvItemName.setText(item.getNome());
+            tvItemQuantity.setText(formatarQuantidade(item.getQuantidade(), item.getUnidadeMedida()));
 
-            // ── Quantidade ─────────────────────────────────────────────────
-            String unidade = item.getUnidadeMedida() != null ? item.getUnidadeMedida() : "unid";
-            double q = item.getQuantidade();
-            String qtdStr = (q == Math.floor(q)) ? String.valueOf((int) q) : String.valueOf(q);
-            tvItemQuantity.setText(qtdStr + " " + unidade);
-
-            // ── Badge validade ─────────────────────────────────────────────
             int dias = DateUtils.calcularDiasRestantes(item.getDataValidade());
             String alerta = DateUtils.getStatusAlerta(dias);
 
@@ -227,8 +198,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             progressFreshness.setProgressTintList(ColorStateList.valueOf(corBarra));
             progressFreshness.setProgress(progressValor);
 
-            // ── Fix 1b: seleção via APIs do MaterialCardView ───────────────
-            // Isso garante que a borda NÃO suma ao rolar (não usa setBackground).
             if (modoSelecao) {
                 checkboxItem.setVisibility(View.VISIBLE);
                 checkboxItem.setChecked(selecionado);
@@ -258,30 +227,16 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
                         ContextCompat.getColor(ctx, R.color.colorSurfaceContainerLowest));
             }
 
-            // ── Clique ─────────────────────────────────────────────────────
             itemView.setOnClickListener(v -> {
                 if (modoSelecao) {
-                    // Fix 2: toggle + notifica listener para atualizar contador
-                    long id = item.getId();
-                    if (adapter.itensSelecionados.contains(id)) {
-                        adapter.itensSelecionados.remove(id);
-                    } else {
-                        adapter.itensSelecionados.add(id);
-                    }
+                    adapter.selecionarItem(item); // Usa o novo método corrigido
                     int pos = getAdapterPosition();
                     if (pos != RecyclerView.NO_ID) adapter.notifyItemChanged(pos);
-
-                    // Fix 2 — dispara callback com total atualizado
-                    if (adapter.selecaoChangedListener != null) {
-                        adapter.selecaoChangedListener.onSelecaoChanged(
-                                adapter.itensSelecionados.size());
-                    }
                 } else {
                     if (clickListener != null) clickListener.onItemClick(item);
                 }
             });
 
-            // ── Long click ─────────────────────────────────────────────────
             itemView.setOnLongClickListener(v -> {
                 if (longClickListener != null) {
                     longClickListener.onItemLongClick(item);
@@ -289,6 +244,39 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
                 }
                 return false;
             });
+        }
+
+        private static String formatarQuantidade(double quantidade, String unidade) {
+            if (unidade == null || unidade.isEmpty()) {
+                return formatarNumero(quantidade) + " unid";
+            }
+
+            String unidLower = unidade.trim().toLowerCase(Locale.getDefault());
+
+            if (unidLower.equals("kg") && quantidade < 1.0) {
+                int gramas = (int) Math.round(quantidade * 1000);
+                return gramas + " g";
+            }
+
+            if ((unidLower.equals("l") || unidLower.equals("litro") || unidLower.equals("litros"))
+                    && quantidade < 1.0) {
+                int ml = (int) Math.round(quantidade * 1000);
+                return ml + " ml";
+            }
+
+            return formatarNumero(quantidade) + " " + unidade;
+        }
+
+        private static String formatarNumero(double valor) {
+            if (valor == Math.floor(valor) && !Double.isInfinite(valor)) {
+                return String.valueOf((int) valor);
+            }
+            String formatado = String.format(Locale.getDefault(), "%.3f", valor);
+            formatado = formatado.replaceAll("[,.]?0+$", "");
+            if (formatado.endsWith(",") || formatado.endsWith(".")) {
+                formatado = formatado.substring(0, formatado.length() - 1);
+            }
+            return formatado;
         }
 
         private static int dpToPx(Context ctx, int dp) {

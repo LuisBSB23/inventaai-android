@@ -27,9 +27,12 @@
     <string name="hint_category">Categoria</string>
     <string name="hint_quantity">Quantidade</string>
     <string name="hint_expiry_date">Data de Validade</string>
+
+    <!-- Sprint 16: "lb" substituído por "L" (Litros) -->
     <string name="unit_unit">unid</string>
     <string name="unit_kg">kg</string>
-    <string name="unit_lb">lb</string>
+    <string name="unit_l">L</string>
+
     <string name="btn_save">Salvar na Despensa</string>
     <string name="back">Voltar</string>
     <string name="select_date">Selecionar data</string>
@@ -44,6 +47,13 @@
         <item>Congelados</item>
         <item>Temperos</item>
         <item>Outros</item>
+    </string-array>
+
+    <!-- Sprint 16: array de unidades sem "lb", com "L" no lugar -->
+    <string-array name="units">
+        <item>unid</item>
+        <item>kg</item>
+        <item>L</item>
     </string-array>
 
     <!-- Detalhes -->
@@ -108,5 +118,35 @@
     <string name="btn_save_recipe_done">Salva! ✓</string>
     <string name="dialog_delete_receita_title">Remover receita</string>
     <string name="cd_recipe_thumb">Imagem da receita</string>
+
+    <string name="chip_todos">Todos (%d)</string>
+    <string name="chip_consumido">Consumido (%d)</string>
+    <string name="chip_descartado">Descartado (%d)</string>
+    <string name="chip_usado_receita">Usado em receita (%d)</string>
+
+    <!-- Sincronização CSV -->
+    <string name="nav_sincronizar">Sincronizar Despensa</string>
+    <string name="title_sincronizacao">Sincronizar Despensa</string>
+    <string name="title_preview_import">Pré-visualizar Importação</string>
+
+    <string name="csv_btn_baixar_modelo">Baixar Modelo de Planilha</string>
+    <string name="csv_btn_importar">Importar Planilha</string>
+    <string name="csv_btn_exportar">Exportar Despensa Atual</string>
+    <string name="csv_btn_whatsapp">Compartilhar no WhatsApp</string>
+
+    <string name="csv_desc_modelo">Gera um CSV vazio com cabeçalhos e exemplos</string>
+    <string name="csv_desc_importar">Seleciona um arquivo .csv para adicionar itens</string>
+    <string name="csv_desc_exportar">Salva todos os itens ativos em arquivo CSV</string>
+    <string name="csv_desc_whatsapp">Envia a lista de compras para um contato</string>
+
+    <string name="csv_status_ok">Encontramos %1$d item(ns). Todos prontos para importar.</string>
+    <string name="csv_status_erro">Encontramos %1$d item(ns). %2$d precisam de correção.</string>
+
+    <string name="csv_merge_title">Itens Repetidos Encontrados</string>
+    <string name="csv_merge_somar">Somar Quantidades</string>
+    <string name="csv_merge_substituir">Substituir Quantidades</string>
+
+    <string name="csv_importado_sucesso">%1$d adicionado(s), %2$d atualizado(s). Importação concluída!</string>
+    <string name="csv_exportado_sucesso">%1$d item(ns) exportado(s) com sucesso!</string>
 
 </resources>

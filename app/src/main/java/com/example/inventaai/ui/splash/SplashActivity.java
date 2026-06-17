@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
@@ -125,10 +126,19 @@ public class SplashActivity extends AppCompatActivity {
                 ? com.example.inventaai.ui.dashboard.DashboardActivity.class
                 : LoginActivity.class;
 
-        Intent intent = new Intent(this, destino);
+        final Intent intent = new Intent(this, destino);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        finish();
+
+        // Sprint 19-B #9: fade-out suave antes de trocar de tela
+        View rootView = findViewById(android.R.id.content);
+        rootView.animate()
+                .alpha(0f)
+                .setDuration(180)
+                .withEndAction(() -> {
+                    startActivity(intent);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    finish();
+                })
+                .start();
     }
 }

@@ -187,8 +187,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- STEPPER de Quantidade
-                 Sprint 13: container com minWidth para evitar quebra de linha em 3+ dígitos -->
+            <!-- STEPPER de Quantidade -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -208,11 +207,6 @@
                     android:src="@drawable/ic_decrease"
                     android:tint="?attr/colorPrimary" />
 
-                <!--
-                    Sprint 13 FIX: largura aumentada de 96dp para 120dp e
-                    minWidth definido para garantir espaço para 3+ dígitos
-                    sem quebrar a linha.
-                -->
                 <LinearLayout
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
@@ -258,36 +252,41 @@
 
             </LinearLayout>
 
-            <!-- BOTÕES — Remover e Salvar -->
+            <!--
+                TAREFA #2 — Botões reorganizados verticalmente:
+                - btnSalvar no TOPO, largura total, estilo Pill primário.
+                - btnRemover ABAIXO, estilo OutlinedButton em cor de erro, altura 48dp.
+                - Espaçamento de 12dp entre eles.
+                - O AlertDialog em Java NÃO foi alterado.
+            -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_marginBottom="8dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnRemover"
-                    style="@style/Widget.InventaAi.Button.Pill.Outlined.Error"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:paddingHorizontal="12dp"
-                    android:text="Remover"
-                    app:icon="@drawable/ic_delete"
-                    app:iconGravity="textStart"
-                    app:iconSize="18dp" />
-
+                <!-- Botão Salvar — topo, largura total, estilo primário -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSalvar"
                     style="@style/Widget.InventaAi.Button.Pill"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
                     android:paddingHorizontal="12dp"
                     android:text="@string/btn_save_item"
                     app:icon="@drawable/ic_save"
+                    app:iconGravity="textStart"
+                    app:iconSize="18dp" />
+
+                <!-- Botão Remover — abaixo, estilo outlined, cor de erro, 48dp -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRemover"
+                    style="@style/Widget.InventaAi.Button.Pill.Outlined.Error"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:paddingHorizontal="12dp"
+                    android:text="Remover"
+                    app:icon="@drawable/ic_delete"
                     app:iconGravity="textStart"
                     app:iconSize="18dp" />
 

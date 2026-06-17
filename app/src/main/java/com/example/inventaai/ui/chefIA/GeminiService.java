@@ -26,10 +26,6 @@ import okhttp3.Response;
 
 public class GeminiService {
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Constantes
-    // ──────────────────────────────────────────────────────────────────────────
-
     private static final String TAG = Constants.LOG_TAG;
 
     private static final String ENDPOINT =
@@ -38,21 +34,10 @@ public class GeminiService {
     private static final MediaType JSON_TYPE =
             MediaType.parse("application/json; charset=utf-8");
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Interface de callback
-    // ──────────────────────────────────────────────────────────────────────────
-
     public interface ReceitaCallback {
-        /** Chamado quando a IA retorna uma receita válida. */
         void onSucesso(ReceitaResponse receita);
-
-        /** Chamado em qualquer erro (rede, parsing, chave inválida etc.). */
         void onErro(String mensagem);
     }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // Cliente HTTP — instância única (thread-safe)
-    // ──────────────────────────────────────────────────────────────────────────
 
     private final OkHttpClient client;
     private final Gson gson;
@@ -60,37 +45,45 @@ public class GeminiService {
     public GeminiService() {
         client = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)   // Gemini pode demorar
+                .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .build();
         gson = new Gson();
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Método principal
-    // ──────────────────────────────────────────────────────────────────────────
+    // =========================================================================
+    // GERAR RECEITA COM ITENS (sem categoria específica)
+    // =========================================================================
 
-    /**
-     * Gera uma receita com base nos itens da despensa fornecidos.
-     *
-     * @param itens    Lista de DespensaItem disponíveis (não deve estar vazia).
-     * @param callback Resultado: sucesso com ReceitaResponse ou mensagem de erro.
-     */
     public void gerarReceita(List<DespensaItem> itens, ReceitaCallback callback) {
+        enviarRequisicao(construirPrompt(itens, null), callback);
+    }
+
+    // =========================================================================
+    // SPRINT 15/18: GERAR RECEITA COM CATEGORIA
+    // =========================================================================
+
+    public void gerarReceitaComCategoria(List<DespensaItem> itens,
+                                         String categoria,
+                                         ReceitaCallback callback) {
+        enviarRequisicao(construirPrompt(itens, categoria), callback);
+    }
+
+    // =========================================================================
+    // HELPERS PRIVADOS
+    // =========================================================================
+
+    private void enviarRequisicao(String prompt, ReceitaCallback callback) {
         String apiKey = BuildConfig.GEMINI_API_KEY;
 
-        // Validação da chave antes de fazer a chamada
         if (apiKey == null || apiKey.isEmpty()) {
-            Log.e(TAG, "GeminiService: GEMINI_API_KEY está vazia no BuildConfig. "
-                    + "Verifique se a chave foi adicionada ao local.properties.");
+            Log.e(TAG, "GeminiService: GEMINI_API_KEY está vazia no BuildConfig.");
             callback.onErro("Chave da API não configurada. Adicione GEMINI_API_KEY ao local.properties.");
             return;
         }
 
-        String prompt      = construirPrompt(itens);
         String requestBody = construirCorpoRequisicao(prompt);
-
-        Log.d(TAG, "GeminiService: enviando prompt (" + itens.size() + " ingredientes)");
+        Log.d(TAG, "GeminiService: enviando prompt...");
 
         Request request = new Request.Builder()
                 .url(ENDPOINT + apiKey)
@@ -111,79 +104,103 @@ public class GeminiService {
                     String bodyString = r.body() != null ? r.body().string() : "";
 
                     if (!r.isSuccessful()) {
-                        // ── LOG DETALHADO: mostra o código HTTP real e o body completo ──
-                        // Isso permite identificar se é 400, 401, 403, 429, 500, etc.
-                        // sem depender da mensagem genérica exibida ao usuário.
-                        Log.e(TAG, "══════════════════════════════════════════");
                         Log.e(TAG, "GeminiService: ERRO HTTP " + r.code());
-                        Log.e(TAG, "GeminiService: Body da resposta de erro:");
-                        Log.e(TAG, bodyString);
-                        Log.e(TAG, "══════════════════════════════════════════");
-
-                        // Tenta extrair a mensagem de erro estruturada do JSON da API
+                        Log.e(TAG, "GeminiService: Body: " + bodyString);
                         String mensagemApi = extrairMensagemDeErro(bodyString);
-                        if (mensagemApi != null) {
-                            Log.e(TAG, "GeminiService: mensagem da API → " + mensagemApi);
-                        }
-
+                        if (mensagemApi != null) Log.e(TAG, "API error: " + mensagemApi);
                         callback.onErro(traduzirErroHttp(r.code()));
                         return;
                     }
 
-                    Log.d(TAG, "GeminiService: HTTP 200 — processando resposta...");
-                    Log.d(TAG, "GeminiService: body completo = " + bodyString);
-
+                    Log.d(TAG, "GeminiService: HTTP 200 — processando...");
                     ReceitaResponse receita = extrairReceita(bodyString, callback);
-                    if (receita != null) {
-                        callback.onSucesso(receita);
-                    }
-                    // Se receita == null, o callback.onErro já foi chamado dentro de extrairReceita
+                    if (receita != null) callback.onSucesso(receita);
 
                 } catch (Exception e) {
-                    Log.e(TAG, "GeminiService: exceção inesperada ao processar resposta — " + e.getMessage(), e);
+                    Log.e(TAG, "GeminiService: exceção inesperada — " + e.getMessage(), e);
                     callback.onErro("Não foi possível processar a receita. Tente novamente.");
                 }
             }
         });
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Helpers privados
-    // ──────────────────────────────────────────────────────────────────────────
+    private String construirPrompt(List<DespensaItem> itens, String categoria) {
 
-    /**
-     * Monta a lista de ingredientes e o prompt completo enviado à IA.
-     */
-    private String construirPrompt(List<DespensaItem> itens) {
-        StringBuilder lista = new StringBuilder();
-        for (DespensaItem item : itens) {
-            lista.append("- ")
-                    .append(item.getNome())
-                    .append(" (")
-                    .append(formatarQuantidade(item.getQuantidade()))
-                    .append(" ")
-                    .append(item.getUnidadeMedida() != null ? item.getUnidadeMedida() : "unid")
-                    .append(")\n");
+        // ── Instrução de categoria ────────────────────────────────────────────
+        String instrucaoCategoria = "";
+        if (categoria != null && !categoria.isEmpty() && !"Surpresa".equals(categoria)) {
+            instrucaoCategoria = " do tipo " + categoria;
         }
 
-        return "Atue como um Chef de cozinha profissional. "
-                + "Tenho os seguintes ingredientes na minha despensa:\n"
-                + lista
-                + "\nCrie uma receita deliciosa priorizando os ingredientes listados. "
-                + "Responda APENAS com um objeto JSON puro, sem markdown, sem blocos de código, "
-                + "sem explicações antes ou depois, contendo exatamente estes campos: "
-                + "\"titulo\" (string), "
-                + "\"tempo_preparo\" (string, ex: \"30 min\"), "
-                + "\"porcoes\" (string, ex: \"4 porções\"), "
-                + "\"dificuldade\" (string: Fácil, Médio ou Difícil), "
-                + "\"ingredientes\" (array de strings, cada item com nome e quantidade), "
-                + "\"passos\" (array de strings com as instruções numeradas). "
-                + "Idioma: Português do Brasil.";
+        // ── Lista de ingredientes disponíveis (pode ser vazia) ────────────────
+        StringBuilder lista = new StringBuilder();
+        if (itens != null && !itens.isEmpty()) {
+            for (DespensaItem item : itens) {
+                lista.append("- ")
+                        .append(item.getNome())
+                        .append(" (")
+                        .append(formatarQuantidade(item.getQuantidade()))
+                        .append(" ")
+                        .append(item.getUnidadeMedida() != null ? item.getUnidadeMedida() : "unid")
+                        .append(")\n");
+            }
+        }
+
+        // ── Bloco condicional de ingredientes ─────────────────────────────────
+        String blocoIngredientes;
+        if (lista.length() > 0) {
+            blocoIngredientes =
+                    "Ingredientes disponíveis na despensa do usuário:\n"
+                            + lista
+                            + "\n"
+                            + "Priorize esses ingredientes, mas você NÃO é obrigado a usá-los todos. "
+                            + "Se a combinação resultar em algo inviável ou de sabor ruim, "
+                            + "prefira uma receita autêntica que use apenas parte deles, "
+                            + "assumindo que itens básicos de cozinha estão disponíveis "
+                            + "(sal, óleo, água, alho, cebola, temperos comuns).\n\n";
+        } else {
+            // Sprint 18: despensa vazia — gera inspiração culinária livre
+            blocoIngredientes =
+                    "O usuário não informou ingredientes específicos. "
+                            + "Crie uma receita de inspiração culinária usando ingredientes comuns "
+                            + "que qualquer cozinha brasileira provavelmente possui "
+                            + "(sal, óleo, farinha, ovos, leite, açúcar, temperos básicos, etc.).\n\n";
+        }
+
+        // ── Regra de Ouro (Sprint 18) ─────────────────────────────────────────
+        String regraDeOuro =
+                "⚠️ REGRA DE OURO: Você é um chef profissional. "
+                        + "Nunca invente pratos fictícios, nomes de receitas inexistentes "
+                        + "ou combinações gastronômicas incomuns. "
+                        + "A autenticidade da receita é MAIS IMPORTANTE do que usar todos os ingredientes listados. "
+                        + "Prefira sempre uma receita real, conhecida e culturalmente válida. "
+                        + "Se os ingredientes disponíveis não formarem nenhuma receita viável, "
+                        + "use apenas os que fazem sentido e complete com básicos de cozinha.\n\n";
+
+        // ── Instrução de formato JSON estrito (Sprint 18) ─────────────────────
+        String instrucaoFormato =
+                "⚠️ FORMATO OBRIGATÓRIO: Responda EXCLUSIVAMENTE com um objeto JSON válido. "
+                        + "NÃO inclua markdown, NÃO use blocos ```json``` ou ```, "
+                        + "NÃO adicione texto antes nem depois do JSON, "
+                        + "NÃO use caracteres especiais fora das strings JSON. "
+                        + "O JSON deve ser parseável diretamente pelo método gson.fromJson(). "
+                        + "Qualquer caractere fora do JSON irá causar falha no aplicativo.\n\n"
+                        + "Campos obrigatórios no JSON:\n"
+                        + "- \"titulo\": string — nome real e conhecido da receita\n"
+                        + "- \"tempo_preparo\": string — ex: \"30 min\"\n"
+                        + "- \"porcoes\": string — ex: \"4 porções\"\n"
+                        + "- \"dificuldade\": string — exatamente uma das opções: Fácil, Médio ou Difícil\n"
+                        + "- \"ingredientes\": array de strings — cada item no formato \"Nome - quantidade e unidade\"\n"
+                        + "- \"passos\": array de strings — cada passo completo como uma string\n\n"
+                        + "Idioma: Português do Brasil.";
+
+        return "Você é um chef profissional especialista em culinária brasileira.\n\n"
+                + regraDeOuro
+                + "Crie uma receita real" + instrucaoCategoria + ".\n\n"
+                + blocoIngredientes
+                + instrucaoFormato;
     }
 
-    /**
-     * Serializa o prompt no formato JSON que a API do Gemini espera.
-     */
     private String construirCorpoRequisicao(String prompt) {
         JsonObject text = new JsonObject();
         text.addProperty("text", prompt);
@@ -197,19 +214,10 @@ public class GeminiService {
         JsonArray contents = new JsonArray();
         contents.add(content);
 
-        // Parâmetro de geração: temperature baixa para JSON mais previsível
         JsonObject genConfig = new JsonObject();
         genConfig.addProperty("temperature", 0.7);
-        // 8192 tokens: suficiente para qualquer receita completa com passos detalhados.
-        // O valor anterior (1024) era insuficiente para o gemini-flash-latest (gemini-3.5-flash),
-        // que usa tokens internos de "pensamento" e truncava o JSON antes de terminar.
         genConfig.addProperty("maxOutputTokens", 8192);
 
-        // Desativa o modo de pensamento (thinking) do modelo.
-        // O gemini-flash-latest (gemini-3.5-flash) ativa "thinking" por padrão,
-        // consumindo ~1000 tokens internamente antes de gerar a resposta,
-        // o que causava MAX_TOKENS no JSON. thinkingBudget=0 desativa esse comportamento.
-        // O campo fica dentro de generationConfig, não no body raiz.
         JsonObject thinkingConfig = new JsonObject();
         thinkingConfig.addProperty("thinkingBudget", 0);
         genConfig.add("thinkingConfig", thinkingConfig);
@@ -225,85 +233,73 @@ public class GeminiService {
         try {
             JsonObject root = JsonParser.parseString(responseJson).getAsJsonObject();
 
-            // ── Verificar se há candidates ────────────────────────────────────
             if (!root.has("candidates") || root.get("candidates").isJsonNull()) {
-                // Pode ocorrer quando a API bloqueia o prompt por segurança
                 String bloqueio = root.has("promptFeedback")
-                        ? root.getAsJsonObject("promptFeedback").toString()
-                        : "sem promptFeedback";
-                Log.e(TAG, "GeminiService: resposta sem 'candidates'. promptFeedback = " + bloqueio);
-                callback.onErro("A IA não conseguiu gerar uma receita para esses ingredientes. Tente com outros itens.");
+                        ? root.getAsJsonObject("promptFeedback").toString() : "sem promptFeedback";
+                Log.e(TAG, "GeminiService: sem candidates. promptFeedback=" + bloqueio);
+                callback.onErro("A IA não conseguiu gerar uma receita. Tente com outros itens.");
                 return null;
             }
 
             JsonArray candidates = root.getAsJsonArray("candidates");
-
             if (candidates.size() == 0) {
-                Log.e(TAG, "GeminiService: array 'candidates' vazio — possível bloqueio por filtro de segurança.");
                 callback.onErro("A IA bloqueou a geração desta receita. Tente novamente.");
                 return null;
             }
 
             JsonObject candidate = candidates.get(0).getAsJsonObject();
 
-            // ── Verificar finishReason ────────────────────────────────────────
             if (candidate.has("finishReason")) {
-                String finishReason = candidate.get("finishReason").getAsString();
-                if (!"STOP".equals(finishReason)) {
-                    Log.e(TAG, "GeminiService: finishReason inesperado = " + finishReason
-                            + ". Candidate completo: " + candidate);
-                    if ("MAX_TOKENS".equals(finishReason)) {
-                        Log.w(TAG, "GeminiService: JSON truncado por limite de tokens. "
-                                + "Considere aumentar maxOutputTokens.");
-                    }
-                    // Tenta continuar mesmo assim — o JSON pode estar parcialmente utilizável
+                String fr = candidate.get("finishReason").getAsString();
+                if (!"STOP".equals(fr)) {
+                    Log.e(TAG, "GeminiService: finishReason=" + fr);
+                    if ("MAX_TOKENS".equals(fr))
+                        Log.w(TAG, "GeminiService: JSON truncado por limite de tokens.");
                 }
             }
 
-            // ── Extrair o texto gerado ────────────────────────────────────────
             if (!candidate.has("content")) {
-                Log.e(TAG, "GeminiService: candidate sem 'content'. Candidate: " + candidate);
                 callback.onErro("Resposta incompleta da IA. Tente novamente.");
                 return null;
             }
 
-            JsonArray parts = candidate
-                    .getAsJsonObject("content")
-                    .getAsJsonArray("parts");
-
-            if (parts == null || parts.size() == 0) {
-                Log.e(TAG, "GeminiService: 'parts' vazio ou ausente.");
+            JsonArray partsArr = candidate.getAsJsonObject("content").getAsJsonArray("parts");
+            if (partsArr == null || partsArr.size() == 0) {
                 callback.onErro("Resposta vazia da IA. Tente novamente.");
                 return null;
             }
 
-            String textoGerado = parts.get(0).getAsJsonObject().get("text").getAsString();
+            String textoGerado = partsArr.get(0).getAsJsonObject().get("text").getAsString();
             Log.d(TAG, "GeminiService: texto gerado = " + textoGerado);
 
-            // ── Limpar possíveis marcadores markdown ──────────────────────────
+            // Sprint 18: limpeza defensiva — remove markdown mesmo com prompt pedindo JSON puro
             String jsonLimpo = textoGerado
                     .replaceAll("(?s)```json\\s*", "")
                     .replaceAll("(?s)```\\s*", "")
                     .trim();
 
-            // ── Converter para ReceitaResponse ────────────────────────────────
-            ReceitaResponse receita = gson.fromJson(jsonLimpo, ReceitaResponse.class);
+            // Sprint 18: extrai apenas o bloco JSON caso haja texto residual antes/depois
+            int inicioJson = jsonLimpo.indexOf('{');
+            int fimJson    = jsonLimpo.lastIndexOf('}');
+            if (inicioJson != -1 && fimJson != -1 && fimJson > inicioJson) {
+                jsonLimpo = jsonLimpo.substring(inicioJson, fimJson + 1);
+            }
 
+            Log.d(TAG, "GeminiService: JSON limpo = " + jsonLimpo);
+
+            ReceitaResponse receita = gson.fromJson(jsonLimpo, ReceitaResponse.class);
             if (receita == null) {
-                Log.e(TAG, "GeminiService: gson.fromJson retornou null para: " + jsonLimpo);
                 callback.onErro("Não foi possível interpretar a receita gerada. Tente novamente.");
                 return null;
             }
-
             return receita;
 
         } catch (JsonSyntaxException e) {
-            Log.e(TAG, "GeminiService: JSON malformado na resposta — " + e.getMessage());
-            Log.e(TAG, "GeminiService: resposta bruta que causou o erro: " + responseJson);
-            callback.onErro("A IA retornou uma resposta em formato inesperado. Tente novamente.");
+            Log.e(TAG, "GeminiService: JSON malformado — " + e.getMessage());
+            callback.onErro("A IA retornou um formato inesperado. Tente novamente.");
             return null;
         } catch (Exception e) {
-            Log.e(TAG, "GeminiService: erro inesperado ao extrair receita — " + e.getMessage(), e);
+            Log.e(TAG, "GeminiService: erro inesperado — " + e.getMessage(), e);
             callback.onErro("Não foi possível processar a receita. Tente novamente.");
             return null;
         }
@@ -314,34 +310,26 @@ public class GeminiService {
             JsonObject root = JsonParser.parseString(bodyJson).getAsJsonObject();
             if (root.has("error")) {
                 JsonObject erro = root.getAsJsonObject("error");
-                String code    = erro.has("code")    ? erro.get("code").getAsString()    : "?";
-                String status  = erro.has("status")  ? erro.get("status").getAsString()  : "?";
-                String message = erro.has("message") ? erro.get("message").getAsString() : "?";
-                return "code=" + code + " status=" + status + " message=" + message;
+                return "code=" + erro.get("code") + " status=" + erro.get("status")
+                        + " message=" + erro.get("message");
             }
-        } catch (Exception ignored) {
-            // Body não é JSON válido ou não tem a estrutura esperada
-        }
+        } catch (Exception ignored) {}
         return null;
     }
 
     private String traduzirErroHttp(int code) {
         switch (code) {
-            case 400: return "Requisição inválida enviada à IA. Verifique o Logcat (tag InventaAi) para detalhes.";
+            case 400: return "Requisição inválida enviada à IA. Verifique o Logcat para detalhes.";
             case 401:
             case 403: return "Chave da API inválida ou sem permissão. Verifique o GEMINI_API_KEY.";
-            case 429: return "Limite de requisições da API atingido. Aguarde alguns minutos e tente novamente.";
+            case 429: return "Limite de requisições atingido. Aguarde alguns minutos.";
             case 500:
-            case 503: return "O serviço do Gemini está temporariamente indisponível. Tente novamente mais tarde.";
-            default:  return "Erro inesperado (HTTP " + code + "). Verifique o Logcat para detalhes.";
+            case 503: return "Serviço do Gemini temporariamente indisponível. Tente mais tarde.";
+            default:  return "Erro inesperado (HTTP " + code + "). Verifique o Logcat.";
         }
     }
 
-    /** Formata a quantidade sem casas decimais desnecessárias. */
     private String formatarQuantidade(double qtd) {
-        if (qtd == Math.floor(qtd)) {
-            return String.valueOf((int) qtd);
-        }
-        return String.valueOf(qtd);
+        return qtd == Math.floor(qtd) ? String.valueOf((int) qtd) : String.valueOf(qtd);
     }
 }

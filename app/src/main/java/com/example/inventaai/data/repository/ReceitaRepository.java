@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.inventaai.data.db.DatabaseContract;
 import com.example.inventaai.data.db.DatabaseContract.ReceitaEntry;
 import com.example.inventaai.data.db.DatabaseHelper;
 import com.example.inventaai.data.model.ReceitaSalva;
@@ -24,7 +25,6 @@ public class ReceitaRepository {
 
     private final DatabaseHelper dbHelper;
     private final Gson           gson;
-    /** Tipo para TypeToken de List<String>. */
     private static final Type LIST_STRING_TYPE = new TypeToken<List<String>>() {}.getType();
 
     public ReceitaRepository(Context context) {
@@ -41,8 +41,7 @@ public class ReceitaRepository {
         try {
             long id = db.insertOrThrow(ReceitaEntry.TABLE_NAME, null, toContentValues(receita));
             receita.setId(id);
-            Log.d(TAG, "ReceitaRepository.salvar: receita id=" + id
-                    + " — '" + receita.getTitulo() + "'");
+            Log.d(TAG, "ReceitaRepository.salvar: id=" + id + " — '" + receita.getTitulo() + "'");
             return id;
         } catch (Exception e) {
             Log.e(TAG, "ReceitaRepository.salvar: erro", e);
@@ -51,23 +50,14 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
-    // VERIFICAR DUPLICIDADE  —  Sprint 13
+    // VERIFICAR DUPLICIDADE
     // =========================================================================
 
-    /**
-     * Verifica se já existe uma receita com o mesmo título para o mesmo usuário.
-     * Comparar ingredientes gerados por IA via JSON é falho devido a variações sutis.
-     *
-     * @param receita A receita candidata a ser salva.
-     * @return {@code true} se já existir uma receita com mesmo título; {@code false} caso contrário.
-     */
     public boolean receitaJaExiste(ReceitaSalva receita) {
         if (receita == null || receita.getTitulo() == null) return false;
-
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
         try {
-            // Checa apenas o título exato e o ID do usuário.
             cursor = db.query(
                     ReceitaEntry.TABLE_NAME,
                     new String[]{ ReceitaEntry._ID },
@@ -76,16 +66,13 @@ public class ReceitaRepository {
                     new String[]{ receita.getTitulo().trim(), receita.getUserId() },
                     null, null, null
             );
-
-            // Se encontrou algum registro com o mesmo título, bloqueia
             if (cursor != null && cursor.moveToFirst()) {
-                Log.d(TAG, "receitaJaExiste: duplicata detectada para título='" + receita.getTitulo() + "'");
+                Log.d(TAG, "receitaJaExiste: duplicata detectada — '" + receita.getTitulo() + "'");
                 return true;
             }
-
             return false;
         } catch (Exception e) {
-            Log.e(TAG, "receitaJaExiste: erro ao verificar duplicidade", e);
+            Log.e(TAG, "receitaJaExiste: erro", e);
             return false;
         } finally {
             if (cursor != null) cursor.close();
@@ -93,7 +80,7 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
-    // LISTAR TODAS (por usuário)
+    // LISTAR TODAS (por usuário) — mantido para compatibilidade
     // =========================================================================
 
     public List<ReceitaSalva> listarTodas(String userId) {
@@ -102,17 +89,96 @@ public class ReceitaRepository {
         Cursor cursor = null;
         try {
             cursor = db.query(
-                    ReceitaEntry.TABLE_NAME,
-                    null,
+                    ReceitaEntry.TABLE_NAME, null,
                     ReceitaEntry.COLUMN_USER_ID + " = ?",
                     new String[]{ userId },
                     null, null,
                     ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
             );
             while (cursor.moveToNext()) lista.add(fromCursor(cursor));
-            Log.d(TAG, "ReceitaRepository.listarTodas: " + lista.size() + " receita(s).");
         } catch (Exception e) {
             Log.e(TAG, "ReceitaRepository.listarTodas: erro", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return lista;
+    }
+
+    // =========================================================================
+    // SPRINT 17 — LISTAR POR STATUS COM BUSCA OPCIONAL
+    // =========================================================================
+
+    public List<ReceitaSalva> listarPorStatus(String userId, String status, String query) {
+        List<ReceitaSalva> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            if (query == null || query.trim().isEmpty()) {
+                // Sem busca: filtra apenas por status
+                cursor = db.query(
+                        ReceitaEntry.TABLE_NAME, null,
+                        ReceitaEntry.COLUMN_USER_ID + " = ? AND "
+                                + ReceitaEntry.COLUMN_STATUS + " = ?",
+                        new String[]{ userId, status },
+                        null, null,
+                        ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
+                );
+            } else {
+                // Com busca: filtra por status + título ou ingredientes
+                String filtro = "%" + query.trim().toLowerCase() + "%";
+                cursor = db.query(
+                        ReceitaEntry.TABLE_NAME, null,
+                        ReceitaEntry.COLUMN_USER_ID + " = ? AND "
+                                + ReceitaEntry.COLUMN_STATUS + " = ? AND ("
+                                + "LOWER(" + ReceitaEntry.COLUMN_TITULO + ") LIKE ? OR "
+                                + "LOWER(" + ReceitaEntry.COLUMN_INGREDIENTES + ") LIKE ?)",
+                        new String[]{ userId, status, filtro, filtro },
+                        null, null,
+                        ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
+                );
+            }
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+            Log.d(TAG, "listarPorStatus: status=" + status + " → " + lista.size() + " receita(s).");
+        } catch (Exception e) {
+            Log.e(TAG, "listarPorStatus: erro", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return lista;
+    }
+
+    // =========================================================================
+    // LISTAR CONCLUÍDAS — mantido para retrocompatibilidade
+    // =========================================================================
+
+    public List<ReceitaSalva> listarConcluidas(String userId) {
+        return listarPorStatus(userId, DatabaseContract.RECEITA_STATUS_CONCLUIDA, null);
+    }
+
+    // =========================================================================
+    // BUSCAR POR TÍTULO OU INGREDIENTE — mantido para retrocompatibilidade
+    // =========================================================================
+
+    public List<ReceitaSalva> buscarPorTituloOuIngrediente(String query, String userId) {
+        if (query == null || query.trim().isEmpty()) return listarTodas(userId);
+
+        List<ReceitaSalva> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String filtro = "%" + query.trim().toLowerCase() + "%";
+            cursor = db.query(
+                    ReceitaEntry.TABLE_NAME, null,
+                    ReceitaEntry.COLUMN_USER_ID + " = ? AND ("
+                            + "LOWER(" + ReceitaEntry.COLUMN_TITULO + ") LIKE ? OR "
+                            + "LOWER(" + ReceitaEntry.COLUMN_INGREDIENTES + ") LIKE ?)",
+                    new String[]{ userId, filtro, filtro },
+                    null, null,
+                    ReceitaEntry.COLUMN_DATA_SALVO + " DESC"
+            );
+            while (cursor.moveToNext()) lista.add(fromCursor(cursor));
+        } catch (Exception e) {
+            Log.e(TAG, "buscarPorTituloOuIngrediente: erro", e);
         } finally {
             if (cursor != null) cursor.close();
         }
@@ -128,8 +194,7 @@ public class ReceitaRepository {
         Cursor cursor = null;
         try {
             cursor = db.query(
-                    ReceitaEntry.TABLE_NAME,
-                    null,
+                    ReceitaEntry.TABLE_NAME, null,
                     ReceitaEntry._ID + " = ?",
                     new String[]{ String.valueOf(id) },
                     null, null, null, "1"
@@ -144,6 +209,29 @@ public class ReceitaRepository {
     }
 
     // =========================================================================
+    // ATUALIZAR STATUS
+    // =========================================================================
+
+    public boolean atualizarStatusReceita(long receitaId, String novoStatus) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(ReceitaEntry.COLUMN_STATUS, novoStatus);
+            int linhas = db.update(
+                    ReceitaEntry.TABLE_NAME, cv,
+                    ReceitaEntry._ID + " = ?",
+                    new String[]{ String.valueOf(receitaId) }
+            );
+            Log.d(TAG, "atualizarStatusReceita: id=" + receitaId
+                    + " → '" + novoStatus + "' (" + linhas + " linha(s))");
+            return linhas > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "atualizarStatusReceita: erro id=" + receitaId, e);
+            return false;
+        }
+    }
+
+    // =========================================================================
     // DELETAR
     // =========================================================================
 
@@ -155,7 +243,6 @@ public class ReceitaRepository {
                     ReceitaEntry._ID + " = ?",
                     new String[]{ String.valueOf(id) }
             );
-            Log.d(TAG, "ReceitaRepository.deletar: id=" + id + " → " + linhas + " linha(s)");
             return linhas > 0;
         } catch (Exception e) {
             Log.e(TAG, "ReceitaRepository.deletar: erro id=" + id, e);
@@ -174,14 +261,13 @@ public class ReceitaRepository {
         cv.put(ReceitaEntry.COLUMN_TEMPO_PREPARO, r.getTempoPreparo());
         cv.put(ReceitaEntry.COLUMN_PORCOES,       r.getPorcoes());
         cv.put(ReceitaEntry.COLUMN_DIFICULDADE,   r.getDificuldade());
-        // Serializa listas para JSON
         cv.put(ReceitaEntry.COLUMN_INGREDIENTES,  gson.toJson(r.getIngredientes()));
         cv.put(ReceitaEntry.COLUMN_PASSOS,        gson.toJson(r.getPassos()));
         cv.put(ReceitaEntry.COLUMN_IMAGEM_URL,    r.getImagemUrl());
-        // Se dataSalvo não foi preenchida, usa o dia de hoje
         String data = r.getDataSalvo() != null ? r.getDataSalvo() : DateUtils.hoje();
         cv.put(ReceitaEntry.COLUMN_DATA_SALVO, data);
         cv.put(ReceitaEntry.COLUMN_USER_ID,    r.getUserId());
+        cv.put(ReceitaEntry.COLUMN_STATUS,     r.getStatus() != null ? r.getStatus() : "SALVA");
         return cv;
     }
 
@@ -197,7 +283,13 @@ public class ReceitaRepository {
         r.setDataSalvo(   c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_DATA_SALVO)));
         r.setUserId(      c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_USER_ID)));
 
-        // Desserializa JSON → List<String>
+        int statusCol = c.getColumnIndex(ReceitaEntry.COLUMN_STATUS);
+        if (statusCol >= 0 && !c.isNull(statusCol)) {
+            r.setStatus(c.getString(statusCol));
+        } else {
+            r.setStatus("SALVA");
+        }
+
         String jsonIngredientes = c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_INGREDIENTES));
         String jsonPassos       = c.getString(c.getColumnIndexOrThrow(ReceitaEntry.COLUMN_PASSOS));
 

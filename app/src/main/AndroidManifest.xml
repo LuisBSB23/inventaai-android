@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -85,12 +85,39 @@
             android:label="Detalhes da Receita"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Tela de Configurações -->
+        <activity
+            android:name=".ui.receitas.ReceitasConcluidasActivity"
+            android:exported="false"
+            android:label="Receitas Concluídas" />
+
+        <activity
+            android:name=".ui.receitas.ReceitasEmAndamentoActivity"
+            android:exported="false"
+            android:label="Receitas em Andamento" />
+
         <activity
             android:name=".ui.configuracoes.ConfiguracoesActivity"
             android:exported="false"
             android:label="Configurações"
             android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.sincronizacao.SincronizacaoActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:label="Sincronizar Despensa" />
+
+        <activity
+            android:name=".ui.sincronizacao.PreviewImportActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:label="Pré-visualizar Importação" />
+
+        <!-- SEED DE TESTE — REMOVER ANTES DA BUILD DE PRODUÇÃO -->
+        <activity
+            android:name=".ui.dashboard.SeedTestActivity"
+            android:exported="true"
+            android:label="Seed Teste Sprint 7" />
 
     </application>
 
