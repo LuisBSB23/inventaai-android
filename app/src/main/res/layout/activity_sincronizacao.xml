@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Sprint 20 — Tela de Sincronização / Gestão por CSV
-    CORRIGIDO: MaterialCardView, padrão idêntico ao Dashboard, sem BOM, MIME amplo
--->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -13,7 +9,7 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.sincronizacao.SincronizacaoActivity">
 
-    <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
+    <!--   Toolbar   -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -52,11 +48,10 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/btnBack"
                 app:layout_constraintTop_toTopOf="parent" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- ── Conteúdo rolável ─────────────────────────────────────────────────── -->
+    <!--   Conteúdo rolável   -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -81,7 +76,7 @@
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp" />
 
-            <!-- ── SEÇÃO: COMEÇAR DO ZERO ──────────────────────────────── -->
+            <!-- OPÇÃO: COMEÇAR DO ZERO -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -114,16 +109,19 @@
                     android:padding="20dp"
                     android:gravity="center_vertical">
 
+                    <!-- CORREÇÃO: Icone e fundo com tint dinâmico -->
                     <FrameLayout
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/bg_circle_primary_container">
+                        android:background="@drawable/bg_circle_primary_container"
+                        android:backgroundTint="?attr/colorPrimaryContainer">
+
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_file_upload"
-                            android:tint="?attr/colorPrimary"
+                            android:tint="?attr/colorOnPrimaryContainer"
                             android:contentDescription="Baixar modelo" />
                     </FrameLayout>
 
@@ -162,7 +160,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ── SEÇÃO: IMPORTAR DADOS ──────────────────────────────── -->
+            <!-- OPÇÃO: IMPORTAR DADOS -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -198,13 +196,15 @@
                     <FrameLayout
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/bg_circle_primary_container">
+                        android:background="@drawable/bg_circle_primary_container"
+                        android:backgroundTint="?attr/colorPrimaryContainer">
+
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_save"
-                            android:tint="?attr/colorPrimary"
+                            android:tint="?attr/colorOnPrimaryContainer"
                             android:contentDescription="Importar" />
                     </FrameLayout>
 
@@ -243,7 +243,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ── SEÇÃO: EXPORTAR DADOS ──────────────────────────────── -->
+            <!-- OPÇÃO: EXPORTAR DADOS -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -279,7 +279,8 @@
                     <FrameLayout
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/bg_circle_primary_container">
+                        android:background="@drawable/bg_circle_primary_container"
+                        android:backgroundTint="?attr/colorPrimaryContainer">
 
                         <ImageView
                             android:layout_width="24dp"
@@ -287,7 +288,7 @@
                             android:layout_gravity="center"
                             android:contentDescription="Exportar"
                             android:src="@drawable/ic_increase"
-                            android:tint="?attr/colorPrimary" />
+                            android:tint="?attr/colorOnPrimaryContainer" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -350,15 +351,16 @@
                     <FrameLayout
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/bg_circle_primary_container">
-                        <!-- Usa ic_nav_chef (existente) como substituto — ícone de WhatsApp não existe no projeto -->
+                        android:background="@drawable/bg_circle_primary_container"
+                        android:backgroundTint="?attr/colorPrimaryContainer">
+
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:contentDescription="WhatsApp"
                             android:src="@drawable/ic_share"
-                            android:tint="?attr/colorPrimary" />
+                            android:tint="?attr/colorOnPrimaryContainer" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -375,6 +377,7 @@
                             android:text="Compartilhar no WhatsApp"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

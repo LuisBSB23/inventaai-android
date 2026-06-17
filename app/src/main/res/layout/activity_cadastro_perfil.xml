@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -17,7 +16,6 @@
 
         <Space android:layout_width="match_parent" android:layout_height="48dp" />
 
-        <!-- ===== BOTÃO VOLTAR — ícone ic_back_arrow (igual às outras telas) ===== -->
         <ImageButton
             android:id="@+id/btnCadastroVoltar"
             android:layout_width="40dp"
@@ -29,7 +27,7 @@
             android:contentDescription="@string/back"
             android:layout_marginBottom="24dp" />
 
-        <!--===== AVATAR — mesmo padrão do activity_perfil.xml ===== -->
+        <!-- Avatar corrigido com tints dinâmicos -->
         <FrameLayout
             android:id="@+id/frameAvatar"
             android:layout_width="96dp"
@@ -37,6 +35,7 @@
             android:clickable="true"
             android:focusable="true"
             android:background="@drawable/bg_circle_primary_container"
+            android:backgroundTint="?attr/colorPrimaryContainer"
             android:layout_marginBottom="8dp">
 
             <!-- Foto quando disponível -->
@@ -56,7 +55,7 @@
                 android:gravity="center"
                 android:fontFamily="@font/inter_bold"
                 android:textSize="36sp"
-                android:textColor="?attr/colorPrimary"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:text="?" />
 
             <!-- Badge de adicionar foto (ícone +) -->
@@ -64,14 +63,15 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="bottom|end"
-                android:background="@drawable/bg_circle_primary_container">
+                android:background="@drawable/bg_circle_primary_container"
+                android:backgroundTint="?attr/colorPrimaryContainer">
 
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_add_photo"
-                    android:tint="?attr/colorPrimary"
+                    android:tint="?attr/colorOnPrimaryContainer"
                     android:contentDescription="@null" />
             </FrameLayout>
         </FrameLayout>

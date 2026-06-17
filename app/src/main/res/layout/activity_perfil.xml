@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -62,6 +61,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="@drawable/bg_circle_primary_container"
+                android:backgroundTint="?attr/colorPrimaryContainer"
                 android:layout_marginBottom="12dp">
 
                 <!-- Foto quando disponível -->
@@ -81,7 +81,7 @@
                     android:gravity="center"
                     android:fontFamily="@font/inter_bold"
                     android:textSize="36sp"
-                    android:textColor="?attr/colorPrimary"
+                    android:textColor="?attr/colorOnPrimaryContainer"
                     android:visibility="visible" />
 
                 <!-- Badge de adicionar foto -->
@@ -89,14 +89,15 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="bottom|end"
-                    android:background="@drawable/bg_circle_primary_container">
+                    android:background="@drawable/bg_circle_primary_container"
+                    android:backgroundTint="?attr/colorPrimaryContainer">
 
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_add_photo"
-                        android:tint="?attr/colorPrimary"
+                        android:tint="?attr/colorOnPrimaryContainer"
                         android:contentDescription="@null" />
                 </FrameLayout>
             </FrameLayout>
@@ -110,7 +111,7 @@
                 android:textColor="?attr/colorOnSurface"
                 android:text="Nome do Usuário" />
 
-            <!-- ID copiável (Ocultado) -->
+            <!-- ID copiável (Ocultado como pedido anteriormente) -->
             <TextView
                 android:id="@+id/tvPerfilId"
                 android:layout_width="wrap_content"
@@ -129,7 +130,9 @@
             style="@style/Widget.InventaAi.Card.Small"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutlineVariant">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -179,7 +182,9 @@
             style="@style/Widget.InventaAi.Card.Small"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutlineVariant">
 
             <LinearLayout
                 android:layout_width="match_parent"
