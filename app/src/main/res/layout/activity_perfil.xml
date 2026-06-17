@@ -110,7 +110,7 @@
                 android:textColor="?attr/colorOnSurface"
                 android:text="Nome do Usuário" />
 
-            <!-- ID copiável -->
+            <!-- ID copiável (Ocultado) -->
             <TextView
                 android:id="@+id/tvPerfilId"
                 android:layout_width="wrap_content"
@@ -119,6 +119,7 @@
                 android:textSize="12sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:text="ID: xxxxxxxx"
+                android:visibility="gone"
                 android:longClickable="true"
                 android:padding="8dp" />
         </LinearLayout>

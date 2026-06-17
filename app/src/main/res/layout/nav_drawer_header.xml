@@ -52,13 +52,11 @@
         android:fontFamily="@font/inter_regular"
         android:textSize="12sp"
         android:textColor="@color/colorOnSurfaceVariant"
-        android:text="ID: ..." />
-
-    <!-- Sprint 19-B #10: Separador visual -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="20dp"
-        android:background="?attr/colorOutlineVariant" />
+        android:visibility="gone"
+        android:text="ID: ..." /> <View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:layout_marginTop="20dp"
+    android:background="?attr/colorOutlineVariant" />
 
 </LinearLayout>

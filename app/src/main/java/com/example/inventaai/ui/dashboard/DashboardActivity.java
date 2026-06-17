@@ -51,6 +51,7 @@ import com.example.inventaai.util.GlideHelper;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
@@ -60,7 +61,6 @@ import java.util.List;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    // ── Views principais ──────────────────────────────────────────────────────
     private DrawerLayout              drawerLayout;
     private NavigationView            navigationView;
     private RecyclerView              rvExpiringSoon;
@@ -75,41 +75,29 @@ public class DashboardActivity extends AppCompatActivity {
     private CircularProgressIndicator progressBar;
     private View                      cardSaudeDespensa;
 
-    // Barra de modo de seleção
     private LinearLayout   layoutBarraSelecao;
     private TextView       tvContadorSelecao;
     private MaterialButton btnCancelarSelecao;
-    private MaterialButton btnExcluirSelecionados; // Sprint 18
-
-    // Sprint 19-B #8: CTA empty state
+    private MaterialButton btnExcluirSelecionados;
     private MaterialButton btnAdicionarPrimeiroItem;
 
-    // ── Card de Saúde dinâmico ──────────────────────────────────
     private TextView  tvSaudePercent;
     private TextView  tvSaudeLabel;
     private ImageView ivSaudeIcon;
 
-    // ── Seção "Vencendo Logo" ocultável ─────────────────────────
     private LinearLayout layoutSectionVencendo;
 
-    // ── Busca
     private LinearLayout      layoutSearchBar;
     private TextInputEditText etBusca;
     private View              btnBuscar;
 
-    // ── Adapters ──────────────────────────────────────────────────────────────
     private DespensaAdapter adapterExpiringSoon;
     private DespensaAdapter adapterPantry;
 
-    // ── Dependências ──────────────────────────────────────────────────────────
     private DespensaRepository despensaRepository;
     private UserRepository     userRepository;
     private SessionManager     sessionManager;
     private String             currentUserId;
-
-    // =========================================================================
-    // CICLO DE VIDA
-    // =========================================================================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,10 +151,6 @@ public class DashboardActivity extends AppCompatActivity {
         atualizarHeaderDrawer();
     }
 
-    // =========================================================================
-    // SPRINT 13: mensagem de retorno do ChefIA
-    // =========================================================================
-
     private void verificarMensagemDeRetorno() {
         Intent intent = getIntent();
         if (intent != null
@@ -176,10 +160,6 @@ public class DashboardActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
         }
     }
-
-    // =========================================================================
-    // INICIALIZAÇÃO
-    // =========================================================================
 
     private void vincularViews() {
         drawerLayout      = findViewById(R.id.drawerLayout);
@@ -199,9 +179,8 @@ public class DashboardActivity extends AppCompatActivity {
         layoutBarraSelecao    = findViewById(R.id.layoutBarraSelecao);
         tvContadorSelecao     = findViewById(R.id.tvContadorSelecao);
         btnCancelarSelecao    = findViewById(R.id.btnCancelarSelecao);
-        btnExcluirSelecionados = findViewById(R.id.btnExcluirSelecionados); // Sprint 18
+        btnExcluirSelecionados = findViewById(R.id.btnExcluirSelecionados);
 
-        // Sprint 19-B #8
         btnAdicionarPrimeiroItem = findViewById(R.id.btnAdicionarPrimeiroItem);
 
         tvSaudePercent = findViewById(R.id.tvSaudePercent);
@@ -233,7 +212,8 @@ public class DashboardActivity extends AppCompatActivity {
             if (!adapterPantry.isModoSelecao()) {
                 adapterPantry.setModoSelecao(true);
             }
-            adapterPantry.selecionarItem(item.getId());
+            // CORREÇÃO 2: Passa o item inteiro para o adapter manter a referência
+            adapterPantry.selecionarItem(item);
             atualizarBarraSelecao();
         });
 
@@ -241,10 +221,6 @@ public class DashboardActivity extends AppCompatActivity {
                 tvContadorSelecao.setText(total + " selecionado(s)")
         );
     }
-
-    // =========================================================================
-    // BUSCA E FILTRO
-    // =========================================================================
 
     private void configurarBusca() {
         if (layoutSearchBar == null || etBusca == null || btnBuscar == null) return;
@@ -319,10 +295,6 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    // =========================================================================
-    // BARRA DE SELEÇÃO
-    // =========================================================================
-
     private void atualizarBarraSelecao() {
         boolean modoAtivo = adapterPantry.isModoSelecao();
         int quantidade    = adapterPantry.getQuantidadeSelecionados();
@@ -330,7 +302,6 @@ public class DashboardActivity extends AppCompatActivity {
         if (modoAtivo) {
             tvContadorSelecao.setText(quantidade + " selecionado(s)");
             btnGenerateRecipe.setText("Gerar Receita");
-            // Sprint 19-B #11: animação de entrada
             if (layoutBarraSelecao.getVisibility() != View.VISIBLE) {
                 layoutBarraSelecao.setVisibility(View.VISIBLE);
                 Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_down_in);
@@ -338,7 +309,6 @@ public class DashboardActivity extends AppCompatActivity {
             }
         } else {
             btnGenerateRecipe.setText(getString(R.string.generate_recipe));
-            // Sprint 19-B #11: animação de saída
             if (layoutBarraSelecao.getVisibility() == View.VISIBLE) {
                 Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_up_out);
                 anim.setAnimationListener(new Animation.AnimationListener() {
@@ -352,10 +322,6 @@ public class DashboardActivity extends AppCompatActivity {
             }
         }
     }
-
-    // =========================================================================
-    // CARREGAR DADOS
-    // =========================================================================
 
     private void atualizarListas() {
         mostrarCarregando(true);
@@ -397,10 +363,6 @@ public class DashboardActivity extends AppCompatActivity {
         rvExpiringSoon.setVisibility(carregando ? View.INVISIBLE : View.VISIBLE);
         rvPantryItems.setVisibility( carregando ? View.INVISIBLE : View.VISIBLE);
     }
-
-    // =========================================================================
-    // SAÚDE DA DESPENSA DINÂMICA
-    // =========================================================================
 
     private int calcularSaudePercent(List<DespensaItem> itens) {
         if (itens == null || itens.isEmpty()) return 100;
@@ -457,10 +419,6 @@ public class DashboardActivity extends AppCompatActivity {
         animator.start();
     }
 
-    // =========================================================================
-    // VISIBILIDADE DA SEÇÃO "VENCENDO LOGO"
-    // =========================================================================
-
     private void atualizarVisibilidadeSectionVencendo(List<DespensaItem> expirando) {
         if (layoutSectionVencendo == null) return;
 
@@ -481,10 +439,6 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    // =========================================================================
-    // ANIMAÇÃO CARD DE SAÚDE
-    // =========================================================================
-
     private void animarCardSaude() {
         if (cardSaudeDespensa == null) return;
         cardSaudeDespensa.setAlpha(0f);
@@ -498,10 +452,6 @@ public class DashboardActivity extends AppCompatActivity {
                                 .start(),
                 150);
     }
-
-    // =========================================================================
-    // NAVIGATION DRAWER — inclui nav_receitas_em_andamento
-    // =========================================================================
 
     private void configurarDrawer() {
         findViewById(R.id.btnMenu).setOnClickListener(v ->
@@ -521,7 +471,6 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
-                // Nova entrada no drawer
             } else if (id == R.id.nav_receitas_em_andamento) {
                 startActivity(new Intent(this, ReceitasEmAndamentoActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -573,7 +522,10 @@ public class DashboardActivity extends AppCompatActivity {
                 ImageView ivDrawerAvatar      = header.findViewById(R.id.ivDrawerAvatar);
 
                 tvDrawerNome.setText(user.getNome());
-                tvDrawerIdAbreviado.setText("ID: " + user.getIdAbreviado());
+
+                // CORREÇÃO 3: Comentado para ocultar o ID do Drawer
+                // tvDrawerIdAbreviado.setText("ID: " + user.getIdAbreviado());
+                tvDrawerIdAbreviado.setVisibility(View.GONE);
 
                 if (user.getAvatarPath() != null && !user.getAvatarPath().isEmpty()) {
                     GlideHelper.loadCircularImage(this, user.getAvatarPath(), ivDrawerAvatar);
@@ -588,10 +540,6 @@ public class DashboardActivity extends AppCompatActivity {
             });
         });
     }
-
-    // =========================================================================
-    // NAVEGAÇÃO
-    // =========================================================================
 
     private void abrirDetalhes(DespensaItem item) {
         if (adapterPantry.isModoSelecao()) {
@@ -636,9 +584,23 @@ public class DashboardActivity extends AppCompatActivity {
                     final List<DespensaItem> ativos = despensaRepository.listarAtivos(userId);
                     AppExecutors.mainThread().execute(() -> {
                         if (isFinishing() || isDestroyed()) return;
+
+                        // CORREÇÃO 1: Modal "Despensa Vazia" adicionada
                         if (ativos.isEmpty()) {
-                            startActivity(new Intent(this, CadastroActivity.class));
-                            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                            new MaterialAlertDialogBuilder(DashboardActivity.this)
+                                    .setTitle("Despensa Vazia")
+                                    .setMessage("O que você gostaria de fazer?")
+                                    .setPositiveButton("Adicionar Alimentos", (dialog, which) -> {
+                                        startActivity(new Intent(DashboardActivity.this, CadastroActivity.class));
+                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                    })
+                                    .setNegativeButton("Receita Aleatória", (dialog, which) -> {
+                                        Intent intentIA = new Intent(DashboardActivity.this, ChefIAActivity.class);
+                                        intentIA.putExtra("TIPO_RECEITA", "ALEATORIA");
+                                        startActivity(intentIA);
+                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                    })
+                                    .show();
                         } else {
                             Toast.makeText(this,
                                     "Selecione pelo menos 1 item para gerar a receita",
@@ -654,12 +616,10 @@ public class DashboardActivity extends AppCompatActivity {
             atualizarBarraSelecao();
         });
 
-        // Sprint 18: excluir selecionados → move para histórico como DESCARTADO
         if (btnExcluirSelecionados != null) {
             btnExcluirSelecionados.setOnClickListener(v -> confirmarExclusaoEmLote());
         }
 
-        // Sprint 19-B #8: CTA na despensa vazia
         if (btnAdicionarPrimeiroItem != null) {
             btnAdicionarPrimeiroItem.setOnClickListener(v -> {
                 Intent intent = new Intent(this, CadastroActivity.class);
@@ -698,10 +658,6 @@ public class DashboardActivity extends AppCompatActivity {
             return false;
         });
     }
-
-    // =========================================================================
-    // SPRINT 18: EXCLUSÃO EM LOTE COM HISTÓRICO
-    // =========================================================================
 
     private void confirmarExclusaoEmLote() {
         List<DespensaItem> selecionados = adapterPantry.getItensSelecionados();

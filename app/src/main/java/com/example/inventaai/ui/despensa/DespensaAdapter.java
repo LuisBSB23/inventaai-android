@@ -20,22 +20,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.inventaai.R;
 import com.example.inventaai.data.model.DespensaItem;
-import com.example.inventaai.util.CategoryColorHelper;   // TAREFA #3
+import com.example.inventaai.util.CategoryColorHelper;
 import com.example.inventaai.util.CategoryIconHelper;
 import com.example.inventaai.util.DateUtils;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.Map;
 
 public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.DespensaViewHolder> {
-
-    // =========================================================================
-    // Interfaces
-    // =========================================================================
 
     public interface OnItemClickListener {
         void onItemClick(DespensaItem item);
@@ -49,73 +45,56 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         void onSelecaoChanged(int totalSelecionados);
     }
 
-    // =========================================================================
-    // Estado
-    // =========================================================================
-
     private final List<DespensaItem>    items;
     private final OnItemClickListener   clickListener;
     private OnItemLongClickListener     longClickListener;
     private OnSelecaoChangedListener    selecaoChangedListener;
 
-    private final Set<Long> itensSelecionados = new HashSet<>();
+    // CORREÇÃO 2: Substituído Set<Long> por Map para reter os objetos selecionados, resolvendo o bug de filtro
+    private final Map<Long, DespensaItem> itensSelecionadosMap = new HashMap<>();
     private boolean modoSelecao = false;
     private int ultimaPosicaoAnimada = -1;
-
-    // =========================================================================
-    // Construtor
-    // =========================================================================
 
     public DespensaAdapter(List<DespensaItem> items, OnItemClickListener clickListener) {
         this.items         = items != null ? new ArrayList<>(items) : new ArrayList<>();
         this.clickListener = clickListener;
     }
 
-    // =========================================================================
-    // API pública
-    // =========================================================================
-
     public void setOnItemLongClickListener(OnItemLongClickListener l)   { longClickListener     = l; }
     public void setOnSelecaoChangedListener(OnSelecaoChangedListener l) { selecaoChangedListener = l; }
 
     public void setModoSelecao(boolean ativo) {
         modoSelecao = ativo;
-        if (!ativo) itensSelecionados.clear();
+        if (!ativo) itensSelecionadosMap.clear();
         notifyDataSetChanged();
     }
 
     public boolean isModoSelecao()            { return modoSelecao; }
-    public int getQuantidadeSelecionados()    { return itensSelecionados.size(); }
+    public int getQuantidadeSelecionados()    { return itensSelecionadosMap.size(); }
 
     public List<DespensaItem> getItensSelecionados() {
-        List<DespensaItem> lista = new ArrayList<>();
-        for (DespensaItem item : items) {
-            if (itensSelecionados.contains(item.getId())) lista.add(item);
-        }
-        return lista;
+        // CORREÇÃO 2: Agora retorna diretamente os objetos armazenados no mapa, sem depender da view filtrada
+        return new ArrayList<>(itensSelecionadosMap.values());
     }
 
-    public void selecionarItem(long id) {
-        if (itensSelecionados.contains(id)) {
-            itensSelecionados.remove(id);
+    public void selecionarItem(DespensaItem item) {
+        long id = item.getId();
+        if (itensSelecionadosMap.containsKey(id)) {
+            itensSelecionadosMap.remove(id);
         } else {
-            itensSelecionados.add(id);
+            itensSelecionadosMap.put(id, item);
         }
         notifyDataSetChanged();
         if (selecaoChangedListener != null) {
-            selecaoChangedListener.onSelecaoChanged(itensSelecionados.size());
+            selecaoChangedListener.onSelecaoChanged(itensSelecionadosMap.size());
         }
     }
 
     public void limparSelecao() {
-        itensSelecionados.clear();
+        itensSelecionadosMap.clear();
         modoSelecao = false;
         notifyDataSetChanged();
     }
-
-    // =========================================================================
-    // DiffUtil
-    // =========================================================================
 
     public void atualizarLista(List<DespensaItem> novaLista) {
         if (novaLista == null) novaLista = new ArrayList<>();
@@ -128,10 +107,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         diff.dispatchUpdatesTo(this);
     }
 
-    // =========================================================================
-    // Adapter overrides
-    // =========================================================================
-
     @NonNull @Override
     public DespensaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
@@ -142,7 +117,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
     @Override
     public void onBindViewHolder(@NonNull DespensaViewHolder holder, int position) {
         DespensaItem item = items.get(position);
-        boolean selecionado = itensSelecionados.contains(item.getId());
+        boolean selecionado = itensSelecionadosMap.containsKey(item.getId());
         holder.bind(item, clickListener, longClickListener, modoSelecao, selecionado, this);
 
         if (position > ultimaPosicaoAnimada) {
@@ -155,14 +130,10 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
     @Override public int getItemCount() { return items.size(); }
 
-    // =========================================================================
-    // ViewHolder
-    // =========================================================================
-
     static class DespensaViewHolder extends RecyclerView.ViewHolder {
 
         private final MaterialCardView cardItem;
-        private final FrameLayout      flIconContainer;   // TAREFA #3: referência ao FrameLayout
+        private final FrameLayout      flIconContainer;
         private final ImageView        ivItemIcon;
         private final TextView         tvItemName;
         private final TextView         tvItemQuantity;
@@ -173,7 +144,7 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
         DespensaViewHolder(@NonNull View v) {
             super(v);
             cardItem          = v.findViewById(R.id.cardItem);
-            flIconContainer   = v.findViewById(R.id.flIconContainer);   // TAREFA #3
+            flIconContainer   = v.findViewById(R.id.flIconContainer);
             ivItemIcon        = v.findViewById(R.id.ivItemIcon);
             tvItemName        = v.findViewById(R.id.tvItemName);
             tvItemQuantity    = v.findViewById(R.id.tvItemQuantity);
@@ -191,24 +162,15 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
 
             Context ctx = itemView.getContext();
 
-            // ── Ícone ──────────────────────────────────────────────────────
             ivItemIcon.setImageResource(CategoryIconHelper.getIcon(item.getCategoria()));
 
-            // ── TAREFA #3 — Cor dinâmica por categoria ─────────────────────
-            // Obtém o par de cores (container + on-container) para a categoria.
-            // Em modo seleção, a cor do container é sobreposta pelo estado do card,
-            // mas mantemos a cor do ícone para consistência visual.
             CategoryColorHelper.Colors cores = CategoryColorHelper.getColors(ctx, item.getCategoria());
             flIconContainer.setBackgroundTintList(ColorStateList.valueOf(cores.containerColor));
             ivItemIcon.setImageTintList(ColorStateList.valueOf(cores.onContainerColor));
 
-            // ── Nome ───────────────────────────────────────────────────────
             tvItemName.setText(item.getNome());
-
-            // ── Quantidade com formatação correta (Sprint 16) ───────────────
             tvItemQuantity.setText(formatarQuantidade(item.getQuantidade(), item.getUnidadeMedida()));
 
-            // ── Badge validade ─────────────────────────────────────────────
             int dias = DateUtils.calcularDiasRestantes(item.getDataValidade());
             String alerta = DateUtils.getStatusAlerta(dias);
 
@@ -236,7 +198,6 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
             progressFreshness.setProgressTintList(ColorStateList.valueOf(corBarra));
             progressFreshness.setProgress(progressValor);
 
-            // ── Seleção ────────────────────────────────────────────────────
             if (modoSelecao) {
                 checkboxItem.setVisibility(View.VISIBLE);
                 checkboxItem.setChecked(selecionado);
@@ -266,28 +227,16 @@ public class DespensaAdapter extends RecyclerView.Adapter<DespensaAdapter.Despen
                         ContextCompat.getColor(ctx, R.color.colorSurfaceContainerLowest));
             }
 
-            // ── Clique ─────────────────────────────────────────────────────
             itemView.setOnClickListener(v -> {
                 if (modoSelecao) {
-                    long id = item.getId();
-                    if (adapter.itensSelecionados.contains(id)) {
-                        adapter.itensSelecionados.remove(id);
-                    } else {
-                        adapter.itensSelecionados.add(id);
-                    }
+                    adapter.selecionarItem(item); // Usa o novo método corrigido
                     int pos = getAdapterPosition();
                     if (pos != RecyclerView.NO_ID) adapter.notifyItemChanged(pos);
-
-                    if (adapter.selecaoChangedListener != null) {
-                        adapter.selecaoChangedListener.onSelecaoChanged(
-                                adapter.itensSelecionados.size());
-                    }
                 } else {
                     if (clickListener != null) clickListener.onItemClick(item);
                 }
             });
 
-            // ── Long click ─────────────────────────────────────────────────
             itemView.setOnLongClickListener(v -> {
                 if (longClickListener != null) {
                     longClickListener.onItemLongClick(item);

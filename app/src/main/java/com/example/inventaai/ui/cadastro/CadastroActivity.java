@@ -10,7 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
@@ -28,6 +27,7 @@ import com.example.inventaai.ui.perfil.PerfilActivity;
 import com.example.inventaai.ui.receitas.ReceitasActivity;
 import com.example.inventaai.ui.receitas.ReceitasConcluidasActivity;
 import com.example.inventaai.ui.receitas.ReceitasEmAndamentoActivity;
+import com.example.inventaai.ui.sincronizacao.SincronizacaoActivity;
 import com.example.inventaai.util.Constants;
 import com.example.inventaai.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
@@ -43,7 +43,6 @@ import java.util.Calendar;
 public class CadastroActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    // ── Views principais ──────────────────────────────────────────────────────
     private DrawerLayout              drawerLayout;
     private NavigationView            navigationView;
     private TextInputLayout           tilNome, tilCategoria, tilQuantidade, tilDataValidade;
@@ -53,7 +52,6 @@ public class CadastroActivity extends AppCompatActivity
     private MaterialButton            btnSalvar;
     private View                      rootView;
 
-    // ── Estado ────────────────────────────────────────────────────────────────
     private String              dataSelecionada = "";
     private DespensaRepository  repository;
     private SessionManager      sessionManager;
@@ -80,12 +78,7 @@ public class CadastroActivity extends AppCompatActivity
         configurarBotaoVoltar();
     }
 
-    // =========================================================================
-    // NAVIGATION DRAWER (Sprint 18)
-    // =========================================================================
-
     private void configurarDrawer() {
-        // Abre o drawer pelo botão hamburguer da toolbar
         View btnMenu = findViewById(R.id.btnMenuCadastro);
         if (btnMenu != null) {
             btnMenu.setOnClickListener(v -> {
@@ -116,10 +109,12 @@ public class CadastroActivity extends AppCompatActivity
         if (tvNome != null && nome != null)
             tvNome.setText(nome);
 
-        if (tvId != null && userId != null)
-            tvId.setText("ID: ..." + userId.substring(Math.max(0, userId.length() - 6)));
+        // CORREÇÃO 3: ID Ocultado no CadastroActivity também
+        if (tvId != null) {
+            tvId.setVisibility(View.GONE);
+            // if (userId != null) tvId.setText("ID: ..." + userId.substring(Math.max(0, userId.length() - 6)));
+        }
 
-        // Sem getUserAvatar() no SessionManager — exibe sempre as iniciais
         if (tvIniciais != null && nome != null && !nome.isEmpty()) {
             tvIniciais.setVisibility(View.VISIBLE);
             if (ivAvatar != null) ivAvatar.setVisibility(View.GONE);
@@ -155,6 +150,9 @@ public class CadastroActivity extends AppCompatActivity
         } else if (id == R.id.nav_configuracoes) {
             startActivity(new Intent(this, HistoricoActivity.class));
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        } else if (id == R.id.nav_sincronizar) { // CORREÇÃO 3: Adicionado fluxo Sincronizar
+            startActivity(new Intent(this, SincronizacaoActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (id == R.id.nav_sair) {
             sessionManager.encerrarSessao();
             Intent intent = new Intent(this, com.example.inventaai.ui.login.LoginActivity.class);
@@ -173,10 +171,6 @@ public class CadastroActivity extends AppCompatActivity
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         }
     }
-
-    // =========================================================================
-    // INICIALIZAÇÃO
-    // =========================================================================
 
     private void vincularViews() {
         drawerLayout    = findViewById(R.id.cadastroDrawerLayout);
@@ -220,10 +214,6 @@ public class CadastroActivity extends AppCompatActivity
         ).show();
     }
 
-    // =========================================================================
-    // VALIDAÇÃO
-    // =========================================================================
-
     private boolean validarFormulario() {
         boolean valido = true;
 
@@ -264,10 +254,6 @@ public class CadastroActivity extends AppCompatActivity
 
         return valido;
     }
-
-    // =========================================================================
-    // SALVAR
-    // =========================================================================
 
     private void configurarBotaoSalvar() {
         btnSalvar.setOnClickListener(v -> {
@@ -319,10 +305,6 @@ public class CadastroActivity extends AppCompatActivity
         if (checkedId == R.id.btnUnidL)  return "L";
         return "unid";
     }
-
-    // =========================================================================
-    // NAVEGAÇÃO
-    // =========================================================================
 
     private void configurarBotaoVoltar() {
         View btnBack = findViewById(R.id.btnBack);
